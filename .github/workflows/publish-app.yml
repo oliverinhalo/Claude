@@ -188,6 +188,7 @@ jobs:
             -m "Built and published by the weekly app factory: https://github.com/${{ github.repository }}"
           git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${FULL}.git"
           git push -q --force origin main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "pushed $FULL"
 
       - name: Set repository metadata
@@ -244,22 +245,23 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
           FULL: ${{ steps.repo.outputs.full }}
+          SHA: ${{ steps.push.outputs.sha }}
         run: |
           set -uo pipefail
           # The push above triggers the app's own pages workflow. Wait for that run
           # to finish, not merely for the Pages record to exist — the record appears
           # the instant the site is created, which is long before anything is served.
           CONCLUSION=""
-          for _ in $(seq 1 60); do
+          for _ in $(seq 1 90); do
             read -r STATUS CONCLUSION <<<"$(gh api \
-              "repos/$FULL/actions/workflows/pages.yml/runs?per_page=1" \
+              "repos/$FULL/actions/workflows/pages.yml/runs?head_sha=$SHA&per_page=1" \
               -q '.workflow_runs[0] | (.status // "none") + " " + (.conclusion // "-")' 2>/dev/null || echo "none -")"
             [ "$STATUS" = "completed" ] && break
             sleep 10
           done
 
           if [ "$CONCLUSION" != "success" ]; then
-            echo "::error::The app's pages workflow ended as '$CONCLUSION'."
+            echo "::error::The app's pages workflow for $SHA ended as '$CONCLUSION'."
             echo "::error::See https://github.com/$FULL/actions"
             exit 1
           fi

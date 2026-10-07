@@ -25,6 +25,17 @@ one, climb the polish ladder further, or raise the lowest-scored app already
 shipped — so a run that dies mid-build is finished the next day rather than the
 next week.
 
+## The console
+
+**<https://oliverinhalo.github.io/factory-console/>** — watch what the factory is
+building, browse everything it has shipped, add your own ideas, and tell it what to
+do next. It reads this repository through the GitHub API with a token you paste in
+once, so nothing private is published.
+
+Ideas and instructions you send become issues labelled `idea` and `request`. Every
+run reads those first, acts on them, and closes each one with a reply — so the page
+is a control surface, not a dashboard.
+
 ## Start here
 
 | If you want to… | Read |
