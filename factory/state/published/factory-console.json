@@ -1,8 +1,8 @@
 {
   "slug": "factory-console",
-  "url": "https://oliverinhalo.github.io/factory-console/",
-  "host": "github-pages",
+  "url": "https://factory-console.pages.dev",
+  "host": "cloudflare",
   "repo": "oliverinhalo/factory-console",
-  "workflow_run": "https://github.com/oliverinhalo/Claude/actions/runs/37642735756",
-  "published_at": "2026-10-07T15:19:35Z"
+  "workflow_run": "https://github.com/oliverinhalo/Claude/actions/runs/37675633571",
+  "published_at": "2026-10-07T19:36:24Z"
 }
