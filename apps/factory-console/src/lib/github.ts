@@ -1,10 +1,12 @@
 /**
  * GitHub API client.
  *
- * The factory repository is private, so the console cannot read it from a plain
- * fetch. Instead the viewer supplies a fine-grained token, which is kept in this
- * browser's localStorage and sent only to api.github.com. Nothing from the
- * private repository is ever baked into this public page.
+ * Reading a public factory repository needs no credentials, so the dashboard
+ * works the moment the page loads. A token is required only to write — adding an
+ * idea or sending an instruction — and for reading a private repository.
+ *
+ * When supplied, the token is kept in this browser's localStorage and sent only
+ * to api.github.com. Nothing from the repository is baked into this page.
  */
 
 const API = 'https://api.github.com';
@@ -56,12 +58,19 @@ export function writeRepo(repo: string): void {
   }
 }
 
-async function request<T>(token: string, path: string, init?: RequestInit): Promise<T> {
+export class NeedsTokenError extends Error {
+  constructor() {
+    super('Connect a GitHub token to do that.');
+    this.name = 'NeedsTokenError';
+  }
+}
+
+async function request<T>(token: string | null, path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
     ...init,
     headers: {
       Accept: 'application/vnd.github+json',
-      Authorization: `Bearer ${token}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       'X-GitHub-Api-Version': '2022-11-28',
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
       ...init?.headers,
@@ -73,13 +82,17 @@ async function request<T>(token: string, path: string, init?: RequestInit): Prom
   }
   if (res.status === 403) {
     throw new GitHubError(
-      'The token is missing a permission for this action, or you have hit the rate limit.',
+      token
+        ? 'The token is missing a permission for this action, or you have hit the rate limit.'
+        : 'GitHub rate-limited this browser. Connect a token to raise the limit.',
       403,
     );
   }
   if (res.status === 404) {
     throw new GitHubError(
-      'Not found. Either the path is wrong or the token cannot see this repository.',
+      token
+        ? 'Not found. Either the path is wrong or the token cannot see this repository.'
+        : 'Not found. If this repository is private, connect a token to read it.',
       404,
     );
   }
@@ -105,6 +118,8 @@ function decodeBase64(data: string): string {
 
 export interface Client {
   repo: string;
+  /** False when browsing anonymously: reads work, writes do not. */
+  canWrite: boolean;
   whoami(): Promise<{ login: string; avatar: string }>;
   file(path: string): Promise<string | null>;
   dir(path: string): Promise<string[]>;
@@ -136,12 +151,17 @@ export interface RawRun {
   html_url: string;
 }
 
-export function createClient(token: string, repo: string): Client {
+export function createClient(token: string | null, repo: string): Client {
   const base = `/repos/${repo}`;
+  const requireToken = () => {
+    if (!token) throw new NeedsTokenError();
+  };
   return {
     repo,
+    canWrite: token !== null,
 
     async whoami() {
+      requireToken();
       const u = await request<{ login: string; avatar_url: string }>(token, '/user');
       return { login: u.login, avatar: u.avatar_url };
     },
@@ -181,6 +201,7 @@ export function createClient(token: string, repo: string): Client {
     },
 
     async createIssue(title, body, labels) {
+      requireToken();
       return request<RawIssue>(token, `${base}/issues`, {
         method: 'POST',
         body: JSON.stringify({ title, body, labels }),
@@ -188,6 +209,7 @@ export function createClient(token: string, repo: string): Client {
     },
 
     async closeIssue(number) {
+      requireToken();
       await request(token, `${base}/issues/${number}`, {
         method: 'PATCH',
         body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
@@ -195,6 +217,7 @@ export function createClient(token: string, repo: string): Client {
     },
 
     async addLabel(number, label) {
+      requireToken();
       await request(token, `${base}/issues/${number}/labels`, {
         method: 'POST',
         body: JSON.stringify({ labels: [label] }),

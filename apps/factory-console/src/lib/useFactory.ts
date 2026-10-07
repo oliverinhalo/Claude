@@ -83,11 +83,13 @@ export function useFactory(client: Client | null) {
           createdAt: issue.created_at,
         }));
       } catch (error) {
-        warnings.push(
-          error instanceof GitHubError && error.status === 403
-            ? 'Your ideas could not be read — the token has no Issues permission.'
-            : 'Your submitted ideas could not be loaded.',
-        );
+        if (client.canWrite) {
+          warnings.push(
+            error instanceof GitHubError && error.status === 403
+              ? 'Your ideas could not be read — the token has no Issues permission.'
+              : 'Your submitted ideas could not be loaded.',
+          );
+        }
       }
 
       try {
@@ -115,7 +117,9 @@ export function useFactory(client: Client | null) {
           url: r.html_url,
         }));
       } catch {
-        warnings.push('Workflow activity is hidden — the token has no Actions permission.');
+        if (client.canWrite) {
+          warnings.push('Workflow activity is hidden — the token has no Actions permission.');
+        }
       }
 
       hasData.current = true;

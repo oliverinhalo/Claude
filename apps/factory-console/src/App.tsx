@@ -16,7 +16,10 @@ export function App() {
   const [repo, setRepo] = useState<string>(readRepo);
   const [tab, setTab] = useState<Tab>('Overview');
 
-  const client = useMemo(() => (token ? createClient(token, repo) : null), [token, repo]);
+  const [wantsToken, setWantsToken] = useState(false);
+  // Reading a public repo needs no token, so the dashboard loads straight away.
+  // A token is required only to write, or to read a private repository.
+  const client = useMemo(() => createClient(token, repo), [token, repo]);
   const { state, refreshing, reload } = useFactory(client);
 
   const connect = useCallback((nextToken: string, nextRepo: string) => {
@@ -24,6 +27,7 @@ export function App() {
     writeRepo(nextRepo);
     setRepo(nextRepo);
     setToken(nextToken);
+    setWantsToken(false);
   }, []);
 
   const disconnect = useCallback(() => {
@@ -31,26 +35,23 @@ export function App() {
     setToken(null);
   }, []);
 
-  if (!client) {
+  // A rejected token, an unreadable private repo, or an explicit request to
+  // connect all lead to the one screen that fixes it.
+  if (
+    wantsToken ||
+    (state.status === 'error' && /rejected|cannot see|private|Not found/i.test(state.message))
+  ) {
     return (
       <>
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <TokenSetup onSubmit={connect} initialRepo={repo} />
-      </>
-    );
-  }
-
-  // A rejected token is a setup problem, not a runtime error: send them back to
-  // the screen that fixes it rather than showing a dead end.
-  if (state.status === 'error' && /rejected|cannot see|Not found/i.test(state.message)) {
-    return (
-      <>
-        <a className="skip-link" href="#main">
-          Skip to content
-        </a>
-        <TokenSetup onSubmit={connect} initialRepo={repo} error={state.message} />
+        <TokenSetup
+          onSubmit={connect}
+          initialRepo={repo}
+          {...(state.status === 'error' ? { error: state.message } : {})}
+          {...(wantsToken ? { onCancel: () => setWantsToken(false) } : {})}
+        />
       </>
     );
   }
@@ -146,11 +147,13 @@ export function App() {
               bank={state.data.bank}
               submitted={state.data.submitted}
               client={client}
+              onConnect={() => setWantsToken(true)}
               onChanged={() => void reload()}
             />
           ) : (
             <ControlView
               client={client}
+              onConnect={() => setWantsToken(true)}
               requests={state.data.requests}
               runs={state.data.runs}
               reports={state.data.reports}
@@ -160,7 +163,11 @@ export function App() {
         </main>
 
         <footer className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-[var(--border)] py-6 text-sm text-[var(--text-faint)]">
-          <span>Your token stays in this browser.</span>
+          <span>
+            {client.canWrite
+              ? 'Your token stays in this browser.'
+              : 'Browsing anonymously — connect to add ideas or send instructions.'}
+          </span>
           <a
             className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--text)]"
             href={`https://github.com/${repo}`}
@@ -171,10 +178,10 @@ export function App() {
           </a>
           <button
             type="button"
-            onClick={disconnect}
+            onClick={client.canWrite ? disconnect : () => setWantsToken(true)}
             className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--text)]"
           >
-            Disconnect
+            {client.canWrite ? 'Disconnect' : 'Connect'}
           </button>
         </footer>
       </div>

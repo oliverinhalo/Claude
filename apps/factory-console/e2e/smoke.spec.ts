@@ -58,45 +58,63 @@ async function mockGitHub(page: Page) {
   });
 }
 
-async function connect(page: Page) {
+/** Land on the dashboard anonymously — reads need no token. */
+async function browse(page: Page) {
   await mockGitHub(page);
   await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1, name: /factory console/i })).toBeVisible();
+}
+
+/** Browse, then supply a token so writes are allowed. */
+async function connect(page: Page) {
+  await browse(page);
+  await page.getByRole('button', { name: /^connect$/i }).click();
   await page.getByLabel(/^token$/i).fill('github_pat_11TESTTOKEN0123456789');
   await page.getByRole('button', { name: /^connect$/i }).click();
   await expect(page.getByRole('heading', { level: 1, name: /factory console/i })).toBeVisible();
 }
 
-test.describe('connect screen', () => {
-  test('renders without console errors', async ({ page }) => {
+test.describe('anonymous', () => {
+  test('renders the dashboard with no token and no console errors', async ({ page }) => {
     const errors: string[] = [];
     page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
     page.on('pageerror', (e) => errors.push(String(e)));
 
-    await page.goto('/');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await browse(page);
     await expect(page.getByRole('main')).toBeVisible();
+    await expect(page.getByText(/browsing anonymously/i)).toBeVisible();
     expect(errors, `console errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('offers to connect instead of a dead submit button', async ({ page }) => {
+    await browse(page);
+    await page.getByRole('button', { name: 'Control' }).click();
+    await expect(page.getByRole('button', { name: /connect to send this/i })).toBeVisible();
+  });
+
   test('has a title and a meta description', async ({ page }) => {
+    await mockGitHub(page);
     await page.goto('/');
     await expect(page).toHaveTitle(/.{10,}/);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /.{30,}/);
   });
 
   test('puts the skip link first for keyboard users', async ({ page }) => {
+    await mockGitHub(page);
     await page.goto('/');
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link', { name: /skip to content/i })).toBeFocused();
   });
 
   test('keeps the token out of the page as readable text', async ({ page }) => {
-    await page.goto('/');
+    await browse(page);
+    await page.getByRole('button', { name: /^connect$/i }).click();
     await expect(page.getByLabel(/^token$/i)).toHaveAttribute('type', 'password');
   });
 
   test('does not scroll horizontally at 320px', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
+    await mockGitHub(page);
     await page.goto('/');
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -109,6 +127,7 @@ test.describe('connect screen', () => {
       localStorage.setItem('theme', '{{{not valid');
       localStorage.setItem('factory-console:repo', '');
     });
+    await mockGitHub(page);
     await page.goto('/');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
@@ -167,9 +186,9 @@ test.describe('connected', () => {
 
 test.describe('accessibility', () => {
   for (const theme of ['light', 'dark'] as const) {
-    test(`connect screen has no serious violations in ${theme} mode`, async ({ page }) => {
+    test(`anonymous dashboard has no serious violations in ${theme} mode`, async ({ page }) => {
       await page.emulateMedia({ colorScheme: theme });
-      await page.goto('/');
+      await browse(page);
       const { violations } = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze();

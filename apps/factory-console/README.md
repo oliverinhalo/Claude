@@ -20,10 +20,11 @@ add your own ideas, and tell it what to do next — without opening a terminal.
 
 ## How it talks to the factory
 
-The factory repository is private, so this page cannot read it from a plain fetch
-and nothing from it is baked into this deployment. Instead you supply a
-fine-grained GitHub token on first load. It is kept in your browser's
-`localStorage` and sent only to `api.github.com`.
+Reading a public factory repository needs no credentials, so the dashboard loads
+straight away with nothing to set up. A token is needed only to **write** — adding
+an idea or sending an instruction — and to read a private repository. When you
+supply one it is kept in your browser's `localStorage` and sent only to
+`api.github.com`; nothing from the repository is baked into this deployment.
 
 Ideas and instructions become GitHub issues labelled `idea` and `request`. The
 factory's scheduled runs read those labels, act, and close the issue with a reply —

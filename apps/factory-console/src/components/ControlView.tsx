@@ -8,6 +8,7 @@ interface Props {
   requests: Request[];
   runs: Run[];
   reports: string[];
+  onConnect: () => void;
   onChanged: () => void;
 }
 
@@ -23,7 +24,7 @@ function conclusionTone(run: Run): string {
   return run.conclusion === 'success' ? 'var(--success)' : 'var(--danger)';
 }
 
-export function ControlView({ client, requests, runs, reports, onChanged }: Props) {
+export function ControlView({ client, requests, runs, reports, onConnect, onChanged }: Props) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -86,13 +87,23 @@ export function ControlView({ client, requests, runs, reports, onChanged }: Prop
             maxLength={8000}
           />
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="submit"
-              disabled={!text.trim() || busy}
-              className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] enabled:hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {busy ? 'Sending…' : 'Send'}
-            </button>
+            {client.canWrite ? (
+              <button
+                type="submit"
+                disabled={!text.trim() || busy}
+                className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] enabled:hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {busy ? 'Sending…' : 'Send'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onConnect}
+                className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] hover:opacity-90"
+              >
+                Connect to send this
+              </button>
+            )}
             {sent !== null ? (
               <p role="status" className="text-sm text-[var(--success)]">
                 Sent as #{sent}. It is picked up on the next run.

@@ -5,6 +5,8 @@ interface Props {
   onSubmit: (token: string, repo: string) => void;
   error?: string | undefined;
   initialRepo?: string;
+  /** Present when the viewer can already browse and is only connecting to write. */
+  onCancel?: (() => void) | undefined;
 }
 
 const PERMISSIONS = [
@@ -19,7 +21,7 @@ const PERMISSIONS = [
  * token to read it. Said plainly, with the exact permissions, because a
  * mis-scoped token is the likeliest reason this page fails.
  */
-export function TokenSetup({ onSubmit, error, initialRepo = DEFAULT_REPO }: Props) {
+export function TokenSetup({ onSubmit, error, initialRepo = DEFAULT_REPO, onCancel }: Props) {
   const [token, setToken] = useState('');
   const [repo, setRepo] = useState(initialRepo);
   const valid = token.trim().length > 20 && /^[\w.-]+\/[\w.-]+$/.test(repo.trim());
@@ -146,13 +148,24 @@ export function TokenSetup({ onSubmit, error, initialRepo = DEFAULT_REPO }: Prop
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={!valid}
-          className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] enabled:hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Connect
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="submit"
+            disabled={!valid}
+            className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] enabled:hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Connect
+          </button>
+          {onCancel ? (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="min-h-11 rounded-[var(--radius)] border border-[var(--border)] px-4 text-sm"
+            >
+              Back
+            </button>
+          ) : null}
+        </div>
       </form>
     </main>
   );
