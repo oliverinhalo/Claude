@@ -102,6 +102,45 @@ jobs:
             && say ":white_check_mark: Can set repository metadata" \
             || { say ":warning: Cannot set description or topics — apps will publish without them"; FAILED=1; }
 
+          # Creating a repo is an ACCOUNT permission; pushing to it is a REPOSITORY
+          # permission. A token scoped to "Only select repositories" passes the
+          # create test and then fails the push, which is the whole publish step.
+          # So actually push.
+          WORK="$(mktemp -d)"
+          ( cd "$WORK"
+            git init -q -b main
+            git config user.name "factory check"
+            git config user.email "noreply@anthropic.com"
+            echo "token check" > README.md
+            mkdir -p .github/workflows
+            printf 'name: probe\non: workflow_dispatch\njobs:\n  noop:\n    runs-on: ubuntu-latest\n    steps:\n      - run: "true"\n' > .github/workflows/probe.yml
+            git add -A
+            git -c commit.gpgsign=false commit -q -m "token check"
+            git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/$OWNER/$NAME.git"
+            git push -q origin main
+          ) 2>/tmp/pusherr
+          if [ $? -eq 0 ]; then
+            say ":white_check_mark: Can push code **and workflow files** to a new repository"
+          else
+            say ":x: **Created the repository but cannot push to it.**"
+            say ""
+            say '```'
+            say "$(grep -viE 'x-access-token|github_pat' /tmp/pusherr | tail -3)"
+            say '```'
+            say ""
+            say "This is the one failure that still lets repo creation succeed. Almost always:"
+            say "**Repository access** on the token is set to *Only select repositories*."
+            say "Creating a repo is an account permission; pushing to it is a repository"
+            say "permission, and a brand-new repo is not in the selected list."
+            say ""
+            say "Fix: open the token, set **Repository access → All repositories**, save."
+            say "<https://github.com/settings/personal-access-tokens>"
+            say ""
+            say "If that is already set, check **Repository permissions → Contents:"
+            say "Read and write** and **Workflows: Read and write**."
+            FAILED=1
+          fi
+
           if gh api -X DELETE "repos/$OWNER/$NAME" >/dev/null 2>&1; then
             say ":white_check_mark: Cleaned up the throwaway repository"
           else
@@ -111,7 +150,9 @@ jobs:
 
           say ""
           if [ -z "$FAILED" ]; then
-            say "**The token is correctly scoped. Each app will get its own repository.**"
+            say "**The token is correctly scoped end to end: create, push, and publish.**"
+          else
+            exit 1
           fi
 
       - name: Is the Cloudflare token usable

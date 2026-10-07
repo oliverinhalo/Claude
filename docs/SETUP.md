@@ -33,8 +33,13 @@ getting its own repo. With it, each app gets `github.com/oliverinhalo/<app-slug>
 2. **Token name:** `app-factory`
 3. **Expiration:** 1 year — the calendar reminder below covers the renewal.
 4. **Resource owner:** `oliverinhalo`
-5. **Repository access:** *All repositories*
-   (it must be able to create repositories that do not exist yet)
+5. **Repository access:** *All repositories* — **not** *Only select repositories*.
+
+   > This one matters more than it looks. *Creating* a repository is an **account**
+   > permission, so a token limited to selected repositories will create
+   > `oliverinhalo/<app>` successfully and then fail to **push** to it, because a
+   > brand-new repo is not in the selected list. The run gets a repository with
+   > nothing in it and a `403`.
 6. **Permissions → Account permissions:**
    - `Administration` → **Read and write**  ← this is what allows repo creation
 7. **Permissions → Repository permissions:**
