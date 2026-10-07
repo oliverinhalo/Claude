@@ -138,6 +138,24 @@ jobs:
           echo "owner=$OWNER" >> "$GITHUB_OUTPUT"
           echo "full=$OWNER/$SLUG" >> "$GITHUB_OUTPUT"
 
+      - name: Enable Pages before the first push
+        if: steps.host.outputs.host == 'github-pages' && steps.host.outputs.own_repo == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+          FULL: ${{ steps.repo.outputs.full }}
+        run: |
+          set -uo pipefail
+          # actions/configure-pages can read an existing site but cannot create one
+          # with a workflow's default GITHUB_TOKEN. The PAT can. Doing it here means
+          # the push below triggers a pages run that succeeds first time.
+          if gh api "repos/$FULL/pages" >/dev/null 2>&1; then
+            echo "Pages already enabled"
+          elif gh api -X POST "repos/$FULL/pages" -f build_type=workflow >/dev/null 2>&1; then
+            echo "Pages enabled (build type: workflow)"
+          else
+            echo "::warning::Could not enable Pages with the PAT; the app workflow will try."
+          fi
+
       - name: Push the app as its repository's root
         id: push
         if: steps.host.outputs.own_repo == 'true'
@@ -150,7 +168,8 @@ jobs:
           set -euo pipefail
           WORK="$(mktemp -d)"
           rsync -a --exclude node_modules --exclude dist --exclude test-results \
-                   --exclude playwright-report "apps/$SLUG/" "$WORK/"
+                   --exclude playwright-report --exclude '*.tsbuildinfo' \
+                   "apps/$SLUG/" "$WORK/"
 
           # The app self-deploys on GitHub Pages: its own workflow has the Pages
           # permissions this one cannot delegate.
@@ -219,26 +238,39 @@ jobs:
                    --token "$VERCEL_TOKEN" --name "$SLUG" 2>&1 | tail -1)"
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
-      - name: Wait for GitHub Pages
+      - name: Wait for the app to deploy itself
         id: ghp
         if: steps.host.outputs.host == 'github-pages' && steps.host.outputs.own_repo == 'true'
         env:
           GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
           FULL: ${{ steps.repo.outputs.full }}
         run: |
-          set -euo pipefail
-          # The app's own pages.yml enables Pages and deploys. Give it time, then
-          # read the URL back from the Pages API.
-          URL=""
-          for i in $(seq 1 40); do
-            URL="$(gh api "repos/$FULL/pages" -q .html_url 2>/dev/null || true)"
-            [ -n "$URL" ] && [ "$URL" != "null" ] && break
-            sleep 15
+          set -uo pipefail
+          # The push above triggers the app's own pages workflow. Wait for that run
+          # to finish, not merely for the Pages record to exist — the record appears
+          # the instant the site is created, which is long before anything is served.
+          CONCLUSION=""
+          for _ in $(seq 1 60); do
+            read -r STATUS CONCLUSION <<<"$(gh api \
+              "repos/$FULL/actions/workflows/pages.yml/runs?per_page=1" \
+              -q '.workflow_runs[0] | (.status // "none") + " " + (.conclusion // "-")' 2>/dev/null || echo "none -")"
+            [ "$STATUS" = "completed" ] && break
+            sleep 10
           done
-          if [ -z "$URL" ] || [ "$URL" = "null" ]; then
-            echo "::error::Pages did not come up for $FULL. Check that repo's Actions tab."
+
+          if [ "$CONCLUSION" != "success" ]; then
+            echo "::error::The app's pages workflow ended as '$CONCLUSION'."
+            echo "::error::See https://github.com/$FULL/actions"
             exit 1
           fi
+
+          URL=""
+          for _ in $(seq 1 20); do
+            URL="$(gh api "repos/$FULL/pages" -q .html_url 2>/dev/null || true)"
+            [ -n "$URL" ] && [ "$URL" != "null" ] && break
+            sleep 10
+          done
+          [ -n "$URL" ] && [ "$URL" != "null" ] || { echo "::error::No Pages URL for $FULL"; exit 1; }
           echo "url=$URL" >> "$GITHUB_OUTPUT"
 
       - name: Fallback — publish into this repository
