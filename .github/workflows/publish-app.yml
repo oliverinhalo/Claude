@@ -295,6 +295,26 @@ jobs:
           echo "url=https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}/apps/$SLUG" >> "$GITHUB_OUTPUT"
 
       # ─── verify and report back ───────────────────────────────────────────
+      - name: Retire GitHub Pages if hosting moved elsewhere
+        if: steps.host.outputs.own_repo == 'true' && steps.host.outputs.host != 'github-pages'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+          FULL: ${{ steps.repo.outputs.full }}
+          HOST: ${{ steps.host.outputs.host }}
+        run: |
+          set -uo pipefail
+          # Otherwise the old <owner>.github.io/<repo> URL keeps serving whatever
+          # was last deployed there — a stale build at an address people already
+          # have. Worse than a 404, which at least tells the truth.
+          if gh api "repos/$FULL/pages" >/dev/null 2>&1; then
+            if gh api -X DELETE "repos/$FULL/pages" >/dev/null 2>&1; then
+              echo "::notice::Hosting moved to $HOST; disabled the stale GitHub Pages site."
+            else
+              echo "::warning::Hosting moved to $HOST but GitHub Pages could not be disabled for $FULL. The old URL may serve an old build."
+            fi
+          fi
+
       - name: Verify the deployment is live
         id: result
         env:

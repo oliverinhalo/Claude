@@ -27,7 +27,7 @@ next week.
 
 ## The console
 
-**<https://oliverinhalo.github.io/factory-console/>** — watch what the factory is
+**<https://factory-console.pages.dev/>** — watch what the factory is
 building, browse everything it has shipped, add your own ideas, and tell it what to
 do next. It reads this repository through the GitHub API with a token you paste in
 once, so nothing private is published.

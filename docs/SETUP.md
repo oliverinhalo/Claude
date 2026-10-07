@@ -130,7 +130,7 @@ ADMIN_EMAILS = "jacobelilevy@gmail.com,jacob@jacoblevy.co.uk"
 
 1. <https://github.com/settings/applications/new>
 2. **Application name:** `Factory Console`
-   **Homepage URL:** `https://oliverinhalo.github.io/factory-console/`
+   **Homepage URL:** `https://factory-console.pages.dev/`
    **Authorization callback URL:** `https://example.com/auth/callback`
    _(a placeholder — step 5d replaces it with the real Worker URL)_
 3. Register, then **Generate a new client secret**.

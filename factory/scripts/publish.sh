@@ -33,18 +33,28 @@ echo "dispatched."
 [ "$WATCH" = "--watch" ] || { echo "poll with: $0 $SLUG --watch"; exit 0; }
 
 echo "── watching"
-sleep 10
+# Identify the run by the commit just pushed. Polling ?per_page=1 returns
+# whatever run is newest at that instant, which in the seconds before the new one
+# registers is the PREVIOUS run — so a stale success or failure gets reported as
+# this one's. Cost me a wrong diagnosis once already.
+SHA="$(git rev-parse HEAD)"
 RUN_ID=""
-for _ in $(seq 1 12); do
-  RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?per_page=1" -q '.workflow_runs[0].id' 2>/dev/null || true)"
+for _ in $(seq 1 24); do
+  RUN_ID="$(gh api "repos/$REPO/actions/workflows/$WORKFLOW/runs?head_sha=$SHA&per_page=1" \
+    -q '.workflow_runs[0].id' 2>/dev/null || true)"
   [ -n "$RUN_ID" ] && [ "$RUN_ID" != "null" ] && break
   sleep 5
 done
-[ -n "$RUN_ID" ] || { echo "could not find the workflow run" >&2; exit 1; }
+if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+  echo "could not find a workflow run for $SHA — check $REPO/actions" >&2
+  exit 1
+fi
 echo "run $RUN_ID → https://github.com/$REPO/actions/runs/$RUN_ID"
 
+STATUS=""; CONCLUSION=""
 for _ in $(seq 1 180); do
-  read -r STATUS CONCLUSION <<<"$(gh api "repos/$REPO/actions/runs/$RUN_ID" -q '.status + " " + (.conclusion // "-")')"
+  read -r STATUS CONCLUSION <<<"$(gh api "repos/$REPO/actions/runs/$RUN_ID" \
+    -q '.status + " " + (.conclusion // "-")' 2>/dev/null || echo "unknown -")"
   [ "$STATUS" = "completed" ] && break
   printf '.'; sleep 10
 done

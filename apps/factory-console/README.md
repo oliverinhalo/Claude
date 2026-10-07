@@ -3,7 +3,7 @@
 The control surface for an autonomous weekly app factory: see what it has built,
 add your own ideas, and tell it what to do next — without opening a terminal.
 
-**[Open the console →](https://oliverinhalo.github.io/factory-console/)**
+**[Open the console →](https://factory-console.pages.dev/)**
 
 ---
 

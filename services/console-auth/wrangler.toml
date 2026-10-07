@@ -9,8 +9,8 @@ workers_dev = true
 ADMIN_EMAILS = "jacobelilevy@gmail.com,jacob@jacoblevy.co.uk"
 
 # The console origin allowed to call this Worker, and where sign-in returns to.
-CONSOLE_ORIGIN = "https://oliverinhalo.github.io"
-CONSOLE_PATH = "/factory-console/"
+CONSOLE_ORIGIN = "https://factory-console.pages.dev"
+CONSOLE_PATH = "/"
 
 # The repository issues are filed against.
 FACTORY_REPO = "oliverinhalo/Claude"
