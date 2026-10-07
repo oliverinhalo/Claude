@@ -1,0 +1,6 @@
+{
+  "$schema": "./ledger.schema.json",
+  "started": "2026-10-07",
+  "target": 52,
+  "apps": []
+}

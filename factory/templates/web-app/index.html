@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>__APP_NAME__ — __APP_DESCRIPTION__</title>
+    <meta name="description" content="__APP_DESCRIPTION__ Free, no sign-up, works in your browser." />
+    <link rel="canonical" href="https://__APP_SLUG__.pages.dev/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="__APP_NAME__" />
+    <meta property="og:description" content="__APP_DESCRIPTION__" />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:url" content="https://__APP_SLUG__.pages.dev/" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbfbfa" media="(prefers-color-scheme: light)" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "__APP_NAME__",
+        "description": "__APP_DESCRIPTION__",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+
+    <script>
+      // Apply the stored theme before first paint so there is no flash.
+      try {
+        var t = localStorage.getItem('theme');
+        if (t === 'dark' || t === 'light') document.documentElement.dataset.theme = t;
+      } catch (e) {
+        /* private mode: fall back to the media query */
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

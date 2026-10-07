@@ -1,0 +1,49 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      # enablement: true turns Pages on using this workflow's own GITHUB_TOKEN,
+      # so publishing needs no secret and no dashboard click.
+      - id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - run: npm ci
+      - run: npm run build
+        env:
+          # GitHub Pages serves a project site from /<repo>/. Building for '/'
+          # here is what makes a deploy render as a blank page.
+          VITE_BASE: ${{ steps.pages.outputs.base_path }}/
+          SITE_URL: ${{ steps.pages.outputs.origin }}${{ steps.pages.outputs.base_path }}
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

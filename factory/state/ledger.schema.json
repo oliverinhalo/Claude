@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "App factory ledger",
+  "type": "object",
+  "required": ["started", "target", "apps"],
+  "properties": {
+    "started": { "type": "string", "format": "date" },
+    "target": { "type": "integer" },
+    "apps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["week", "slug", "name", "category", "repo", "url", "shipped", "score"],
+        "properties": {
+          "week":     { "type": "integer", "minimum": 1 },
+          "slug":     { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+          "name":     { "type": "string" },
+          "category": { "type": "string" },
+          "sentence": { "type": "string", "description": "helps <who> do <what> in <time> without <alternative>" },
+          "repo":     { "type": "string", "description": "owner/name" },
+          "url":      { "type": "string", "description": "verified live URL" },
+          "host":     { "type": "string", "enum": ["cloudflare-pages", "vercel", "github-pages", "subdirectory-fallback"] },
+          "shipped":  { "type": "string", "format": "date" },
+          "score":    { "type": "number", "minimum": 0, "maximum": 10, "description": "self-assessed against references/quality-bar.md" },
+          "signature_detail": { "type": "string" },
+          "paid_tier_hypothesis": { "type": "string" },
+          "notes":    { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+name: Factory health
+
+# Safety net. If a week passes with no app shipped, something broke quietly —
+# a routine that stopped firing, an expired token, a run that never finished.
+# This notices and opens an issue, so a silent stall cannot last a month.
+
+on:
+  schedule:
+    - cron: '41 9 * * 3' # Wednesdays, mid-week, after a Monday run should have landed
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Assess progress
+        id: check
+        run: |
+          set -euo pipefail
+          LEDGER=factory/state/ledger.json
+          COUNT=$(jq '.apps | length' "$LEDGER")
+          STARTED=$(jq -r '.started' "$LEDGER")
+          WEEKS=$(( ( $(date -u +%s) - $(date -u -d "$STARTED" +%s) ) / 604800 ))
+          LAST=$(jq -r '.apps[-1].shipped // "never"' "$LEDGER")
+          if [ "$LAST" = "never" ]; then
+            DAYS=$(( ( $(date -u +%s) - $(date -u -d "$STARTED" +%s) ) / 86400 ))
+          else
+            DAYS=$(( ( $(date -u +%s) - $(date -u -d "$LAST" +%s) ) / 86400 ))
+          fi
+          echo "shipped=$COUNT"  >> "$GITHUB_OUTPUT"
+          echo "weeks=$WEEKS"    >> "$GITHUB_OUTPUT"
+          echo "last=$LAST"      >> "$GITHUB_OUTPUT"
+          echo "days=$DAYS"      >> "$GITHUB_OUTPUT"
+          BEHIND=$(( WEEKS - COUNT ))
+          echo "behind=$BEHIND"  >> "$GITHUB_OUTPUT"
+          STALLED=false
+          [ "$DAYS" -gt 10 ] && STALLED=true
+          echo "stalled=$STALLED" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Factory health"
+            echo
+            echo "- shipped: **$COUNT**"
+            echo "- weeks elapsed: **$WEEKS**"
+            echo "- last ship: **$LAST** ($DAYS days ago)"
+            echo "- behind schedule by: **$BEHIND**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open an issue if the factory has stalled
+        if: steps.check.outputs.stalled == 'true'
+        uses: actions/github-script@v7
+        env:
+          DAYS: ${{ steps.check.outputs.days }}
+          SHIPPED: ${{ steps.check.outputs.shipped }}
+          WEEKS: ${{ steps.check.outputs.weeks }}
+          BEHIND: ${{ steps.check.outputs.behind }}
+          LAST: ${{ steps.check.outputs.last }}
+        with:
+          script: |
+            const { DAYS, SHIPPED, WEEKS, BEHIND, LAST } = process.env;
+            const title = `Factory stalled — nothing shipped for ${DAYS} days`;
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: 'open', labels: 'factory-health',
+            });
+            const body = [
+              `No app has shipped for **${DAYS} days** (last: ${LAST}).`,
+              ``,
+              `| | |`,
+              `|---|---|`,
+              `| Shipped | ${SHIPPED} |`,
+              `| Weeks elapsed | ${WEEKS} |`,
+              `| Behind by | ${BEHIND} |`,
+              ``,
+              `### What to check, in order`,
+              ``,
+              `1. Is the weekly routine still enabled? <https://claude.ai/settings/automations>`,
+              `2. Has \`FACTORY_GH_TOKEN\` expired? \`docs/SETUP.md\` step 1.`,
+              `3. Is there an interrupted run in \`factory/state/run/\` waiting to resume?`,
+              `4. Did the last **Publish app** workflow fail?`,
+              ``,
+              `To resume immediately, start a session in this repository and say:`,
+              `*"Resume the factory run"* — the pipeline picks up from its checkpoint.`,
+            ].join('\n');
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.data[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ['factory-health'],
+              });
+            }

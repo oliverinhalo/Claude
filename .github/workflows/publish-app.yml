@@ -1,0 +1,311 @@
+name: Publish app
+
+# The privileged half of the factory.
+#
+# Claude Code cloud sessions are bound by a relay proxy to their configured
+# repositories, so they cannot create the per-app repositories (403 on
+# POST /user/repos, enforced by the proxy, not the token). A GitHub runner is not
+# behind that proxy, so everything that needs account-level access happens here.
+#
+# See docs/ARCHITECTURE.md.
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: App slug (directory name under apps/)
+        required: true
+        type: string
+      branch:
+        description: Branch holding the app
+        required: false
+        default: ''
+        type: string
+      host:
+        description: Where to publish
+        required: false
+        default: auto
+        type: choice
+        options: [auto, cloudflare, vercel, github-pages]
+      visibility:
+        description: New repository visibility
+        required: false
+        default: public
+        type: choice
+        options: [public, private]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      url: ${{ steps.result.outputs.url }}
+      host: ${{ steps.result.outputs.host }}
+      repo: ${{ steps.result.outputs.repo }}
+    steps:
+      - name: Check out the factory
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.branch != '' && inputs.branch || format('staging/{0}', inputs.slug) }}
+          fetch-depth: 1
+
+      - name: Validate inputs
+        id: validate
+        run: |
+          set -euo pipefail
+          SLUG='${{ inputs.slug }}'
+          if ! [[ "$SLUG" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+            echo "::error::slug must be lowercase-kebab-case, got '$SLUG'"; exit 1
+          fi
+          if [ ! -d "apps/$SLUG" ]; then
+            echo "::error::apps/$SLUG does not exist on this branch"; exit 1
+          fi
+          for f in package.json README.md LICENSE index.html; do
+            [ -f "apps/$SLUG/$f" ] || { echo "::error::apps/$SLUG/$f is missing"; exit 1; }
+          done
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+
+      - name: Decide the host
+        id: host
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          PAT: ${{ secrets.FACTORY_GH_TOKEN }}
+        run: |
+          set -euo pipefail
+          REQUESTED='${{ inputs.host }}'
+          HOST="$REQUESTED"
+          if [ "$REQUESTED" = "auto" ]; then
+            if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then HOST=cloudflare
+            elif [ -n "$VERCEL_TOKEN" ]; then HOST=vercel
+            else HOST=github-pages; fi
+          fi
+          OWN_REPO=true
+          if [ -z "$PAT" ]; then
+            OWN_REPO=false
+            echo "::warning::FACTORY_GH_TOKEN is not set — the app cannot get its own repository. Falling back to a subdirectory of this repository. Fix: docs/SETUP.md step 1."
+          fi
+          echo "host=$HOST" >> "$GITHUB_OUTPUT"
+          echo "own_repo=$OWN_REPO" >> "$GITHUB_OUTPUT"
+          echo "Publishing to $HOST (own repository: $OWN_REPO)"
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/${{ inputs.slug }}/package-lock.json
+
+      - name: Install and verify the app builds
+        working-directory: apps/${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+          npm run typecheck
+          npm test
+          npm run build
+          npm run budget
+
+      # ─── the privileged part ───────────────────────────────────────────────
+      - name: Create the app's repository
+        id: repo
+        if: steps.host.outputs.own_repo == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+          SLUG: ${{ inputs.slug }}
+          VIS: ${{ inputs.visibility }}
+        run: |
+          set -euo pipefail
+          OWNER="$(gh api user -q .login)"
+          DESC="$(jq -r '.description // ""' "apps/$SLUG/package.json")"
+
+          if gh api "repos/$OWNER/$SLUG" >/dev/null 2>&1; then
+            echo "repos/$OWNER/$SLUG already exists — reusing it (publishing is idempotent)"
+          else
+            PRIVATE=false; [ "$VIS" = "private" ] && PRIVATE=true
+            gh api -X POST user/repos \
+              -f name="$SLUG" \
+              -f description="$DESC" \
+              -F private="$PRIVATE" \
+              -F has_issues=true -F has_wiki=false -F has_projects=false \
+              -F auto_init=false > /dev/null
+            echo "created repos/$OWNER/$SLUG"
+          fi
+          echo "owner=$OWNER" >> "$GITHUB_OUTPUT"
+          echo "full=$OWNER/$SLUG" >> "$GITHUB_OUTPUT"
+
+      - name: Push the app as its repository's root
+        id: push
+        if: steps.host.outputs.own_repo == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+          SLUG: ${{ inputs.slug }}
+          FULL: ${{ steps.repo.outputs.full }}
+          HOST: ${{ steps.host.outputs.host }}
+        run: |
+          set -euo pipefail
+          WORK="$(mktemp -d)"
+          rsync -a --exclude node_modules --exclude dist --exclude test-results \
+                   --exclude playwright-report "apps/$SLUG/" "$WORK/"
+
+          # The app self-deploys on GitHub Pages: its own workflow has the Pages
+          # permissions this one cannot delegate.
+          if [ "$HOST" = "github-pages" ]; then
+            mkdir -p "$WORK/.github/workflows"
+            cp factory/templates/deploy/github-pages.yml "$WORK/.github/workflows/pages.yml"
+          fi
+
+          cd "$WORK"
+          git init -q -b main
+          git config user.name "app factory"
+          git config user.email "noreply@anthropic.com"
+          git add -A
+          git -c commit.gpgsign=false commit -q \
+            -m "Initial release" \
+            -m "Built and published by the weekly app factory: https://github.com/${{ github.repository }}"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${FULL}.git"
+          git push -q --force origin main
+          echo "pushed $FULL"
+
+      - name: Set repository metadata
+        if: steps.host.outputs.own_repo == 'true'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+          SLUG: ${{ inputs.slug }}
+          FULL: ${{ steps.repo.outputs.full }}
+        run: |
+          set -euo pipefail
+          DESC="$(jq -r '.description // ""' "apps/$SLUG/package.json")"
+          gh api -X PATCH "repos/$FULL" -f description="$DESC" >/dev/null
+          gh api -X PUT "repos/$FULL/topics" \
+            -f 'names[]=web-app' -f 'names[]=no-signup' -f 'names[]=privacy-first' \
+            -f "names[]=$SLUG" >/dev/null
+
+      # ─── hosting ──────────────────────────────────────────────────────────
+      - name: Deploy to Cloudflare Pages
+        id: cf
+        if: steps.host.outputs.host == 'cloudflare'
+        working-directory: apps/${{ inputs.slug }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SLUG: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          # Cloudflare serves from the root, so the default base is correct.
+          VITE_BASE=/ SITE_URL="https://$SLUG.pages.dev" npm run build
+          npx --yes wrangler@latest pages project create "$SLUG" \
+            --production-branch main 2>/dev/null || echo "project exists, continuing"
+          npx --yes wrangler@latest pages deploy dist \
+            --project-name "$SLUG" --branch main --commit-dirty=true
+          echo "url=https://$SLUG.pages.dev" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Vercel
+        id: vercel
+        if: steps.host.outputs.host == 'vercel'
+        working-directory: apps/${{ inputs.slug }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          SLUG: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          VITE_BASE=/ npm run build
+          URL="$(npx --yes vercel@latest deploy dist --prod --yes \
+                   --token "$VERCEL_TOKEN" --name "$SLUG" 2>&1 | tail -1)"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for GitHub Pages
+        id: ghp
+        if: steps.host.outputs.host == 'github-pages' && steps.host.outputs.own_repo == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+          FULL: ${{ steps.repo.outputs.full }}
+        run: |
+          set -euo pipefail
+          # The app's own pages.yml enables Pages and deploys. Give it time, then
+          # read the URL back from the Pages API.
+          URL=""
+          for i in $(seq 1 40); do
+            URL="$(gh api "repos/$FULL/pages" -q .html_url 2>/dev/null || true)"
+            [ -n "$URL" ] && [ "$URL" != "null" ] && break
+            sleep 15
+          done
+          if [ -z "$URL" ] || [ "$URL" = "null" ]; then
+            echo "::error::Pages did not come up for $FULL. Check that repo's Actions tab."
+            exit 1
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Fallback — publish into this repository
+        id: fallback
+        if: steps.host.outputs.own_repo != 'true'
+        env:
+          SLUG: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          echo "::warning::Published as a subdirectory because FACTORY_GH_TOKEN is missing."
+          echo "url=https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}/apps/$SLUG" >> "$GITHUB_OUTPUT"
+
+      # ─── verify and report back ───────────────────────────────────────────
+      - name: Verify the deployment is live
+        id: result
+        env:
+          SLUG: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          URL='${{ steps.cf.outputs.url }}${{ steps.vercel.outputs.url }}${{ steps.ghp.outputs.url }}${{ steps.fallback.outputs.url }}'
+          HOST='${{ steps.host.outputs.host }}'
+          REPO='${{ steps.repo.outputs.full }}'
+          [ "${{ steps.host.outputs.own_repo }}" = "true" ] || { HOST=subdirectory-fallback; REPO='${{ github.repository }}'; }
+          [ -n "$URL" ] || { echo "::error::no URL was produced"; exit 1; }
+
+          CODE=000
+          if [ "$HOST" != "subdirectory-fallback" ]; then
+            for i in $(seq 1 20); do
+              CODE="$(curl -sSL -o /dev/null -w '%{http_code}' --max-time 20 "$URL" || echo 000)"
+              [ "$CODE" = "200" ] && break
+              echo "attempt $i: $CODE — waiting"
+              sleep 15
+            done
+            [ "$CODE" = "200" ] || { echo "::error::$URL returned $CODE after retries"; exit 1; }
+          fi
+
+          echo "url=$URL"   >> "$GITHUB_OUTPUT"
+          echo "host=$HOST" >> "$GITHUB_OUTPUT"
+          echo "repo=$REPO" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Published"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| App | \`$SLUG\` |"
+            echo "| Live | $URL |"
+            echo "| Host | $HOST |"
+            echo "| Repository | $REPO |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record the result for the session to read
+        env:
+          SLUG: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B main origin/main
+          mkdir -p factory/state/published
+          jq -n --arg slug "$SLUG" --arg url '${{ steps.result.outputs.url }}' \
+                --arg host '${{ steps.result.outputs.host }}' \
+                --arg repo '${{ steps.result.outputs.repo }}' \
+                --arg run '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' \
+                --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            '{slug:$slug, url:$url, host:$host, repo:$repo, workflow_run:$run, published_at:$at}' \
+            > "factory/state/published/$SLUG.json"
+          git config user.name "app factory"
+          git config user.email "noreply@anthropic.com"
+          git add "factory/state/published/$SLUG.json"
+          git -c commit.gpgsign=false commit -q -m "release: $SLUG published" || exit 0
+          git push origin main

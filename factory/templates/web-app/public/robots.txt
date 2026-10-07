@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://__APP_SLUG__.pages.dev/sitemap.xml
