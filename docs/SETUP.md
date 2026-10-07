@@ -163,6 +163,36 @@ admins whenever someone else submits an idea.
 
 ---
 
+## Step 6 — Run it on demand (optional, 2 minutes)
+
+Without this, runs only happen on their schedule. With it, the console gets a
+**Run it now** button.
+
+It uses your **Claude subscription**, not metered API billing — so it costs
+nothing beyond what you already pay.
+
+1. On your own machine, in a terminal:
+
+   ```bash
+   claude setup-token
+   ```
+
+   Follow the prompt and copy the token it prints.
+
+2. Add it at
+   <https://github.com/oliverinhalo/Claude/settings/secrets/actions/new>:
+   - **Name:** `CLAUDE_CODE_OAUTH_TOKEN`
+   - **Secret:** the token
+
+That is all. The **Run it now** panel on the console's Overview starts a run
+immediately, and you can tell it what to focus on.
+
+> These tokens expire. If on-demand runs start failing with a 401, run
+> `claude setup-token` again and replace the secret. Scheduled runs are
+> unaffected either way — they do not use this token.
+
+---
+
 ## Verifying the setup
 
 A Claude session **cannot** check whether your secrets exist — the proxy blocks the

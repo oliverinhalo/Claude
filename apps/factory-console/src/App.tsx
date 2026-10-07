@@ -183,7 +183,11 @@ export function App() {
               onChanged={() => void reload()}
             />
           ) : tab === 'Overview' ? (
-            <Overview data={state.data} />
+            <Overview
+              data={state.data}
+              client={client}
+              canRun={client.canWrite || viewer?.admin === true}
+            />
           ) : tab === 'Apps' ? (
             <AppsView apps={state.data.ledger.apps} />
           ) : tab === 'Ideas' ? (

@@ -84,6 +84,66 @@ export function IdeasView({ bank, submitted, client, viewer, onConnect, onChange
 
   return (
     <div className="space-y-10">
+      {submitted.length > 0 ? (
+        <section aria-labelledby="yours-heading">
+          <h2 id="yours-heading" className="text-[length:var(--t-lg)] font-semibold">
+            In the queue
+          </h2>
+          <p className="mt-1 text-[var(--text-muted)]">
+            Waiting for the next run. Marking one{' '}
+            <strong className="font-medium text-[var(--text)]">Build next</strong> makes it the
+            one chosen.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {submitted.map((idea) => (
+              <li
+                key={idea.issue}
+                className="flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-raised)] px-4 py-3"
+              >
+                <div className="min-w-48 flex-1">
+                  <p className="font-medium">
+                    {idea.name}
+                    {idea.state === 'next' ? (
+                      <span className="ml-2 rounded-full bg-[var(--accent)] px-2 py-0.5 text-sm font-normal text-[var(--accent-text)]">
+                        build next
+                      </span>
+                    ) : null}
+                  </p>
+                  {idea.description ? (
+                    <p className="mt-0.5 text-sm text-[var(--text-muted)]">
+                      {idea.description}
+                    </p>
+                  ) : null}
+                  <p className="mt-0.5 text-sm text-[var(--text-faint)]">
+                    added {idea.createdAt ? relative(idea.createdAt) : 'recently'}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  {idea.state !== 'next' && idea.issue !== undefined ? (
+                    <button
+                      type="button"
+                      onClick={() => void prioritise(idea.issue as number)}
+                      className="min-h-11 rounded-[var(--radius)] border border-[var(--border)] px-3 text-sm transition-colors duration-[var(--dur-state)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                    >
+                      Build next
+                    </button>
+                  ) : null}
+                  {idea.issue !== undefined ? (
+                    <button
+                      type="button"
+                      onClick={() => void withdraw(idea.issue as number)}
+                      className="min-h-11 rounded-[var(--radius)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-[var(--dur-state)] hover:border-[var(--danger)] hover:text-[var(--danger)]"
+                    >
+                      Withdraw
+                    </button>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <section aria-labelledby="add-heading">
         <h2 id="add-heading" className="text-[length:var(--t-lg)] font-semibold">
           Add your own idea
@@ -169,61 +229,6 @@ export function IdeasView({ bank, submitted, client, viewer, onConnect, onChange
           ) : null}
         </form>
       </section>
-
-      {submitted.length > 0 ? (
-        <section aria-labelledby="yours-heading">
-          <h2 id="yours-heading" className="text-[length:var(--t-lg)] font-semibold">
-            Your ideas in the queue
-          </h2>
-          <ul className="mt-3 space-y-2">
-            {submitted.map((idea) => (
-              <li
-                key={idea.issue}
-                className="flex flex-wrap items-center gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-raised)] px-4 py-3"
-              >
-                <div className="min-w-48 flex-1">
-                  <p className="font-medium">
-                    {idea.name}
-                    {idea.state === 'next' ? (
-                      <span className="ml-2 rounded-full bg-[var(--accent)] px-2 py-0.5 text-sm font-normal text-[var(--accent-text)]">
-                        build next
-                      </span>
-                    ) : null}
-                  </p>
-                  {idea.description ? (
-                    <p className="mt-0.5 text-sm text-[var(--text-muted)]">
-                      {idea.description}
-                    </p>
-                  ) : null}
-                  <p className="mt-0.5 text-sm text-[var(--text-faint)]">
-                    added {idea.createdAt ? relative(idea.createdAt) : 'recently'}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  {idea.state !== 'next' && idea.issue !== undefined ? (
-                    <button
-                      type="button"
-                      onClick={() => void prioritise(idea.issue as number)}
-                      className="min-h-11 rounded-[var(--radius)] border border-[var(--border)] px-3 text-sm transition-colors duration-[var(--dur-state)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
-                    >
-                      Build next
-                    </button>
-                  ) : null}
-                  {idea.issue !== undefined ? (
-                    <button
-                      type="button"
-                      onClick={() => void withdraw(idea.issue as number)}
-                      className="min-h-11 rounded-[var(--radius)] border border-[var(--border)] px-3 text-sm text-[var(--text-muted)] transition-colors duration-[var(--dur-state)] hover:border-[var(--danger)] hover:text-[var(--danger)]"
-                    >
-                      Withdraw
-                    </button>
-                  ) : null}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
 
       <section aria-labelledby="bank-heading">
         <div className="flex flex-wrap items-baseline justify-between gap-3">

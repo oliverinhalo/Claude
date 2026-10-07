@@ -1,5 +1,7 @@
 import type { FactoryData } from '../lib/useFactory';
+import type { Client } from '../lib/github';
 import { meanScore, nextRun, relative, weeksCompleted, weeksElapsed } from '../lib/parse';
+import { RunNow } from './RunNow';
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -11,8 +13,16 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
-export function Overview({ data }: { data: FactoryData }) {
-  const { ledger, checkpoints, requests } = data;
+export function Overview({
+  data,
+  client,
+  canRun,
+}: {
+  data: FactoryData;
+  client: Client;
+  canRun: boolean;
+}) {
+  const { ledger, checkpoints, requests, submitted, pending } = data;
   const shipped = ledger.apps.length;
   const week = weeksElapsed(ledger.started);
   const mean = meanScore(ledger.apps);
@@ -67,6 +77,8 @@ export function Overview({ data }: { data: FactoryData }) {
         </div>
       </section>
 
+      <RunNow client={client} canRun={canRun} />
+
       <section aria-labelledby="now-heading">
         <h2 id="now-heading" className="text-[length:var(--t-lg)] font-semibold">
           Right now
@@ -105,6 +117,43 @@ export function Overview({ data }: { data: FactoryData }) {
           </p>
         )}
       </section>
+
+      {submitted.length > 0 || pending.length > 0 ? (
+        <section aria-labelledby="queue-heading">
+          <h2 id="queue-heading" className="text-[length:var(--t-lg)] font-semibold">
+            In the queue
+          </h2>
+          <p className="mt-1 text-sm text-[var(--text-muted)]">
+            Ideas waiting for a run. Manage them on the Ideas tab.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {[...submitted, ...pending].map((idea) => (
+              <li
+                key={idea.issue}
+                className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--surface-raised)] px-4 py-3"
+              >
+                <span className="font-medium">{idea.name}</span>
+                {idea.state === 'pending' ? (
+                  <span className="rounded-full border border-[var(--border-strong)] px-2 py-0.5 text-sm text-[var(--text-muted)]">
+                    awaiting your approval
+                  </span>
+                ) : idea.state === 'next' ? (
+                  <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-sm text-[var(--accent-text)]">
+                    build next
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-[var(--surface-sunken)] px-2 py-0.5 text-sm text-[var(--text-muted)]">
+                    approved
+                  </span>
+                )}
+                <span className="ml-auto text-sm text-[var(--text-faint)]">
+                  {idea.createdAt ? relative(idea.createdAt) : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {requests.length > 0 ? (
         <section aria-labelledby="pending-heading">

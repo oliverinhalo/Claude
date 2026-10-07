@@ -1,0 +1,147 @@
+name: Run factory now
+
+# An on-demand factory run, so you are not waiting for a schedule.
+#
+# Authenticated by CLAUDE_CODE_OAUTH_TOKEN, which uses your Claude subscription
+# rather than metered API billing. Generate one by running `claude setup-token`
+# locally; see docs/SETUP.md step 6. Without it this workflow explains itself and
+# exits cleanly rather than failing.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: What the run should do
+        required: true
+        default: continue
+        type: choice
+        options:
+          - continue        # resume a checkpoint, polish, or raise a weak app
+          - new-app         # start a new app this run
+      focus:
+        description: 'Optional: an issue number or a sentence telling it what to work on'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: write
+  issues: write
+  actions: write
+  pull-requests: write
+
+concurrency:
+  group: factory-run
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Check Claude is configured
+        id: check
+        env:
+          OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$OAUTH" ]; then
+            {
+              echo "### Not run — on-demand runs are not set up yet"
+              echo
+              echo "This needs one secret, generated from your own machine:"
+              echo
+              echo '```bash'
+              echo 'claude setup-token'
+              echo '```'
+              echo
+              echo "Add the result as \`CLAUDE_CODE_OAUTH_TOKEN\` at"
+              echo "<https://github.com/${{ github.repository }}/settings/secrets/actions/new>."
+              echo
+              echo "It authenticates with your Claude subscription, not metered API"
+              echo "billing. Full steps are in \`docs/SETUP.md\` step 6."
+              echo
+              echo "Until then, runs happen on their schedule: Mondays 07:43 and"
+              echo "Tuesday to Sunday 07:17, Europe/London."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN is not set — see the run summary."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v5
+        if: steps.check.outputs.ready == 'true'
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        if: steps.check.outputs.ready == 'true'
+        with:
+          node-version: 22
+
+      - name: Build the run prompt
+        id: prompt
+        if: steps.check.outputs.ready == 'true'
+        env:
+          MODE: ${{ inputs.mode }}
+          FOCUS: ${{ inputs.focus }}
+        run: |
+          set -euo pipefail
+          {
+            echo 'text<<PROMPT_EOF'
+            echo "An on-demand factory run, started by the owner from the Factory Console."
+            echo
+            echo "Read these first, in order:"
+            echo "  1. CLAUDE.md"
+            echo "  2. .claude/skills/ship-weekly-app/SKILL.md — the pipeline. Follow it."
+            echo "  3. factory/scripts/inbox.sh — what the owner has asked for. This outranks your own plan."
+            echo "  4. factory/scripts/preflight.sh — which capabilities apply."
+            echo "  5. ls factory/state/run/ — an in_progress checkpoint means you are RESUMING."
+            echo
+            if [ "$MODE" = "new-app" ]; then
+              echo "Mode: NEW APP. Run the full pipeline and publish a new app to its own repository."
+            else
+              echo "Mode: CONTINUE. Finish an interrupted run if one exists; otherwise climb the"
+              echo "polish ladder on the most recent app, or raise the lowest-scored app in the ledger."
+              echo "Do not start a new app unless there is genuinely nothing else worth doing."
+            fi
+            if [ -n "$FOCUS" ]; then
+              echo
+              echo "The owner asked specifically for this, and it takes priority:"
+              echo "  $FOCUS"
+            fi
+            echo
+            echo "Hard rules that still apply:"
+            echo "- Only ideas labelled 'approved' may be built. Never build or approve a"
+            echo "  'pending-approval' idea — that decision is the owner's alone."
+            echo "- factory/scripts/quality-gate.sh must exit 0 before anything is published."
+            echo "  Never weaken a check to make it pass."
+            echo "- Free tiers only. Nothing that can bill."
+            echo "- Checkpoint at every phase boundary and commit often; this job has a time"
+            echo "  limit and committed work is the only work that survives it."
+            echo "- Publish with factory/scripts/publish.sh, which dispatches publish-app.yml."
+            echo "  Verify the live URL yourself before touching the ledger."
+            echo "- Close every inbox issue you acted on with a reply saying what you did."
+            echo 'PROMPT_EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run the factory
+        if: steps.check.outputs.ready == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: ${{ steps.prompt.outputs.text }}
+          claude_args: --max-turns 300
+
+      - name: Report where to look
+        if: steps.check.outputs.ready == 'true' && always()
+        run: |
+          {
+            echo "### Run finished"
+            echo
+            echo "- Mode: \`${{ inputs.mode }}\`"
+            echo "- Console: <https://oliverinhalo.github.io/factory-console/>"
+            echo "- Shipped apps: \`factory/state/shipped.md\`"
+            echo "- Run reports: \`factory/state/reports/\`"
+          } >> "$GITHUB_STEP_SUMMARY"
