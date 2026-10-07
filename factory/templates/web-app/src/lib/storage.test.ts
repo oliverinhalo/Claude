@@ -60,7 +60,10 @@ describe('createStore', () => {
   });
 
   it('refuses data written by a newer version instead of corrupting it', () => {
-    localStorage.setItem('test:note', JSON.stringify({ v: 99, d: { text: 'future', done: true } }));
+    localStorage.setItem(
+      'test:note',
+      JSON.stringify({ v: 99, d: { text: 'future', done: true } }),
+    );
     const r = make(2).load();
     expect(r.status).toBe('recovered');
     if (r.status === 'recovered') expect(r.reason).toMatch(/newer version/);

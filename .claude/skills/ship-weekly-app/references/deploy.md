@@ -41,7 +41,10 @@ What the workflow does, in order:
 ```bash
 curl -sS -o /dev/null -w '%{http_code}\n' "$URL"
 curl -sS "$URL" | grep -o '<title>[^<]*</title>'
-node factory/scripts/verify-live.mjs "$URL"   # Playwright: renders, no console errors
+
+# Playwright: renders, no console errors, no failed assets, no 320px overflow.
+# Run from inside the app so Playwright resolves from its node_modules.
+cd apps/<slug> && node ../../factory/scripts/verify-live.mjs "$URL"
 ```
 
 A green workflow with a white-screen deploy is the most common failure in this

@@ -35,7 +35,10 @@ interface Envelope {
 }
 
 const isEnvelope = (value: unknown): value is Envelope =>
-  typeof value === 'object' && value !== null && 'v' in value && 'd' in value &&
+  typeof value === 'object' &&
+  value !== null &&
+  'v' in value &&
+  'd' in value &&
   typeof (value as Envelope).v === 'number';
 
 export function createStore<T>(options: StoreOptions<T>) {
@@ -59,7 +62,11 @@ export function createStore<T>(options: StoreOptions<T>) {
     }
 
     if (!isEnvelope(parsed)) {
-      return { status: 'recovered', value: fallback, reason: 'stored data had an unknown shape' };
+      return {
+        status: 'recovered',
+        value: fallback,
+        reason: 'stored data had an unknown shape',
+      };
     }
 
     let data = parsed.d;
@@ -67,17 +74,29 @@ export function createStore<T>(options: StoreOptions<T>) {
     if (v > version) {
       // Written by a newer version of the app. Do not guess; start clean rather
       // than corrupting what the newer version wrote.
-      return { status: 'recovered', value: fallback, reason: 'stored data is from a newer version' };
+      return {
+        status: 'recovered',
+        value: fallback,
+        reason: 'stored data is from a newer version',
+      };
     }
     while (v < version) {
       const migrate = migrations[v];
       if (!migrate) {
-        return { status: 'recovered', value: fallback, reason: `no migration from version ${v}` };
+        return {
+          status: 'recovered',
+          value: fallback,
+          reason: `no migration from version ${v}`,
+        };
       }
       try {
         data = migrate(data);
       } catch {
-        return { status: 'recovered', value: fallback, reason: `migration from version ${v} failed` };
+        return {
+          status: 'recovered',
+          value: fallback,
+          reason: `migration from version ${v} failed`,
+        };
       }
       v += 1;
     }

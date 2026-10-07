@@ -1,6 +1,6 @@
-# __APP_NAME__
+# **APP_NAME**
 
-__APP_DESCRIPTION__
+**APP_DESCRIPTION**
 
 **[Open the app →](https://__APP_SLUG__.pages.dev)**
 
@@ -23,15 +23,15 @@ npm install
 npm run dev
 ```
 
-| Command | What it does |
-|---|---|
-| `npm run dev` | Development server |
-| `npm run build` | Production build into `dist/` |
-| `npm test` | Unit tests |
-| `npm run test:e2e` | End-to-end and accessibility tests |
-| `npm run typecheck` | Type checking |
-| `npm run lint` | Lint |
-| `npm run budget` | Bundle size budget |
+| Command             | What it does                       |
+| ------------------- | ---------------------------------- |
+| `npm run dev`       | Development server                 |
+| `npm run build`     | Production build into `dist/`      |
+| `npm test`          | Unit tests                         |
+| `npm run test:e2e`  | End-to-end and accessibility tests |
+| `npm run typecheck` | Type checking                      |
+| `npm run lint`      | Lint                               |
+| `npm run budget`    | Bundle size budget                 |
 
 ## How it works
 

@@ -184,9 +184,17 @@ factory/scripts/publish.sh <slug> --watch
 A failed publish is yours. Read the job logs, fix the cause, dispatch again. Do not
 report a run as complete on a dispatched-but-unverified deploy.
 
-Finally, verify the live URL yourself — fetch it, confirm 200, confirm the app's own
-title is in the HTML, and open it in Playwright to confirm it renders and the core
-loop works *in production*, not just locally. Deploys break in ways builds do not.
+Finally, verify the live URL yourself:
+
+```bash
+cd apps/<slug> && node ../../factory/scripts/verify-live.mjs "$URL"
+```
+
+That checks it returns 200, carries the app's own title and description, renders
+real content, has an `h1` and a `main`, loads every asset, keeps the console clean,
+and does not overflow at 320px. Then drive the core loop in production by hand.
+Deploys break in ways builds do not — a green workflow and a blank page are a
+common pair, and the cause is almost always the base path.
 
 ## Phase 9 — Close the run
 

@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"],
+    // Playwright evaluate() callbacks run in the browser, so e2e needs DOM types.
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],

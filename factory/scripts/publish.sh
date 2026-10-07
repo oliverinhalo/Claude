@@ -54,7 +54,7 @@ if [ "${CONCLUSION:-}" = "success" ]; then
   echo "── published"
   gh api "repos/$REPO/actions/runs/$RUN_ID/jobs" -q '.jobs[].steps[] | select(.name|test("summary|url";"i")) | .name' 2>/dev/null || true
   echo "verify the live URL yourself before touching the ledger:"
-  echo "  node factory/scripts/verify-live.mjs <url>"
+  echo "  cd apps/$SLUG && node ../../factory/scripts/verify-live.mjs <url>"
   exit 0
 fi
 

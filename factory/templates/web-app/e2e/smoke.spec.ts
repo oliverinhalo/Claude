@@ -57,7 +57,9 @@ test.describe('accessibility', () => {
       const { violations } = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze();
-      const blocking = violations.filter((v) => v.impact === 'critical' || v.impact === 'serious');
+      const blocking = violations.filter(
+        (v) => v.impact === 'critical' || v.impact === 'serious',
+      );
       expect(
         blocking,
         blocking.map((v) => `${v.id}: ${v.help} (${v.nodes.length} node(s))`).join('\n'),

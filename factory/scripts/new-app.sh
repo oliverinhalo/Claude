@@ -18,17 +18,31 @@ fi
 mkdir -p "$ROOT/apps"
 cp -r "$ROOT/factory/templates/web-app" "$DEST"
 
-# Substitute template placeholders.
+# Substitute template placeholders across every text file that contains one.
+# An extension allowlist misses LICENSE, .env.example, .svg and .mjs — so match
+# on content instead, and let grep -I skip binaries.
 YEAR="$(date -u +%Y)"
-while IFS= read -r -d '' f; do
+OWNER="${FACTORY_OWNER:-oliverinhalo}"
+mapfile -t TARGETS < <(grep -rlI '__APP_SLUG__\|__APP_NAME__\|__APP_DESCRIPTION__\|__YEAR__\|__OWNER__' "$DEST" || true)
+for f in "${TARGETS[@]}"; do
   sed -i \
     -e "s|__APP_SLUG__|$SLUG|g" \
     -e "s|__APP_NAME__|$NAME|g" \
     -e "s|__APP_DESCRIPTION__|$DESC|g" \
     -e "s|__YEAR__|$YEAR|g" \
-    -e "s|__OWNER__|${FACTORY_OWNER:-oliverinhalo}|g" \
+    -e "s|__OWNER__|$OWNER|g" \
     "$f"
-done < <(find "$DEST" -type f \( -name '*.json' -o -name '*.ts' -o -name '*.tsx' -o -name '*.html' -o -name '*.md' -o -name '*.webmanifest' -o -name '*.txt' -o -name '*.yml' -o -name '*.css' \) -print0)
+done
+echo "substituted placeholders in ${#TARGETS[@]} file(s)"
+
+# Substituting a real app name changes line lengths, so the scaffold is only
+# format-clean after a formatting pass. The gate checks formatting and must not
+# be weakened, so do it here rather than leave a fresh scaffold failing.
+if npx --yes prettier@3 --write "$DEST" >/dev/null 2>&1; then
+  echo "formatted the scaffold"
+else
+  echo "warning: could not run prettier (offline?) — run 'npm run format' after npm install" >&2
+fi
 
 mkdir -p "$DEST/docs"
 cat > "$DEST/docs/SPEC.md" <<SPEC
@@ -57,18 +71,15 @@ without **<what they do today>**.
 
 ## The four states
 
-| State | Behaviour |
-|---|---|
-| Empty | |
-| Error | |
-| Slow | |
-| Offline | |
+| State   | Behaviour |
+| ------- | --------- |
+| Empty   |           |
+| Error   |           |
+| Slow    |           |
+| Offline |           |
 
 ## The one thing that must be excellent
-
 SPEC
 
-cd "$DEST"
-git -C "$ROOT" rev-parse --git-dir >/dev/null 2>&1 && true
 echo "scaffolded apps/$SLUG"
 echo "next: cd apps/$SLUG && npm install"

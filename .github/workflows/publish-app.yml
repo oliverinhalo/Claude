@@ -267,7 +267,7 @@ jobs:
           CODE=000
           if [ "$HOST" != "subdirectory-fallback" ]; then
             for i in $(seq 1 20); do
-              CODE="$(curl -sSL -o /dev/null -w '%{http_code}' --max-time 20 "$URL" || echo 000)"
+              CODE="$(curl -sSL -o /dev/null -w '%{http_code}' --max-time 20 "$URL" 2>/dev/null)" || CODE=000
               [ "$CODE" = "200" ] && break
               echo "attempt $i: $CODE — waiting"
               sleep 15

@@ -1,8 +1,26 @@
 #!/usr/bin/env node
 // Verify a deployed app for real: it responds, it renders, the core UI is there,
 // nothing errors in the console, and no asset 404s (the base-path bug).
-//   node verify-live.mjs https://slug.pages.dev
-import { chromium } from '@playwright/test';
+// Run from inside the app so @playwright/test resolves:
+//   cd apps/<slug> && node ../../factory/scripts/verify-live.mjs https://slug.pages.dev
+import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { pathToFileURL } from 'node:url';
+
+// Node resolves imports relative to this script, not the working directory, so
+// resolve Playwright out of the app's own node_modules.
+let chromium;
+try {
+  const requireFromApp = createRequire(`${process.cwd()}/package.json`);
+  const mod = await import(pathToFileURL(requireFromApp.resolve('@playwright/test')).href);
+  // The package resolves to a CJS entry, so the named export may sit on .default.
+  chromium = mod.chromium ?? mod.default?.chromium;
+  if (!chromium) throw new Error('no chromium export');
+} catch {
+  console.error('Run this from inside the app directory, after npm install:');
+  console.error('  cd apps/<slug> && node ../../factory/scripts/verify-live.mjs <url>');
+  process.exit(2);
+}
 
 const url = process.argv[2];
 if (!url) {
@@ -23,7 +41,12 @@ const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? '';
 note(title.length > 0 && !/vite|react|__APP_/i.test(title), 'has its own <title>', title || 'none');
 note(/<meta[^>]+name=["']description["']/i.test(html), 'has a meta description');
 
-const browser = await chromium.launch();
+// The factory environment ships Chromium at PLAYWRIGHT_BROWSERS_PATH and blocks
+// downloads, so use that binary when the revision Playwright wants is absent.
+const preinstalled = `${process.env.PLAYWRIGHT_BROWSERS_PATH ?? '/opt/pw-browsers'}/chromium`;
+const browser = await chromium.launch(
+  existsSync(preinstalled) ? { executablePath: preinstalled } : {},
+);
 const page = await browser.newPage();
 const consoleErrors = [];
 const failedRequests = [];

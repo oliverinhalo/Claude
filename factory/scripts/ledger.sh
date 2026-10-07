@@ -37,7 +37,7 @@ if jq -e --arg s "$slug" '.apps[] | select(.slug == $s)' "$LEDGER" >/dev/null; t
 fi
 
 echo "verifying $url is live before recording…"
-CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$url" || echo 000)"
+CODE="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 "$url" 2>/dev/null)" || CODE=000
 [ "$CODE" = "200" ] || { echo "refusing: $url returned $CODE, not 200" >&2; exit 1; }
 
 WEEK="$(( $(jq '.apps | length' "$LEDGER") + 1 ))"

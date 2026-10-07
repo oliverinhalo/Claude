@@ -13,7 +13,7 @@
   --n-200: #e8e8e4;
   --n-300: #d4d4ce;
   --n-400: #a8a8a0;
-  --n-500: #78786f;
+  --n-500: #6d6d64;
   --n-600: #56564e;
   --n-700: #3c3c36;
   --n-800: #262622;
@@ -82,14 +82,14 @@
  * explicit choice. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-  --surface: #0b0d10;
+    --surface: #0b0d10;
     --surface-raised: #15181d;
     --surface-sunken: #080a0c;
     --border: #252a31;
     --border-strong: #353b44;
     --text: #e9ecef;
     --text-muted: #a0a8b3;
-    --text-faint: #717a85;
+    --text-faint: #7e828b;
     --accent: #7fb79a;
     --accent-text: #0b0d10;
     --focus: #7fb79a;
@@ -108,7 +108,7 @@
   --border-strong: #353b44;
   --text: #e9ecef;
   --text-muted: #a0a8b3;
-  --text-faint: #717a85;
+  --text-faint: #7e828b;
   --accent: #7fb79a;
   --accent-text: #0b0d10;
   --focus: #7fb79a;

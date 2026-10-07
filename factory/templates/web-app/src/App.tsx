@@ -38,8 +38,8 @@ export function App() {
             </h2>
             <p className="mt-2 text-[var(--text-muted)]">
               Strict TypeScript, design tokens with a real dark mode, versioned local
-              persistence that survives corrupt data, unit tests, an end-to-end smoke
-              test, and an accessibility audit are all wired up. Build the core loop from{' '}
+              persistence that survives corrupt data, unit tests, an end-to-end smoke test, and
+              an accessibility audit are all wired up. Build the core loop from{' '}
               <code className="font-mono text-sm">docs/SPEC.md</code>, then replace this
               section.
             </p>

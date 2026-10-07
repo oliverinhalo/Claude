@@ -1,7 +1,17 @@
+import { existsSync } from 'node:fs';
 import { defineConfig, devices } from '@playwright/test';
 
-// Chromium is pre-installed in the factory environment; PLAYWRIGHT_BROWSERS_PATH
-// points at it, so no download is needed or wanted.
+/**
+ * The factory environment ships a Chromium build at PLAYWRIGHT_BROWSERS_PATH and
+ * blocks downloads, so the revision Playwright wants is often not the one present.
+ * Point at the pre-installed binary when it exists; in CI, where `playwright
+ * install` runs normally, fall through to the managed browser.
+ */
+const preinstalled = `${process.env.PLAYWRIGHT_BROWSERS_PATH ?? '/opt/pw-browsers'}/chromium`;
+const launchOptions = !process.env.CI && existsSync(preinstalled)
+  ? { executablePath: preinstalled }
+  : {};
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -11,6 +21,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://127.0.0.1:4173',
     trace: 'retain-on-failure',
+    launchOptions,
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
