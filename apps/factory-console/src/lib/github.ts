@@ -140,6 +140,7 @@ export interface RawIssue {
   html_url: string;
   comments: number;
   labels: Array<{ name: string } | string>;
+  user?: { login: string } | null;
 }
 
 export interface RawRun {

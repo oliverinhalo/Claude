@@ -1,26 +1,42 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { TokenSetup } from './components/TokenSetup';
 import { Overview } from './components/Overview';
 import { AppsView } from './components/AppsView';
 import { IdeasView } from './components/IdeasView';
 import { ControlView } from './components/ControlView';
+import { PendingView } from './components/PendingView';
+import { SignIn } from './components/SignIn';
+import { authAvailable, captureSessionFromUrl, whoAmI, type Viewer } from './lib/auth';
 import { createClient, readRepo, readToken, writeRepo, writeToken } from './lib/github';
 import { useFactory } from './lib/useFactory';
 
-const TABS = ['Overview', 'Apps', 'Ideas', 'Control'] as const;
-type Tab = (typeof TABS)[number];
+const BASE_TABS = ['Overview', 'Apps', 'Ideas', 'Control'] as const;
+type Tab = (typeof BASE_TABS)[number] | 'Pending';
 
 export function App() {
   const [token, setToken] = useState<string | null>(readToken);
   const [repo, setRepo] = useState<string>(readRepo);
   const [tab, setTab] = useState<Tab>('Overview');
+  const [viewer, setViewer] = useState<Viewer | null>(null);
+  const [signInError, setSignInError] = useState<string | null>(null);
+
+  // The Worker hands the session back in the fragment on return from GitHub.
+  useEffect(() => {
+    const { error } = captureSessionFromUrl();
+    if (error) setSignInError(error);
+    void whoAmI().then(setViewer);
+  }, []);
 
   const [wantsToken, setWantsToken] = useState(false);
   // Reading a public repo needs no token, so the dashboard loads straight away.
   // A token is required only to write, or to read a private repository.
   const client = useMemo(() => createClient(token, repo), [token, repo]);
   const { state, refreshing, reload } = useFactory(client);
+
+  const pendingCount =
+    state.status === 'ready' && viewer?.admin ? state.data.pending.length : 0;
+  const tabs: Tab[] = viewer?.admin ? [...BASE_TABS, 'Pending'] : [...BASE_TABS];
 
   const connect = useCallback((nextToken: string, nextRepo: string) => {
     writeToken(nextToken);
@@ -70,7 +86,15 @@ export function App() {
             </h1>
             <p className="mt-1 font-mono text-sm text-[var(--text-faint)]">{repo}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <SignIn
+              viewer={viewer}
+              available={authAvailable}
+              onSignedOut={() => {
+                setViewer(null);
+                void reload();
+              }}
+            />
             <button
               type="button"
               onClick={() => void reload()}
@@ -87,7 +111,7 @@ export function App() {
           aria-label="Sections"
           className="-mx-1 flex gap-1 overflow-x-auto border-b border-[var(--border)]"
         >
-          {TABS.map((name) => (
+          {tabs.map((name) => (
             <button
               key={name}
               type="button"
@@ -100,9 +124,23 @@ export function App() {
               }`}
             >
               {name}
+              {name === 'Pending' && pendingCount > 0 ? (
+                <span className="ml-1.5 rounded-full bg-[var(--accent)] px-1.5 py-0.5 text-xs text-[var(--accent-text)] tnum">
+                  {pendingCount}
+                </span>
+              ) : null}
             </button>
           ))}
         </nav>
+
+        {signInError ? (
+          <p
+            role="alert"
+            className="mt-4 rounded-[var(--radius)] border border-[var(--danger)] px-3 py-2 text-sm text-[var(--danger)]"
+          >
+            {signInError}
+          </p>
+        ) : null}
 
         <main id="main" className="flex-1 py-8">
           {state.status === 'loading' || state.status === 'idle' ? (
@@ -138,6 +176,12 @@ export function App() {
                 </button>
               </div>
             </div>
+          ) : tab === 'Pending' ? (
+            <PendingView
+              pending={state.data.pending}
+              viewer={viewer}
+              onChanged={() => void reload()}
+            />
           ) : tab === 'Overview' ? (
             <Overview data={state.data} />
           ) : tab === 'Apps' ? (
@@ -147,12 +191,14 @@ export function App() {
               bank={state.data.bank}
               submitted={state.data.submitted}
               client={client}
+              viewer={viewer}
               onConnect={() => setWantsToken(true)}
               onChanged={() => void reload()}
             />
           ) : (
             <ControlView
               client={client}
+              viewer={viewer}
               onConnect={() => setWantsToken(true)}
               requests={state.data.requests}
               runs={state.data.runs}

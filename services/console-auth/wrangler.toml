@@ -1,0 +1,22 @@
+name = "factory-console-auth"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+# Who gets admin powers. Compared against the viewer's VERIFIED GitHub emails,
+# lowercased. Anyone else may submit ideas, which land pending approval.
+ADMIN_EMAILS = "jacobelilevy@gmail.com,jacob@jacoblevy.co.uk"
+
+# The console origin allowed to call this Worker, and where sign-in returns to.
+CONSOLE_ORIGIN = "https://oliverinhalo.github.io"
+CONSOLE_PATH = "/factory-console/"
+
+# The repository issues are filed against.
+FACTORY_REPO = "oliverinhalo/Claude"
+
+# Secrets, set by the deploy workflow — never in this file:
+#   GITHUB_CLIENT_ID      OAuth app client id
+#   GITHUB_CLIENT_SECRET  OAuth app client secret
+#   SESSION_SECRET        HMAC key for session tokens
+#   FACTORY_GH_TOKEN      PAT used to file and label issues

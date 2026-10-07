@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { Client } from '../lib/github';
+import { authAvailable, signIn, submitIdea, type Viewer } from '../lib/auth';
 import { groupByCategory, matches, relative } from '../lib/parse';
 import type { Idea } from '../lib/types';
 
@@ -7,17 +8,22 @@ interface Props {
   bank: Idea[];
   submitted: Idea[];
   client: Client;
+  viewer: Viewer | null;
   onConnect: () => void;
   onChanged: () => void;
 }
 
-export function IdeasView({ bank, submitted, client, onConnect, onChanged }: Props) {
+export function IdeasView({ bank, submitted, client, viewer, onConnect, onChanged }: Props) {
   const [query, setQuery] = useState('');
   const [name, setName] = useState('');
   const [detail, setDetail] = useState('');
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const [sent, setSent] = useState<number | null>(null);
+  const [sent, setSent] = useState<{ number: number; approved: boolean } | null>(null);
+  // Signed in → the Worker files it and decides approval. Otherwise fall back to
+  // the pasted token, which only the owner has.
+  const viaWorker = authAvailable && viewer !== null;
+  const canSubmit = viaWorker || client.canWrite;
 
   const filtered = useMemo(() => bank.filter((i) => matches(i, query)), [bank, query]);
   const groups = useMemo(() => groupByCategory(filtered), [filtered]);
@@ -28,18 +34,22 @@ export function IdeasView({ bank, submitted, client, onConnect, onChanged }: Pro
     setBusy(true);
     setProblem(null);
     try {
-      const issue = await client.createIssue(
-        name.trim(),
-        [
-          detail.trim() || '_No further detail given._',
-          '',
-          '---',
-          'Submitted from the Factory Console. The next factory run reads open issues',
-          'labelled `idea` and scores them against the rubric alongside its own candidates.',
-        ].join('\n'),
-        ['idea'],
-      );
-      setSent(issue.number);
+      if (viaWorker) {
+        const result = await submitIdea(name.trim(), detail.trim());
+        setSent({ number: result.number, approved: result.approved });
+      } else {
+        const issue = await client.createIssue(
+          name.trim(),
+          [
+            detail.trim() || '_No further detail given._',
+            '',
+            '---',
+            'Submitted from the Factory Console with an owner token, so it is approved.',
+          ].join('\n'),
+          ['idea', 'approved'],
+        );
+        setSent({ number: issue.number, approved: true });
+      }
       setName('');
       setDetail('');
       onChanged();
@@ -115,13 +125,25 @@ export function IdeasView({ bank, submitted, client, onConnect, onChanged }: Pro
             />
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            {client.canWrite ? (
+            {canSubmit ? (
               <button
                 type="submit"
                 disabled={!name.trim() || busy}
                 className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] enabled:hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {busy ? 'Sending…' : 'Send to the factory'}
+                {busy
+                  ? 'Sending…'
+                  : viewer && !viewer.admin
+                    ? 'Submit for approval'
+                    : 'Send to the factory'}
+              </button>
+            ) : authAvailable ? (
+              <button
+                type="button"
+                onClick={signIn}
+                className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] hover:opacity-90"
+              >
+                Sign in to submit an idea
               </button>
             ) : (
               <button
@@ -134,7 +156,9 @@ export function IdeasView({ bank, submitted, client, onConnect, onChanged }: Pro
             )}
             {sent !== null ? (
               <p role="status" className="text-sm text-[var(--success)]">
-                Queued as #{sent}. The next run will see it.
+                {sent.approved
+                  ? `Queued as #${sent.number}. The next run will see it.`
+                  : `Submitted as #${sent.number}. It needs an admin's approval before the factory sees it.`}
               </p>
             ) : null}
           </div>

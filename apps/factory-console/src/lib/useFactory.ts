@@ -8,6 +8,7 @@ export interface FactoryData {
   ledger: Ledger;
   bank: Idea[];
   submitted: Idea[];
+  pending: Idea[];
   requests: Request[];
   checkpoints: Checkpoint[];
   reports: string[];
@@ -67,21 +68,35 @@ export function useFactory(client: Client | null) {
       // Issues and workflow runs are optional: a token without those permissions
       // should still show a working dashboard rather than an error page.
       let submitted: Idea[] = [];
+      let pending: Idea[] = [];
       let requests: Request[] = [];
       let runs: Run[] = [];
 
       try {
         const raw = await client.issues('idea', 'open');
-        submitted = raw.map((issue) => ({
-          name: issue.title,
-          description: (issue.body ?? '').split('\n')[0] ?? '',
-          category: 'yours',
-          issue: issue.number,
-          state: issue.labels.some((l) => (typeof l === 'string' ? l : l.name) === 'next')
-            ? 'next'
-            : 'queued',
-          createdAt: issue.created_at,
-        }));
+        const labelsOf = (issue: (typeof raw)[number]) =>
+          issue.labels.map((l) => (typeof l === 'string' ? l : l.name));
+        const asIdea = (issue: (typeof raw)[number]): Idea => {
+          const labels = labelsOf(issue);
+          return {
+            name: issue.title,
+            description: (issue.body ?? '').split('\n')[0] ?? '',
+            category: 'yours',
+            issue: issue.number,
+            state: labels.includes('pending-approval')
+              ? 'pending'
+              : labels.includes('next')
+                ? 'next'
+                : 'queued',
+            createdAt: issue.created_at,
+            ...(issue.user?.login ? { submittedBy: issue.user.login } : {}),
+          };
+        };
+        // Pending ideas are listed separately: the factory is told never to build
+        // one, so showing them beside approved ideas would misrepresent the queue.
+        const all = raw.map(asIdea);
+        submitted = all.filter((i) => i.state !== 'pending');
+        pending = all.filter((i) => i.state === 'pending');
       } catch (error) {
         if (client.canWrite) {
           warnings.push(
@@ -129,6 +144,7 @@ export function useFactory(client: Client | null) {
           ledger,
           bank: bankRaw ? parseIdeaBank(bankRaw) : [],
           submitted,
+          pending,
           requests,
           checkpoints,
           reports: reportFiles

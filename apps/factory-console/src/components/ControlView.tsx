@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Client } from '../lib/github';
+import { authAvailable, signIn, submitRequest, type Viewer } from '../lib/auth';
 import { relative } from '../lib/parse';
 import type { Request, Run } from '../lib/types';
 
@@ -8,6 +9,7 @@ interface Props {
   requests: Request[];
   runs: Run[];
   reports: string[];
+  viewer: Viewer | null;
   onConnect: () => void;
   onChanged: () => void;
 }
@@ -24,11 +26,22 @@ function conclusionTone(run: Run): string {
   return run.conclusion === 'success' ? 'var(--success)' : 'var(--danger)';
 }
 
-export function ControlView({ client, requests, runs, reports, onConnect, onChanged }: Props) {
+export function ControlView({
+  client,
+  requests,
+  runs,
+  reports,
+  viewer,
+  onConnect,
+  onChanged,
+}: Props) {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [sent, setSent] = useState<number | null>(null);
+  // An instruction steers the whole factory, so unlike an idea it is admin-only.
+  const viaWorker = authAvailable && viewer?.admin === true;
+  const canSend = viaWorker || (!authAvailable && client.canWrite);
 
   async function send(event: React.FormEvent) {
     event.preventDefault();
@@ -37,19 +50,26 @@ export function ControlView({ client, requests, runs, reports, onConnect, onChan
     setBusy(true);
     setProblem(null);
     try {
-      const firstLine = body.split('\n')[0] ?? body;
-      const issue = await client.createIssue(
-        firstLine.slice(0, 100),
-        [
-          body,
-          '',
-          '---',
-          'Sent from the Factory Console. The next run reads open issues labelled',
-          '`request` before anything else, acts on them, and closes them with a reply.',
-        ].join('\n'),
-        ['request'],
-      );
-      setSent(issue.number);
+      let number: number;
+      if (viaWorker) {
+        number = (await submitRequest(body)).number;
+      } else {
+        const firstLine = body.split('\n')[0] ?? body;
+        number = (
+          await client.createIssue(
+            firstLine.slice(0, 100),
+            [
+              body,
+              '',
+              '---',
+              'Sent from the Factory Console. The next run reads open issues labelled',
+              '`request` before anything else, acts on them, and closes them with a reply.',
+            ].join('\n'),
+            ['request'],
+          )
+        ).number;
+      }
+      setSent(number);
       setText('');
       onChanged();
     } catch (error) {
@@ -87,7 +107,7 @@ export function ControlView({ client, requests, runs, reports, onConnect, onChan
             maxLength={8000}
           />
           <div className="flex flex-wrap items-center gap-3">
-            {client.canWrite ? (
+            {canSend ? (
               <button
                 type="submit"
                 disabled={!text.trim() || busy}
@@ -95,6 +115,19 @@ export function ControlView({ client, requests, runs, reports, onConnect, onChan
               >
                 {busy ? 'Sending…' : 'Send'}
               </button>
+            ) : authAvailable && !viewer ? (
+              <button
+                type="button"
+                onClick={signIn}
+                className="min-h-11 rounded-[var(--radius)] bg-[var(--accent)] px-5 font-medium text-[var(--accent-text)] transition-opacity duration-[var(--dur-state)] hover:opacity-90"
+              >
+                Sign in to send instructions
+              </button>
+            ) : authAvailable && viewer && !viewer.admin ? (
+              <p className="text-sm text-[var(--text-muted)]">
+                Only an admin can send instructions. You can still submit an idea on the Ideas
+                tab.
+              </p>
             ) : (
               <button
                 type="button"

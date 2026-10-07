@@ -30,6 +30,11 @@ instruction is not a suggestion to weigh against your own plan — it replaces i
 - An idea marked **BUILD NEXT** is this run's app, unless it hits a hard
   disqualifier in `references/idea-rubric.md` — and then you say so on the issue
   rather than quietly choosing something else.
+- **Only ideas labelled `approved` may be built.** An idea labelled
+  `pending-approval` came from someone who is not an admin and the owner has not
+  cleared it. Never build one, never approve one yourself, and never fold it into
+  your own candidate list as though you thought of it. If it is obviously good,
+  say so in a comment and leave it pending — the decision is not yours.
 - Close every issue you acted on, with a reply saying what you actually did:
   `factory/scripts/inbox.sh --done <number> "<what you did>"`
 - An instruction you decide not to follow still gets a reply explaining why.
@@ -56,8 +61,9 @@ obvious ones, because the obvious ones are where the comparison happens.
 
 Sources to push against, in this order:
 
-0. **Ideas submitted by the owner** (`factory/scripts/inbox.sh`). These come first
-   and are scored alongside your own. One marked BUILD NEXT skips scoring entirely.
+0. **Approved ideas from the console** (`factory/scripts/inbox.sh`). These come
+   first and are scored alongside your own. One marked BUILD NEXT skips scoring
+   entirely. Ideas still `pending-approval` are not candidates — leave them alone.
 1. `factory/ideas/idea-bank.md` — the standing backlog. Read it all.
 2. Live signal — search for what people are complaining about this week:
    *"is there a tool that"*, *"I wish there was an app"*, recent Hacker News

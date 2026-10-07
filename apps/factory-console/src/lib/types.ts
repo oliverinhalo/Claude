@@ -41,8 +41,10 @@ export interface Idea {
   category: string;
   /** Present when the idea came from a GitHub issue rather than the bank. */
   issue?: number;
-  state?: 'queued' | 'next' | 'done';
+  state?: 'queued' | 'next' | 'done' | 'pending';
   createdAt?: string;
+  /** GitHub login of whoever filed it, when it came from an issue. */
+  submittedBy?: string;
 }
 
 export interface Request {

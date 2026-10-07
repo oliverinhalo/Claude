@@ -33,20 +33,21 @@ getting its own repo. With it, each app gets `github.com/oliverinhalo/<app-slug>
 2. **Token name:** `app-factory`
 3. **Expiration:** 1 year — the calendar reminder below covers the renewal.
 4. **Resource owner:** `oliverinhalo`
-5. **Repository access:** *All repositories* — **not** *Only select repositories*.
+5. **Repository access:** _All repositories_ — **not** _Only select repositories_.
 
-   > This one matters more than it looks. *Creating* a repository is an **account**
+   > This one matters more than it looks. _Creating_ a repository is an **account**
    > permission, so a token limited to selected repositories will create
    > `oliverinhalo/<app>` successfully and then fail to **push** to it, because a
    > brand-new repo is not in the selected list. The run gets a repository with
    > nothing in it and a `403`.
+
 6. **Permissions → Account permissions:**
-   - `Administration` → **Read and write**  ← this is what allows repo creation
+   - `Administration` → **Read and write** ← this is what allows repo creation
 7. **Permissions → Repository permissions:**
-   - `Administration` → **Read and write**  (create repos, set topics, enable Pages)
-   - `Contents` → **Read and write**        (push the app)
-   - `Pages` → **Read and write**           (publish)
-   - `Workflows` → **Read and write**       (the app's own CI workflow file)
+   - `Administration` → **Read and write** (create repos, set topics, enable Pages)
+   - `Contents` → **Read and write** (push the app)
+   - `Pages` → **Read and write** (publish)
+   - `Workflows` → **Read and write** (the app's own CI workflow file)
    - `Metadata` → Read-only (auto-selected)
 8. Generate, copy the token.
 9. Add it here: <https://github.com/oliverinhalo/Claude/settings/secrets/actions/new>
@@ -68,7 +69,7 @@ Free forever at this usage. No card required for the free plan.
    the right sidebar. Copy it.
 3. Create a token at <https://dash.cloudflare.com/profile/api-tokens> →
    **Create Token** → use the **Edit Cloudflare Workers** template.
-   Under *Account Resources* select your account. Create, copy.
+   Under _Account Resources_ select your account. Create, copy.
 4. Add **both** as Actions secrets in this repository
    (<https://github.com/oliverinhalo/Claude/settings/secrets/actions>):
    - `CLOUDFLARE_API_TOKEN`
@@ -93,12 +94,72 @@ is the better default.
 ## Step 4 — Confirm the weekly Routine exists
 
 The Routine is what wakes the agent. Check it at
-<https://claude.ai/settings/automations> (or ask Claude: *"list my routines"*).
+<https://claude.ai/settings/automations> (or ask Claude: _"list my routines"_).
 
 You are looking for **"Weekly app factory"**, scheduled Mondays. If it is missing,
 ask Claude in any session:
 
 > Recreate the weekly app factory routine from `.claude/skills/ship-weekly-app/SKILL.md`.
+
+---
+
+## Step 5 — Sign-in and the approval queue (optional)
+
+Without this, the console is read-only to everyone except you (you paste a token).
+With it, anyone can sign in with GitHub and submit an idea, which lands **pending
+your approval** — and you get admin powers without pasting anything.
+
+Admins are decided by **verified GitHub email**, set in
+`services/console-auth/wrangler.toml`:
+
+```
+ADMIN_EMAILS = "jacobelilevy@gmail.com,jacob@jacoblevy.co.uk"
+```
+
+### 5a. Cloudflare (free, no card)
+
+1. Sign up at <https://dash.cloudflare.com/sign-up>.
+2. **Workers & Pages** → copy the **Account ID** from the right sidebar.
+3. <https://dash.cloudflare.com/profile/api-tokens> → **Create Token** → use the
+   **Edit Cloudflare Workers** template → select your account → create, copy.
+4. Add both as Actions secrets here:
+   - `CLOUDFLARE_ACCOUNT_ID`
+   - `CLOUDFLARE_API_TOKEN`
+
+### 5b. A GitHub OAuth app
+
+1. <https://github.com/settings/applications/new>
+2. **Application name:** `Factory Console`
+   **Homepage URL:** `https://oliverinhalo.github.io/factory-console/`
+   **Authorization callback URL:** `https://example.com/auth/callback`
+   _(a placeholder — step 5d replaces it with the real Worker URL)_
+3. Register, then **Generate a new client secret**.
+4. Add as Actions secrets:
+   - `GH_OAUTH_CLIENT_ID` — the Client ID
+   - `GH_OAUTH_CLIENT_SECRET` — the secret you just generated
+
+### 5c. Deploy the Worker
+
+**Actions → Deploy console auth → Run workflow.** The summary prints the Worker
+URL, something like `https://factory-console-auth.<your-subdomain>.workers.dev`.
+
+### 5d. Point things at it
+
+1. Back in the OAuth app, set **Authorization callback URL** to
+   `<worker-url>/auth/callback` and save.
+2. Add a repository **variable** (not a secret) at
+   <https://github.com/oliverinhalo/Claude/settings/variables/actions>:
+   - **Name:** `VITE_API_BASE`
+   - **Value:** the Worker URL
+3. **Actions → Publish app → Run workflow** with slug `factory-console` to rebuild
+   the console against it.
+
+Sign-in then appears in the console header, and a **Pending** tab shows up for
+admins whenever someone else submits an idea.
+
+> The Worker holds the credential that writes to this repository, so no visitor
+> ever handles a token. Admin status comes from a _verified_ email — an unverified
+> one proves nothing, since anyone can type any address into their GitHub profile.
 
 ---
 

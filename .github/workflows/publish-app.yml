@@ -164,12 +164,21 @@ jobs:
           SLUG: ${{ inputs.slug }}
           FULL: ${{ steps.repo.outputs.full }}
           HOST: ${{ steps.host.outputs.host }}
+          VITE_API_BASE: ${{ vars.VITE_API_BASE }}
         run: |
           set -euo pipefail
           WORK="$(mktemp -d)"
           rsync -a --exclude node_modules --exclude dist --exclude test-results \
                    --exclude playwright-report --exclude '*.tsbuildinfo' \
                    "apps/$SLUG/" "$WORK/"
+
+          # Build-time config the app needs in its own repo, where this repo's
+          # variables are not visible. Written as .env.production so the app's own
+          # CI and Pages build both pick it up.
+          if [ -n "${VITE_API_BASE:-}" ]; then
+            echo "VITE_API_BASE=$VITE_API_BASE" >> "$WORK/.env.production"
+            echo "carried VITE_API_BASE into the app"
+          fi
 
           # The app self-deploys on GitHub Pages: its own workflow has the Pages
           # permissions this one cannot delegate.
