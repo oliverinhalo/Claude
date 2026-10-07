@@ -33,7 +33,7 @@ jobs:
           VERCEL: ${{ secrets.VERCEL_TOKEN }}
         run: |
           set -euo pipefail
-          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }  # stdout too, so logs are readable
           say "## Secrets"
           say ""
           say "| Secret | Status |"
@@ -67,7 +67,7 @@ jobs:
           GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
         run: |
           set -uo pipefail
-          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }  # stdout too, so logs are readable
           say ""
           say "## Token capability test"
           say ""
@@ -121,7 +121,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -uo pipefail
-          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          say() { echo "$1"; echo "$1" >> "$GITHUB_STEP_SUMMARY"; }  # stdout too, so logs are readable
           say ""
           say "## Cloudflare"
           say ""
