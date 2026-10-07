@@ -20,9 +20,10 @@ Monday 07:43 ──► idea bank + live signal ──► 40 candidates
                                       ledger, run report, next week's head start
 ```
 
-**Cadence:** Mondays start the week's app. Tuesday to Sunday resume it, climb the
-polish ladder, raise the lowest-scored app already shipped, or get a head start on
-next week — because one session a week does not spend a week's allowance.
+**Cadence:** Mondays start the week's app. Tuesday to Sunday resume an unfinished
+one, climb the polish ladder further, or raise the lowest-scored app already
+shipped — so a run that dies mid-build is finished the next day rather than the
+next week.
 
 ## Start here
 
@@ -91,10 +92,11 @@ every week. Each secret you add removes a limitation; none of them block a run.
 - **One human action is unavoidable.** GitHub will not let a token mint a token
   with broader scope, so a person must create the PAT once. Ten minutes, once a
   year. Until then apps publish as subdirectories, and every run says so loudly.
-- **"Use the whole usage limit" is approximated.** Nothing can read remaining
-  subscription usage, so the pipeline instead never idles — after the gate passes
-  it climbs a polish ladder, and when it runs out of ladder it starts next week's
-  app. Work is checkpointed at every phase so being cut off mid-run loses nothing.
+- **It works hard; it does not pad.** The gate is a floor, and most of a run goes
+  into the polish ladder above it. But when the real work is done the run ends and
+  says so — inventing scope to look busy is explicitly forbidden. Work is
+  checkpointed at every phase, so a run cut off mid-flight resumes rather than
+  restarts.
 - **52 apps will not be 52 equal apps.** The gate guarantees a floor: it builds, it
   is tested, it is accessible, it is live, it is documented. Taste above that floor
   varies. Each run self-scores out of 10 in the ledger, honestly, so the weak ones

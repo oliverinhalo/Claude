@@ -141,10 +141,10 @@ Then run the `qa` sub-agent against the acceptance criteria from the spec. It te
 the *product*, not the code: every criterion, by hand, through the UI, including the
 paths you did not think of.
 
-## Phase 7 — Polish ladder (this is where the week's remaining budget goes)
+## Phase 7 — Polish ladder (where most of the run's time should go)
 
-The gate is the floor, not the target. Climb, in order, and keep climbing until the
-session ends. Read `references/polish-ladder.md` for the full checklist.
+The gate is the floor, not the target. Climb, in order, as far as the run allows.
+Read `references/polish-ladder.md` for the full checklist.
 
 1. Hostile-input pass — paste 50,000 characters in, submit empty, click twice fast,
    resize to 320px, use it with a keyboard only, turn the network off.
@@ -160,9 +160,9 @@ session ends. Read `references/polish-ladder.md` for the full checklist.
 7. Write the README a stranger can follow, and the landing section of the app that
    explains itself in one screen.
 
-When you have climbed the whole ladder and the session is still alive, start the
-*next* week's app in `apps/` and leave it checkpointed. Never idle. See
-`references/budget.md`.
+Work hard here — this is the difference between an app that works and an app
+someone would pay for. But do not pad: when a rung is genuinely done, move on, and
+when the ladder is genuinely climbed, say so. See `references/budget.md`.
 
 ## Phase 8 — Publish (the privileged step)
 
@@ -210,6 +210,10 @@ common pair, and the cause is almost always the base path.
 
 A run that ships a live app and writes an honest report is a success even if the app
 is a six. A run that ships nothing is not a success, however good the reason.
+
+If the app is finished and the run still has time, `references/budget.md` lists
+what is worth doing next — and lists "nothing further, end the run" as a legitimate
+answer. Do not invent work to fill time.
 
 ---
 
