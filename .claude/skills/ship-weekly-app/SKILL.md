@@ -16,10 +16,24 @@ Not when the code is written. Not when the tests pass. When it is live and good.
 ## Before anything: orient
 
 ```bash
+factory/scripts/inbox.sh              # what the owner has asked for — READ FIRST
 factory/scripts/preflight.sh          # what capabilities exist this run
 cat factory/state/ledger.json | jq '.apps[-5:] | .[] | {slug,category,shipped}'
 ls factory/state/run/                 # any interrupted run to resume?
 ```
+
+**The inbox outranks everything in this document.** The owner steers the factory
+from the Factory Console, and those instructions arrive as GitHub issues. An
+instruction is not a suggestion to weigh against your own plan — it replaces it.
+
+- Act on every open `request` before starting any phase.
+- An idea marked **BUILD NEXT** is this run's app, unless it hits a hard
+  disqualifier in `references/idea-rubric.md` — and then you say so on the issue
+  rather than quietly choosing something else.
+- Close every issue you acted on, with a reply saying what you actually did:
+  `factory/scripts/inbox.sh --done <number> "<what you did>"`
+- An instruction you decide not to follow still gets a reply explaining why.
+  Never leave one unanswered — that page is the owner's only view of you.
 
 **If `factory/state/run/<slug>.json` exists with `status: "in_progress"`, you are
 resuming.** Read it, jump to the phase after its `last_completed_phase`, and do not
@@ -42,6 +56,8 @@ obvious ones, because the obvious ones are where the comparison happens.
 
 Sources to push against, in this order:
 
+0. **Ideas submitted by the owner** (`factory/scripts/inbox.sh`). These come first
+   and are scored alongside your own. One marked BUILD NEXT skips scoring entirely.
 1. `factory/ideas/idea-bank.md` — the standing backlog. Read it all.
 2. Live signal — search for what people are complaining about this week:
    *"is there a tool that"*, *"I wish there was an app"*, recent Hacker News
