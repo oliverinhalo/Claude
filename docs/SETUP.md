@@ -8,6 +8,22 @@ Total time: about ten minutes.
 
 ---
 
+## Step 0 — Make `main` the default branch (one click, do this first)
+
+This repository was created empty, so GitHub made the first pushed branch the
+default. Session proxies refuse repository-settings writes, so this one cannot be
+done from a Claude session.
+
+1. Open <https://github.com/oliverinhalo/Claude/settings>
+2. Under **Default branch**, click the switch icon and choose **`main`**.
+3. Confirm.
+
+Until this is done, the factory still runs — both branches hold the same content —
+but the weekly run and the `main` branch can drift apart, and scheduled workflows
+fire from the wrong branch. Thirty seconds now saves a confusing week later.
+
+---
+
 ## Step 1 — `FACTORY_GH_TOKEN` (required for one-repo-per-app)
 
 Without it, every app is published as a subdirectory of this repository instead of

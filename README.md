@@ -20,6 +20,10 @@ Monday 07:43 ──► idea bank + live signal ──► 40 candidates
                                       ledger, run report, next week's head start
 ```
 
+**Cadence:** Mondays start the week's app. Tuesday to Sunday resume it, climb the
+polish ladder, raise the lowest-scored app already shipped, or get a head start on
+next week — because one session a week does not spend a week's allowance.
+
 ## Start here
 
 | If you want to… | Read |

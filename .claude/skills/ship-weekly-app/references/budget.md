@@ -52,6 +52,24 @@ The checkpoint file records enough that a cold session can resume with no contex
 `next_action` is the important field. Write it as an instruction to a stranger,
 because that is who reads it.
 
+## The cadence
+
+Two routines drive this:
+
+| Routine | When | What it does |
+|---|---|---|
+| **Weekly app factory** | Mondays 07:43 | Starts the week's app, or resumes an unfinished one. Phases 1–9. |
+| **Daily factory continuation** | Tue–Sun 07:17 | Never starts a new week's app from scratch. Resumes the checkpoint, climbs the polish ladder, raises the lowest-scored shipped app, or gets a head start on next week. |
+
+The daily routine exists because a single weekly session does not consume a week's
+allowance, and the instruction is to use it. It is also the recovery mechanism: a
+Monday run that dies at phase 5 is finished by Tuesday rather than waiting seven
+days.
+
+A daily run that finds nothing to do is a bug in its own judgement, not a quiet
+day. There is always a rung left on the ladder, always a five in the ledger worth
+raising, and always next week's app to start.
+
 ## The rhythm of a run
 
 Roughly, when the budget is generous:
