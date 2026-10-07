@@ -35,24 +35,42 @@ else
 fi
 
 echo
-echo "Secrets configured in this repository (names only; values never printed)"
-SECRETS="$(gh api "repos/${GITHUB_REPOSITORY:-oliverinhalo/Claude}/actions/secrets" -q '.secrets[].name' 2>/dev/null)"
-have() { grep -qx "$1" <<<"$SECRETS"; }
-
-if have FACTORY_GH_TOKEN; then
-  ok "FACTORY_GH_TOKEN — each app gets its own repository"
-else
-  warn "FACTORY_GH_TOKEN missing → fallback: apps publish as subdirectories of this repo"
-  echo "      fix: docs/SETUP.md step 1"
+echo "Secrets"
+# The session proxy blocks the Actions secrets API, so a session cannot read
+# which secrets exist. Reporting "missing" here would be a false negative: the
+# publisher workflow reads its own secrets at run time and picks the host then.
+# gh writes the error body to stdout even with -q, so a non-empty result proves
+# nothing. Gate on its exit status, which is non-zero on the proxy's 403.
+SECRETS=""
+if RAW="$(gh api "repos/${GITHUB_REPOSITORY:-oliverinhalo/Claude}/actions/secrets" 2>/dev/null)"; then
+  SECRETS="$(jq -r '.secrets[].name' <<<"$RAW" 2>/dev/null)"
 fi
-
-if have CLOUDFLARE_API_TOKEN && have CLOUDFLARE_ACCOUNT_ID; then
-  ok "Cloudflare — hosting on *.pages.dev"
-elif have VERCEL_TOKEN; then
-  warn "Cloudflare missing, Vercel present → hosting on Vercel (Hobby forbids commercial use)"
+if [ -z "$SECRETS" ]; then
+  warn "cannot be read from a session (the proxy blocks the Actions secrets API)"
+  echo "      This is expected and is NOT evidence that a secret is missing."
+  echo "      publish-app.yml reads them at run time and selects the host itself:"
+  echo "        FACTORY_GH_TOKEN present  → the app gets its own repository"
+  echo "        absent                    → published as a subdirectory, with a warning"
+  echo "        Cloudflare pair present   → hosted on *.pages.dev"
+  echo "        absent                    → hosted on GitHub Pages (needs no secret)"
+  echo "      To check for real, dispatch the setup verifier:"
+  echo "        gh api -X POST repos/${GITHUB_REPOSITORY:-oliverinhalo/Claude}/actions/workflows/verify-setup.yml/dispatches -f ref=main"
 else
-  warn "No host token → fallback: GitHub Pages (works with zero secrets)"
-  echo "      fix: docs/SETUP.md step 2"
+  have() { grep -qx "$1" <<<"$SECRETS"; }
+  if have FACTORY_GH_TOKEN; then
+    ok "FACTORY_GH_TOKEN — each app gets its own repository"
+  else
+    warn "FACTORY_GH_TOKEN missing → fallback: apps publish as subdirectories"
+    echo "      fix: docs/SETUP.md step 1"
+  fi
+  if have CLOUDFLARE_API_TOKEN && have CLOUDFLARE_ACCOUNT_ID; then
+    ok "Cloudflare — hosting on *.pages.dev"
+  elif have VERCEL_TOKEN; then
+    warn "Cloudflare missing, Vercel present → hosting on Vercel"
+  else
+    warn "No host token → fallback: GitHub Pages (works with zero secrets)"
+    echo "      fix: docs/SETUP.md step 2"
+  fi
 fi
 
 echo

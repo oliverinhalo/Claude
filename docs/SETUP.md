@@ -99,14 +99,22 @@ ask Claude in any session:
 
 ## Verifying the setup
 
-Run the preflight from any Claude session in this repository:
+A Claude session **cannot** check whether your secrets exist — the proxy blocks the
+Actions secrets API, so from a session "missing" and "unreadable" look identical.
+`factory/scripts/preflight.sh` says so plainly rather than guessing.
+
+To check for real, dispatch the verifier. It reports which secrets exist, which
+host the next run would choose, and — crucially — whether the PAT is actually
+scoped to create repositories, by creating a throwaway repo and deleting it again:
 
 ```bash
-factory/scripts/preflight.sh
+gh api -X POST repos/oliverinhalo/Claude/actions/workflows/verify-setup.yml/dispatches -f ref=main
 ```
 
-It reports which capabilities are live and which fallback each missing one triggers.
-It never fails the build — a missing optional secret is a degraded mode, not an error.
+Or from the browser: **Actions → Verify setup → Run workflow**.
+
+The result is in the run's summary. A mis-scoped token is the single most likely
+setup mistake, and this is the only thing that catches it before a real run does.
 
 ## What happens on a Monday
 

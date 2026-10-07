@@ -1,0 +1,140 @@
+name: Verify setup
+
+# Proves the factory's credentials actually work, before a real run depends on
+# them. A session cannot do this itself: the proxy blocks the Actions secrets
+# API, so from a session "missing" and "unreadable" look identical.
+#
+# The repository-creation test creates a throwaway repo and deletes it again.
+# If deletion fails, the summary says so by name.
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_repo_creation:
+        description: Create and delete a throwaway repo to prove the PAT works
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Which secrets exist
+        id: present
+        env:
+          PAT: ${{ secrets.FACTORY_GH_TOKEN }}
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          VERCEL: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          set -euo pipefail
+          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          say "## Secrets"
+          say ""
+          say "| Secret | Status |"
+          say "|---|---|"
+          [ -n "$PAT" ]        && say "| \`FACTORY_GH_TOKEN\` | present |"        || say "| \`FACTORY_GH_TOKEN\` | **missing** — apps publish as subdirectories (docs/SETUP.md step 1) |"
+          [ -n "$CF_TOKEN" ]   && say "| \`CLOUDFLARE_API_TOKEN\` | present |"    || say "| \`CLOUDFLARE_API_TOKEN\` | absent — not required |"
+          [ -n "$CF_ACCOUNT" ] && say "| \`CLOUDFLARE_ACCOUNT_ID\` | present |"   || say "| \`CLOUDFLARE_ACCOUNT_ID\` | absent — not required |"
+          [ -n "$VERCEL" ]     && say "| \`VERCEL_TOKEN\` | present |"            || say "| \`VERCEL_TOKEN\` | absent — not required |"
+          echo "pat=$([ -n "$PAT" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+          echo "cf=$([ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ] && echo yes || echo no)" >> "$GITHUB_OUTPUT"
+
+      - name: Which host a run would choose
+        env:
+          PAT: ${{ steps.present.outputs.pat }}
+          CF: ${{ steps.present.outputs.cf }}
+        run: |
+          set -euo pipefail
+          HOST=github-pages; [ "$CF" = "yes" ] && HOST=cloudflare
+          REPO="its own repository"; [ "$PAT" = "no" ] && REPO="a subdirectory of this repo"
+          {
+            echo ""
+            echo "## What the next run would do"
+            echo ""
+            echo "- Publish the app to **$REPO**"
+            echo "- Host it on **$HOST**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Does the PAT really allow creating repositories
+        if: steps.present.outputs.pat == 'yes' && inputs.test_repo_creation
+        env:
+          GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
+        run: |
+          set -uo pipefail
+          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          say ""
+          say "## Token capability test"
+          say ""
+
+          OWNER="$(gh api user -q .login 2>/dev/null)"
+          if [ -z "$OWNER" ]; then
+            say ":x: The token cannot read \`/user\`. It is invalid, expired, or revoked."
+            say ""
+            say "Regenerate it: see \`docs/SETUP.md\` step 1."
+            exit 1
+          fi
+          say ":white_check_mark: Authenticates as **$OWNER**"
+
+          NAME="factory-token-check-${{ github.run_id }}"
+          if ! gh api -X POST user/repos -f name="$NAME" -F private=true -F auto_init=false \
+               -f description="Temporary factory token check. Deleted automatically." >/dev/null 2>/tmp/err; then
+            say ":x: **Cannot create repositories.** Apps will publish as subdirectories."
+            say ""
+            say '```'
+            say "$(head -3 /tmp/err)"
+            say '```'
+            say ""
+            say "Most likely cause: **Account permissions → Administration** was not set to"
+            say "*Read and write* when the token was created, or *Repository access* was not"
+            say "set to *All repositories*. Both are required. See \`docs/SETUP.md\` step 1."
+            exit 1
+          fi
+          say ":white_check_mark: Created \`$OWNER/$NAME\`"
+
+          FAILED=""
+          gh api -X PATCH "repos/$OWNER/$NAME" -f description="ok" >/dev/null 2>&1 \
+            && say ":white_check_mark: Can set repository metadata" \
+            || { say ":warning: Cannot set description or topics — apps will publish without them"; FAILED=1; }
+
+          if gh api -X DELETE "repos/$OWNER/$NAME" >/dev/null 2>&1; then
+            say ":white_check_mark: Cleaned up the throwaway repository"
+          else
+            say ":warning: **Could not delete \`$OWNER/$NAME\`.** Delete it by hand:"
+            say "<https://github.com/$OWNER/$NAME/settings>"
+          fi
+
+          say ""
+          if [ -z "$FAILED" ]; then
+            say "**The token is correctly scoped. Each app will get its own repository.**"
+          fi
+
+      - name: Is the Cloudflare token usable
+        if: steps.present.outputs.cf == 'yes'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -uo pipefail
+          say() { echo "$1" >> "$GITHUB_STEP_SUMMARY"; }
+          say ""
+          say "## Cloudflare"
+          say ""
+          RESP="$(curl -sS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                  "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects" || true)"
+          if [ "$(jq -r '.success // false' <<<"$RESP")" = "true" ]; then
+            say ":white_check_mark: Token works and can reach Pages on this account."
+          else
+            say ":x: Cloudflare rejected the token:"
+            say '```'
+            say "$(jq -r '.errors[]?.message // "no response"' <<<"$RESP" | head -3)"
+            say '```'
+            say "Recreate it with the **Edit Cloudflare Workers** template and select your"
+            say "account under *Account Resources*. See \`docs/SETUP.md\` step 2."
+            exit 1
+          fi
