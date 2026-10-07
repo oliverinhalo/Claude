@@ -1,13 +1,23 @@
 name: Run factory now
 
-# An on-demand factory run, so you are not waiting for a schedule.
+# The factory's engine: scheduled runs and on-demand runs, both here.
 #
-# Authenticated by CLAUDE_CODE_OAUTH_TOKEN, which uses your Claude subscription
-# rather than metered API billing. Generate one by running `claude setup-token`
-# locally; see docs/SETUP.md step 6. Without it this workflow explains itself and
-# exits cleanly rather than failing.
+# This replaced Claude Routines, which could not work. A routine-fired session is
+# created with no repository sources, so it has no git credential and no GitHub
+# token: `git push` returns 403 ("not in this session's authorized set") and the
+# API rejects it. A fired run proved it — it read the pipeline, found it could not
+# write, and stopped. An Actions runner has both, and is not behind that proxy.
+#
+# Authenticated by CLAUDE_CODE_OAUTH_TOKEN, which uses the Claude subscription
+# rather than metered API billing. Generate one with `claude setup-token`; see
+# docs/SETUP.md step 6. Without it this workflow explains itself and exits
+# cleanly rather than failing noisily every morning.
 
 on:
+  schedule:
+    # Times are UTC, so these land an hour later in London during BST.
+    - cron: '43 7 * * 1'          # Monday: start a new app
+    - cron: '17 7 * * 0,2,3,4,5,6' # Other days: continue, polish, or improve
   workflow_dispatch:
     inputs:
       mode:
@@ -84,10 +94,12 @@ jobs:
         id: prompt
         if: steps.check.outputs.ready == 'true'
         env:
-          MODE: ${{ inputs.mode }}
+          # A scheduled run has no inputs: Monday starts an app, other days continue.
+          MODE: ${{ inputs.mode || (github.event.schedule == '43 7 * * 1' && 'new-app' || 'continue') }}
           FOCUS: ${{ inputs.focus }}
         run: |
           set -euo pipefail
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
           {
             echo 'text<<PROMPT_EOF'
             echo "An on-demand factory run, started by the owner from the Factory Console."
@@ -140,7 +152,7 @@ jobs:
           {
             echo "### Run finished"
             echo
-            echo "- Mode: \`${{ inputs.mode }}\`"
+            echo "- Mode: \`${{ steps.prompt.outputs.mode }}\`"
             echo "- Console: <https://oliverinhalo.github.io/factory-console/>"
             echo "- Shipped apps: \`factory/state/shipped.md\`"
             echo "- Run reports: \`factory/state/reports/\`"

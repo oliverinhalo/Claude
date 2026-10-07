@@ -91,17 +91,39 @@ is the better default.
 
 ---
 
-## Step 4 — Confirm the weekly Routine exists
+## Step 4 — `CLAUDE_CODE_OAUTH_TOKEN` (required — nothing runs without it)
 
-The Routine is what wakes the agent. Check it at
-<https://claude.ai/settings/automations> (or ask Claude: _"list my routines"_).
+This is what actually runs the factory. Two minutes.
 
-You are looking for **"Weekly app factory"**, scheduled Mondays. If it is missing,
-ask Claude in any session:
+1. On your own machine, in a terminal:
 
-> Recreate the weekly app factory routine from `.claude/skills/ship-weekly-app/SKILL.md`.
+   ```bash
+   claude setup-token
+   ```
 
----
+   Follow the prompt and copy the token it prints.
+
+2. Add it at
+   <https://github.com/oliverinhalo/Claude/settings/secrets/actions/new>:
+   - **Name:** `CLAUDE_CODE_OAUTH_TOKEN`
+   - **Secret:** the token
+
+That is it. `.github/workflows/run-factory.yml` then runs on its schedule —
+Mondays start a new app, other days continue — and the console's **Run it now**
+button works.
+
+It bills to your **Claude subscription**, not the metered API.
+
+> **Why not Claude Routines?** They were tried first and cannot work. A
+> routine-fired session is created with no repository sources, so it has no git
+> credential and no GitHub token: `git push` returns `403 — not in this
+> session's authorized set`. A fired run proved it: it read the pipeline, found
+> it could not write, and stopped without building anything. An Actions runner
+> has both credentials and is not behind that proxy. The two routines are
+> disabled; `run-factory.yml` replaced them.
+
+> These tokens expire. If runs start failing with a 401, run `claude
+> setup-token` again and replace the secret.
 
 ## Step 5 — Sign-in and the approval queue (optional)
 
@@ -163,33 +185,11 @@ admins whenever someone else submits an idea.
 
 ---
 
-## Step 6 — Run it on demand (optional, 2 minutes)
+## Step 6 — Run it on demand
 
-Without this, runs only happen on their schedule. With it, the console gets a
-**Run it now** button.
-
-It uses your **Claude subscription**, not metered API billing — so it costs
-nothing beyond what you already pay.
-
-1. On your own machine, in a terminal:
-
-   ```bash
-   claude setup-token
-   ```
-
-   Follow the prompt and copy the token it prints.
-
-2. Add it at
-   <https://github.com/oliverinhalo/Claude/settings/secrets/actions/new>:
-   - **Name:** `CLAUDE_CODE_OAUTH_TOKEN`
-   - **Secret:** the token
-
-That is all. The **Run it now** panel on the console's Overview starts a run
-immediately, and you can tell it what to focus on.
-
-> These tokens expire. If on-demand runs start failing with a 401, run
-> `claude setup-token` again and replace the secret. Scheduled runs are
-> unaffected either way — they do not use this token.
+Already covered by step 4 — the same secret powers both. The **Run it now**
+panel on the console's Overview starts a run immediately, and you can tell it
+what to focus on.
 
 ---
 

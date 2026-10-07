@@ -20,10 +20,11 @@ Monday 07:43 ──► idea bank + live signal ──► 40 candidates
                                       ledger, run report, next week's head start
 ```
 
-**Cadence:** Mondays start the week's app. Tuesday to Sunday resume an unfinished
-one, climb the polish ladder further, or raise the lowest-scored app already
-shipped — so a run that dies mid-build is finished the next day rather than the
-next week.
+**Cadence:** `.github/workflows/run-factory.yml` runs it. Mondays start the
+week's app; other days resume an unfinished one, climb the polish ladder, or
+raise the lowest-scored app already shipped — so a run that dies mid-build is
+finished the next day rather than the next week. The console's **Run it now**
+button starts one immediately.
 
 ## The console
 

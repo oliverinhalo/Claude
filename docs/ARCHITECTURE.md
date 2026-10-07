@@ -29,6 +29,31 @@ Repository-scoped paths (`/repos/{owner}/{repo}/...`) pass through normally,
 So a cloud session cannot create the 52 repositories itself. One privileged step
 has to run somewhere that is not behind the proxy. GitHub Actions runners are not.
 
+## The second constraint, found the hard way
+
+Scheduling was built on Claude Routines. It does not work, and the failure is
+silent rather than loud:
+
+```
+A routine-fired session is created with sources: []
+  → no git credential, no GitHub token
+  → git push  →  403 "not in this session's authorized set"
+  → gh api    →  rejected
+```
+
+A fired run read the pipeline, discovered it could not write, and stopped
+having built nothing — while reporting itself complete. Every scheduled run
+would have done the same.
+
+So the schedule moved to `.github/workflows/run-factory.yml`, which runs the
+pipeline through `anthropics/claude-code-action` on an Actions runner. The
+runner has a real `GITHUB_TOKEN`, is not behind the session proxy, and
+authenticates to Claude with a subscription OAuth token rather than metered
+API billing. The routines are disabled.
+
+This also collapses the architecture pleasantly: the privileged publisher was
+already an Actions workflow, and now the thing that drives it is too.
+
 ## The split
 
 ```
