@@ -1,5 +1,5 @@
 import type { FactoryData } from '../lib/useFactory';
-import { meanScore, nextRun, relative, weeksElapsed } from '../lib/parse';
+import { meanScore, nextRun, relative, weeksCompleted, weeksElapsed } from '../lib/parse';
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -18,7 +18,8 @@ export function Overview({ data }: { data: FactoryData }) {
   const mean = meanScore(ledger.apps);
   const next = nextRun();
   const active = checkpoints.find((c) => c.status === 'in_progress');
-  const pace = shipped - week;
+  // Judged against weeks finished, not the week in progress.
+  const pace = shipped - weeksCompleted(ledger.started);
 
   return (
     <div className="space-y-8">

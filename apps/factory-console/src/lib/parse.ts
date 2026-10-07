@@ -68,6 +68,17 @@ export function weeksElapsed(started: string, now = new Date()): number {
   return Math.max(1, weeks);
 }
 
+/**
+ * Whole weeks finished since the start — what pace should be judged against.
+ * Week 1 is in progress on day one, so nothing is owed yet and the factory is
+ * not "1 behind".
+ */
+export function weeksCompleted(started: string, now = new Date()): number {
+  const start = new Date(`${started}T00:00:00Z`).getTime();
+  if (Number.isNaN(start)) return 0;
+  return Math.max(0, Math.floor((now.getTime() - start) / 604_800_000));
+}
+
 export function meanScore(apps: LedgerApp[]): number | null {
   if (apps.length === 0) return null;
   const total = apps.reduce((sum, app) => sum + app.score, 0);

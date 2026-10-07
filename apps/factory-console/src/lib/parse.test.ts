@@ -6,6 +6,7 @@ import {
   nextRun,
   parseIdeaBank,
   relative,
+  weeksCompleted,
   weeksElapsed,
 } from './parse';
 import type { LedgerApp } from './types';
@@ -105,6 +106,24 @@ describe('weeksElapsed', () => {
   });
   it('does not throw on a malformed date', () => {
     expect(weeksElapsed('not-a-date')).toBe(1);
+  });
+});
+
+describe('weeksCompleted', () => {
+  it('is 0 on day one, so nothing is owed yet', () => {
+    expect(weeksCompleted('2026-10-07', new Date('2026-10-07T12:00:00Z'))).toBe(0);
+  });
+  it('is still 0 six days in', () => {
+    expect(weeksCompleted('2026-10-07', new Date('2026-10-13T12:00:00Z'))).toBe(0);
+  });
+  it('becomes 1 after a full week', () => {
+    expect(weeksCompleted('2026-10-07', new Date('2026-10-14T12:00:00Z'))).toBe(1);
+  });
+  it('never goes negative for a future start', () => {
+    expect(weeksCompleted('2027-01-01', new Date('2026-10-07T12:00:00Z'))).toBe(0);
+  });
+  it('does not throw on a malformed date', () => {
+    expect(weeksCompleted('nonsense')).toBe(0);
   });
 });
 
