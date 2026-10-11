@@ -2,12 +2,8 @@
 
 | Week | App | What it does | Live | Repo | Score |
 |---|---|---|---|---|---|
-| _nothing shipped yet_ | | | | | |
+| 1 | **Trainyard** | Trains an image classifier from your own webcam shots, entirely in the browser. | [open](https://trainyard.pages.dev) | [oliverinhalo/trainyard](https://github.com/oliverinhalo/trainyard) | 7/10 |
 
-Updated by `factory/scripts/ledger.sh` at the end of each run. Do not edit by hand.
+**1 of 52 shipped · mean score 7/10**
 
----
-
-**Not counted above:** the [Factory Console](https://factory-console.pages.dev/)
-([repo](https://github.com/oliverinhalo/factory-console)) is control-plane
-infrastructure, not one of the 52. It deliberately does not take a week's slot.
+Updated by `factory/scripts/ledger.sh`. Do not edit by hand.

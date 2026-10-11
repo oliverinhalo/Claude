@@ -16,10 +16,19 @@ on a GitHub runner, which is not behind the proxy.
 
 ## The publish sequence
 
+**Pushing `staging/<slug>` is the publish.** `publish-app.yml` triggers on any push
+to `staging/**` and derives the slug from the branch name.
+
 ```bash
-factory/scripts/publish.sh <slug>            # push + dispatch
+factory/scripts/publish.sh <slug>            # gate, push staging/<slug>, then watch
 factory/scripts/publish.sh <slug> --watch    # poll to completion, print logs on failure
 ```
+
+> A run inside `run-factory.yml` authenticates as the `claude[bot]` App token,
+> which **cannot create a workflow dispatch** — `403 Resource not accessible by
+> integration` — however the job's own `permissions:` are set. That is why the
+> push is the trigger: it needs no credential the agent lacks. `publish.sh` still
+> attempts a dispatch for the manual case and treats a 403 there as expected.
 
 What the workflow does, in order:
 

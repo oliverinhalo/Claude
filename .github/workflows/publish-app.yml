@@ -10,6 +10,8 @@ name: Publish app
 # See docs/ARCHITECTURE.md.
 
 on:
+  push:
+    branches: ['staging/**']
   workflow_dispatch:
     inputs:
       slug:
@@ -47,17 +49,49 @@ jobs:
       host: ${{ steps.result.outputs.host }}
       repo: ${{ steps.result.outputs.repo }}
     steps:
+      - name: Resolve what to publish
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          IN_SLUG: ${{ inputs.slug }}
+          IN_BRANCH: ${{ inputs.branch }}
+          IN_HOST: ${{ inputs.host }}
+          IN_VIS: ${{ inputs.visibility }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "push" ]; then
+            # refs/heads/staging/<slug>
+            SLUG="${REF_NAME#staging/}"
+            BRANCH="$REF_NAME"
+            HOST="auto"
+            VIS="public"
+            echo "triggered by a push to $BRANCH"
+          else
+            SLUG="$IN_SLUG"
+            BRANCH="${IN_BRANCH:-staging/$IN_SLUG}"
+            HOST="${IN_HOST:-auto}"
+            VIS="${IN_VIS:-public}"
+          fi
+          [ -n "$SLUG" ] || { echo "::error::Could not work out which app to publish"; exit 1; }
+          {
+            echo "slug=$SLUG"
+            echo "branch=$BRANCH"
+            echo "host=$HOST"
+            echo "visibility=$VIS"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Check out the factory
         uses: actions/checkout@v5
         with:
-          ref: ${{ inputs.branch != '' && inputs.branch || format('staging/{0}', inputs.slug) }}
+          ref: ${{ steps.plan.outputs.branch }}
           fetch-depth: 1
 
       - name: Validate inputs
         id: validate
         run: |
           set -euo pipefail
-          SLUG='${{ inputs.slug }}'
+          SLUG='${{ steps.plan.outputs.slug }}'
           if ! [[ "$SLUG" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
             echo "::error::slug must be lowercase-kebab-case, got '$SLUG'"; exit 1
           fi
@@ -78,7 +112,7 @@ jobs:
           PAT: ${{ secrets.FACTORY_GH_TOKEN }}
         run: |
           set -euo pipefail
-          REQUESTED='${{ inputs.host }}'
+          REQUESTED='${{ steps.plan.outputs.host }}'
           HOST="$REQUESTED"
           if [ "$REQUESTED" = "auto" ]; then
             if [ -n "$CF_TOKEN" ] && [ -n "$CF_ACCOUNT" ]; then HOST=cloudflare
@@ -98,10 +132,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: apps/${{ inputs.slug }}/package-lock.json
+          cache-dependency-path: apps/${{ steps.plan.outputs.slug }}/package-lock.json
 
       - name: Install and verify the app builds
-        working-directory: apps/${{ inputs.slug }}
+        working-directory: apps/${{ steps.plan.outputs.slug }}
         run: |
           set -euo pipefail
           npm ci --no-audit --no-fund || npm install --no-audit --no-fund
@@ -116,8 +150,8 @@ jobs:
         if: steps.host.outputs.own_repo == 'true'
         env:
           GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
-          SLUG: ${{ inputs.slug }}
-          VIS: ${{ inputs.visibility }}
+          SLUG: ${{ steps.plan.outputs.slug }}
+          VIS: ${{ steps.plan.outputs.visibility }}
         run: |
           set -euo pipefail
           OWNER="$(gh api user -q .login)"
@@ -161,7 +195,7 @@ jobs:
         if: steps.host.outputs.own_repo == 'true'
         env:
           GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
-          SLUG: ${{ inputs.slug }}
+          SLUG: ${{ steps.plan.outputs.slug }}
           FULL: ${{ steps.repo.outputs.full }}
           HOST: ${{ steps.host.outputs.host }}
           VITE_API_BASE: ${{ vars.VITE_API_BASE }}
@@ -205,7 +239,7 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.FACTORY_GH_TOKEN }}
-          SLUG: ${{ inputs.slug }}
+          SLUG: ${{ steps.plan.outputs.slug }}
           FULL: ${{ steps.repo.outputs.full }}
         run: |
           set -euo pipefail
@@ -219,11 +253,11 @@ jobs:
       - name: Deploy to Cloudflare Pages
         id: cf
         if: steps.host.outputs.host == 'cloudflare'
-        working-directory: apps/${{ inputs.slug }}
+        working-directory: apps/${{ steps.plan.outputs.slug }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          SLUG: ${{ inputs.slug }}
+          SLUG: ${{ steps.plan.outputs.slug }}
         run: |
           set -euo pipefail
           # Cloudflare serves from the root, so the default base is correct.
@@ -237,10 +271,10 @@ jobs:
       - name: Deploy to Vercel
         id: vercel
         if: steps.host.outputs.host == 'vercel'
-        working-directory: apps/${{ inputs.slug }}
+        working-directory: apps/${{ steps.plan.outputs.slug }}
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          SLUG: ${{ inputs.slug }}
+          SLUG: ${{ steps.plan.outputs.slug }}
         run: |
           set -euo pipefail
           VITE_BASE=/ npm run build
@@ -288,7 +322,7 @@ jobs:
         id: fallback
         if: steps.host.outputs.own_repo != 'true'
         env:
-          SLUG: ${{ inputs.slug }}
+          SLUG: ${{ steps.plan.outputs.slug }}
         run: |
           set -euo pipefail
           echo "::warning::Published as a subdirectory because FACTORY_GH_TOKEN is missing."
@@ -318,7 +352,7 @@ jobs:
       - name: Verify the deployment is live
         id: result
         env:
-          SLUG: ${{ inputs.slug }}
+          SLUG: ${{ steps.plan.outputs.slug }}
         run: |
           set -euo pipefail
           URL='${{ steps.cf.outputs.url }}${{ steps.vercel.outputs.url }}${{ steps.ghp.outputs.url }}${{ steps.fallback.outputs.url }}'
@@ -354,7 +388,7 @@ jobs:
 
       - name: Record the result for the session to read
         env:
-          SLUG: ${{ inputs.slug }}
+          SLUG: ${{ steps.plan.outputs.slug }}
         run: |
           set -euo pipefail
           git fetch origin main

@@ -87,6 +87,23 @@ else
   bad "ledger.json missing"
 fi
 
+BROKEN=""
+for f in "$ROOT"/factory/state/run/*.json; do
+  [ -e "$f" ] || continue
+  jq -e . "$f" >/dev/null 2>&1 || BROKEN="$BROKEN $f"
+done
+if [ -n "$BROKEN" ]; then
+  bad "checkpoint file(s) do NOT parse:$BROKEN"
+  echo "      Read them by hand before deciding anything — a run may have made"
+  echo "      progress that this cannot see. Conflict markers mean two writes collided."
+fi
+
+CONFLICTED="$(grep -rlE '^(<<<<<<< |>>>>>>> |=======$)' "$ROOT/factory" "$ROOT/.claude" 2>/dev/null || true)"
+if [ -n "$CONFLICTED" ]; then
+  bad "unresolved conflict markers committed in:"
+  for f in $CONFLICTED; do echo "      ${f#$ROOT/}"; done
+fi
+
 INPROGRESS="$(grep -l '"status": *"in_progress"' "$ROOT"/factory/state/run/*.json 2>/dev/null || true)"
 if [ -n "$INPROGRESS" ]; then
   warn "interrupted run(s) found — RESUME these before starting anything new:"

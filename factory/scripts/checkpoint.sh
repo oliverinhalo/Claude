@@ -11,6 +11,19 @@ NEXT="${4:-}"
 FILE="$ROOT/factory/state/run/$SLUG.json"
 NOW="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+# A checkpoint that does not parse is worse than none: the resume path reads it.
+# This happened for real — two writes in one run collided and the conflict
+# markers were committed.
+if [ -f "$FILE" ] && ! jq -e . "$FILE" >/dev/null 2>&1; then
+  echo "WARNING: $FILE is not valid JSON." >&2
+  if grep -qE '^(<<<<<<< |>>>>>>> |=======$)' "$FILE"; then
+    echo "         It contains git conflict markers — two writes collided." >&2
+  fi
+  mv "$FILE" "$FILE.corrupt"
+  echo "         Moved it to $FILE.corrupt and starting a fresh checkpoint." >&2
+  echo "         Read the .corrupt file before assuming the run made no progress." >&2
+fi
+
 if [ ! -f "$FILE" ]; then
   WEEK="$(( $(jq '.apps | length' "$ROOT/factory/state/ledger.json") + 1 ))"
   jq -n --arg s "$SLUG" --argjson w "$WEEK" --arg now "$NOW" \

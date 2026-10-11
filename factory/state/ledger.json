@@ -2,5 +2,21 @@
   "$schema": "./ledger.schema.json",
   "started": "2026-10-07",
   "target": 52,
-  "apps": []
+  "apps": [
+    {
+      "week": 1,
+      "slug": "trainyard",
+      "name": "Trainyard",
+      "category": "teaching-tool",
+      "sentence": "Trains an image classifier from your own webcam shots, entirely in the browser.",
+      "repo": "oliverinhalo/trainyard",
+      "url": "https://trainyard.pages.dev",
+      "host": "cloudflare-pages",
+      "shipped": "2026-10-11",
+      "score": 7,
+      "signature_detail": "Per-class confidence lamps that light as the live prediction shifts.",
+      "paid_tier_hypothesis": "More classes, more examples per class, and saved projects.",
+      "notes": "From approved idea #2. Audio deferred; the Embedder interface is the seam for it. Score provisional at 7 until tried on a real camera — the e2e fake camera shows one scene for both classes, so real-world accuracy is unverified."
+    }
+  ]
 }

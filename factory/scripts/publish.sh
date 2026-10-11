@@ -23,12 +23,18 @@ git add -A
 git diff --cached --quiet || git commit -m "release: $SLUG ready to publish"
 git push -f origin "HEAD:$BRANCH"
 
-echo "── dispatch $WORKFLOW"
-gh api -X POST "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
-  -f ref="$(git rev-parse --abbrev-ref HEAD)" \
-  -f "inputs[slug]=$SLUG" \
-  -f "inputs[branch]=$BRANCH"
-echo "dispatched."
+# The push above already triggers publish-app.yml (it listens on staging/**).
+# Dispatching is only a belt-and-braces for the manual case, and fails with 403
+# when running as the claude[bot] App token — which is fine, not a problem.
+echo "── publish triggered by the push to $BRANCH"
+if gh api -X POST "repos/$REPO/actions/workflows/$WORKFLOW/dispatches" \
+     -f ref="$(git rev-parse --abbrev-ref HEAD)" \
+     -f "inputs[slug]=$SLUG" \
+     -f "inputs[branch]=$BRANCH" >/dev/null 2>&1; then
+  echo "also dispatched explicitly."
+else
+  echo "explicit dispatch unavailable (expected as claude[bot]); the push trigger covers it."
+fi
 
 [ "$WATCH" = "--watch" ] || { echo "poll with: $0 $SLUG --watch"; exit 0; }
 

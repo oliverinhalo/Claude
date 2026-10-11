@@ -1,8 +1,31 @@
-# Trainyard — run report (NOT YET PUBLISHED)
+# Trainyard — run report
 
-**Status:** built, gate green (9/9), pushed to `staging/trainyard`. **Not live.** Publishing was blocked.
+**Status:** live at <https://trainyard.pages.dev>. Gate green (9/9), verified in a
+real browser — 200, its own title and description, renders, `h1` and `main`
+present, no failed requests, clean console, no overflow at 320px. Ledger updated,
+score 7/10.
 
-## Blocker (needs a human, or a workflow change)
+## Blocker — resolved
+
+The 403 was real and correctly diagnosed. Root cause: a run inside
+`run-factory.yml` authenticates as the `claude[bot]` App token, which cannot
+create a workflow dispatch regardless of the job's own `permissions:`. Declining
+to hunt for another credential was the right call.
+
+Fixed at the source rather than by handing the agent a broader token:
+`publish-app.yml` now also triggers on a push to `staging/**` and derives the slug
+from the branch name, so pushing the staging branch *is* the publish and needs no
+credential the agent lacks. `publish.sh` still attempts an explicit dispatch for
+the manual case and treats a 403 there as expected.
+
+Separately, this run committed `factory/state/run/trainyard.json` with unresolved
+git conflict markers — two of its own writes collided. The resume path reads that
+file, so a malformed one silently breaks recovery. `checkpoint.sh` now moves an
+unparseable checkpoint aside with a loud warning instead of failing obscurely, and
+`preflight.sh` reports both unparseable checkpoints and any committed conflict
+markers.
+
+### The blocker as originally reported
 `factory/scripts/publish.sh trainyard` pushed the staging branch, then the dispatch of `publish-app.yml`
 failed: `403 Resource not accessible by integration`. The session authenticates as the `claude[bot]`
 GitHub App token, which cannot create workflow dispatches, even though `run-factory.yml` grants
