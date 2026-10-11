@@ -4,8 +4,8 @@
   "description": "Teach your webcam to recognise things. Record examples, label them, and train an image classifier that never leaves your browser.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fbfbfa",
-  "theme_color": "#0b0d10",
+  "background_color": "#f8f5ee",
+  "theme_color": "#12100c",
   "icons": [
     {
       "src": "/favicon.svg",

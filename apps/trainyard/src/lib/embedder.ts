@@ -48,7 +48,9 @@ function loadScript(src: string): Promise<void> {
     el.onload = () => resolve();
     el.onerror = () => {
       el.remove();
-      reject(new Error(`Could not download ${new URL(src).pathname.split('/')[3] ?? 'a script'}.`));
+      reject(
+        new Error(`Could not download ${new URL(src).pathname.split('/')[3] ?? 'a script'}.`),
+      );
     };
     document.head.append(el);
   });

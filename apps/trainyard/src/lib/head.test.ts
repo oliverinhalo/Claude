@@ -37,15 +37,19 @@ describe('trainHead', () => {
     const losses: number[] = [];
     trainHead(clusters(), { epochs: 30, onEpoch: (_e, l) => losses.push(l) });
     expect(losses).toHaveLength(30);
-    expect(losses.at(-1)!).toBeLessThan(losses[0]!);
+    expect(losses.at(-1) ?? Infinity).toBeLessThan(losses[0] ?? 0);
   });
 
   it('still learns when one class has far fewer examples', () => {
     const set = clusters(30);
     const keep = set.y.map((k, i) => (k !== 2 || i % 6 === 0 ? i : -1)).filter((i) => i >= 0);
-    const small: TrainingSet = { x: keep.map((i) => set.x[i]!), y: keep.map((i) => set.y[i]!), classes: 3 };
+    const small: TrainingSet = {
+      x: keep.map((i) => set.x[i] ?? new Float32Array(16)),
+      y: keep.map((i) => set.y[i] ?? 0),
+      classes: 3,
+    };
     const { head } = trainHead(small);
-    expect(predict(head, set.x[set.y.lastIndexOf(2)]!)[0]!.index).toBe(2);
+    expect(predict(head, set.x[set.y.lastIndexOf(2)] ?? [])[0]?.index).toBe(2);
   });
 
   it('refuses an empty set', () => {
@@ -56,11 +60,11 @@ describe('trainHead', () => {
 describe('predict', () => {
   it('returns a descending probability distribution summing to 1', () => {
     const { head } = trainHead(clusters(), { epochs: 20 });
-    const out = predict(head, clusters().x[0]!);
+    const out = predict(head, clusters().x[0] ?? []);
     expect(out.reduce((n, p) => n + p.probability, 0)).toBeCloseTo(1, 6);
     expect(out.every((p) => p.probability >= 0)).toBe(true);
     for (let i = 1; i < out.length; i++) {
-      expect(out[i - 1]!.probability).toBeGreaterThanOrEqual(out[i]!.probability);
+      expect(out[i - 1]?.probability ?? 0).toBeGreaterThanOrEqual(out[i]?.probability ?? 1);
     }
   });
 

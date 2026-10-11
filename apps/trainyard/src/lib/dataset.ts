@@ -37,7 +37,13 @@ export function emptyDataset(): Dataset {
     { id: newId(), name: 'Class 1', samples: [] },
     { id: newId(), name: 'Class 2', samples: [] },
   ];
-  return { classes, selectedId: classes[0]!.id, head: null, trainedOn: 0, accuracy: null };
+  return {
+    classes,
+    selectedId: classes[0]?.id ?? '',
+    head: null,
+    trainedOn: 0,
+    accuracy: null,
+  };
 }
 
 export const totalSamples = (d: Dataset): number =>
@@ -64,7 +70,7 @@ export function encodeVector(v: Float32Array): string {
   const bytes = new Uint8Array(v.length + 4);
   new DataView(bytes.buffer).setFloat32(0, scale, true);
   for (let i = 0; i < v.length; i++) {
-    bytes[i + 4] = Math.round((v[i]! / scale) * 127) & 0xff;
+    bytes[i + 4] = Math.round(((v[i] ?? 0) / scale) * 127) & 0xff;
   }
   let bin = '';
   for (const b of bytes) bin += String.fromCharCode(b);
@@ -79,7 +85,7 @@ export function decodeVector(s: string): Float32Array {
   if (!Number.isFinite(scale) || scale <= 0) throw new Error('bad scale');
   const out = new Float32Array(bytes.length - 4);
   for (let i = 0; i < out.length; i++) {
-    const signed = (bytes[i + 4]! << 24) >> 24;
+    const signed = ((bytes[i + 4] ?? 0) << 24) >> 24;
     out[i] = (signed / 127) * scale;
   }
   return l2Normalise(out);
@@ -102,7 +108,11 @@ export interface SerialDataset {
 
 export function serialise(d: Dataset): SerialDataset {
   return {
-    classes: d.classes.map((c) => ({ id: c.id, name: c.name, samples: c.samples.map(encodeVector) })),
+    classes: d.classes.map((c) => ({
+      id: c.id,
+      name: c.name,
+      samples: c.samples.map(encodeVector),
+    })),
     selectedId: d.selectedId,
     head: d.head,
     trainedOn: d.trainedOn,
@@ -139,7 +149,8 @@ export function deserialise(value: unknown): Dataset | null {
   let dim: number | null = null;
   try {
     for (const raw of value.classes) {
-      if (!isObj(raw) || typeof raw.id !== 'string' || typeof raw.name !== 'string') return null;
+      if (!isObj(raw) || typeof raw.id !== 'string' || typeof raw.name !== 'string')
+        return null;
       if (!Array.isArray(raw.samples) || raw.samples.length > MAX_SAMPLES) return null;
       const samples = raw.samples.map((s) => {
         if (typeof s !== 'string') throw new Error('sample');
@@ -157,7 +168,7 @@ export function deserialise(value: unknown): Dataset | null {
   const selectedId =
     typeof value.selectedId === 'string' && classes.some((c) => c.id === value.selectedId)
       ? value.selectedId
-      : classes[0]!.id;
+      : (classes[0]?.id ?? '');
   let head: Head | null = null;
   if (value.head !== null && value.head !== undefined) {
     if (!isHead(value.head, classes.length) || (dim !== null && value.head.dim !== dim)) {
@@ -203,12 +214,16 @@ export function exportModel(d: Dataset): string {
 export type ImportResult = { ok: true; dataset: Dataset } | { ok: false; message: string };
 
 export function importModel(text: string): ImportResult {
-  if (text.length > 12_000_000) return { ok: false, message: 'That file is too large to be a Trainyard model.' };
+  if (text.length > 12_000_000)
+    return { ok: false, message: 'That file is too large to be a Trainyard model.' };
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch {
-    return { ok: false, message: 'That file is not valid JSON, so it cannot be a Trainyard model.' };
+    return {
+      ok: false,
+      message: 'That file is not valid JSON, so it cannot be a Trainyard model.',
+    };
   }
   if (!isObj(parsed) || parsed.kind !== FILE_KIND) {
     return { ok: false, message: 'That file was not exported from Trainyard.' };

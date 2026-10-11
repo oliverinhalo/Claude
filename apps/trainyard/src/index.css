@@ -81,3 +81,168 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---- Trainyard components ------------------------------------------------------ */
+
+.btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 0 var(--s-4);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--t-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-state) var(--ease-enter),
+    border-color var(--dur-state) var(--ease-enter),
+    transform var(--dur-state) var(--ease-enter);
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--text-faint);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--text);
+}
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+}
+.btn-sm {
+  min-height: 2.25rem;
+  padding: 0 var(--s-3);
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-sm);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* The signature: class lamps. Each class owns a colour that follows it from its
+ * card, to its thumbnails, to its confidence bar, like a signal on a rail line. */
+.lamp {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  flex: none;
+  border-radius: 999px;
+  background: var(--lamp);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--lamp) 25%, transparent);
+}
+
+/* Rail-track ruler along the top of the page: sleepers every 12px. */
+.track {
+  height: 6px;
+  background:
+    repeating-linear-gradient(90deg, var(--border-strong) 0 2px, transparent 2px 12px)
+      bottom/100% 6px no-repeat,
+    linear-gradient(var(--border-strong), var(--border-strong)) center/100% 2px no-repeat;
+}
+
+.video-frame {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+.video-frame video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.rec-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 4px var(--lamp, var(--accent));
+  animation: pulse 1s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes pulse {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.bar {
+  height: 0.625rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+}
+.bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--lamp);
+  transition: width var(--dur-move) var(--ease-enter);
+}
+
+.name-input {
+  min-width: 0;
+  flex: 1;
+  padding: var(--s-1) var(--s-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+}
+.name-input:hover {
+  border-color: var(--border);
+}
+.name-input:focus-visible {
+  background: var(--surface);
+}
+
+.thumbs {
+  display: flex;
+  gap: var(--s-1);
+  overflow: hidden;
+}
+.thumbs img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 4px;
+  object-fit: cover;
+  outline: 2px solid var(--lamp);
+  outline-offset: -2px;
+}

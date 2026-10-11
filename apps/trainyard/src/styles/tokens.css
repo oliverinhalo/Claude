@@ -8,27 +8,37 @@
 
 :root {
   /* Neutral ramp — hue-shifted, because pure grey reads cheap. */
-  --n-50: #fbfbfa;
-  --n-100: #f4f4f2;
-  --n-200: #e8e8e4;
-  --n-300: #d4d4ce;
-  --n-400: #a8a8a0;
-  --n-500: #6d6d64;
-  --n-600: #56564e;
-  --n-700: #3c3c36;
-  --n-800: #262622;
-  --n-900: #161614;
+  --n-50: #f8f5ee;
+  --n-100: #f0ece2;
+  --n-200: #e3ddcf;
+  --n-300: #cfc7b4;
+  --n-400: #a39b87;
+  --n-500: #6b6558;
+  --n-600: #534e43;
+  --n-700: #3b372f;
+  --n-800: #26231e;
+  --n-900: #17150f;
 
-  --accent-500: #3d6b4f;
-  --accent-600: #2f5540;
+  --accent-500: #c2511a;
+  --accent-600: #a8420f;
   --accent-contrast: #ffffff;
 
   --danger: #a4332b;
   --success: #2f6b46;
 
+  /* One lamp colour per class: fills and swatches only, never text. */
+  --k-0: #d9480f;
+  --k-1: #1c7ed6;
+  --k-2: #2f9e44;
+  --k-3: #ae3ec9;
+  --k-4: #e8a900;
+  --k-5: #0c8599;
+  --k-6: #d6336c;
+  --k-7: #5f3dc4;
+
   /* Semantic layer — this is what components use. */
   --surface: var(--n-50);
-  --surface-raised: #ffffff;
+  --surface-raised: #fffdf8;
   --surface-sunken: var(--n-100);
   --border: var(--n-200);
   --border-strong: var(--n-300);
@@ -65,8 +75,8 @@
   --radius-lg: 10px;
 
   /* Shadows are tinted, never pure black. */
-  --shadow-sm: 0 1px 2px rgb(22 22 20 / 0.06);
-  --shadow: 0 2px 8px -2px rgb(22 22 20 / 0.1), 0 1px 3px rgb(22 22 20 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(23 21 15 / 0.06);
+  --shadow: 0 2px 8px -2px rgb(23 21 15 / 0.1), 0 1px 3px rgb(23 21 15 / 0.06);
 
   --dur-state: 120ms;
   --dur-move: 200ms;
@@ -82,38 +92,38 @@
  * explicit choice. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --surface: #0b0d10;
-    --surface-raised: #15181d;
-    --surface-sunken: #080a0c;
-    --border: #252a31;
-    --border-strong: #353b44;
-    --text: #e9ecef;
-    --text-muted: #a0a8b3;
-    --text-faint: #7e828b;
-    --accent: #7fb79a;
-    --accent-text: #0b0d10;
-    --focus: #7fb79a;
+    --surface: #12100c;
+    --surface-raised: #1c1913;
+    --surface-sunken: #0d0b08;
+    --border: #2f2a20;
+    --border-strong: #433c2e;
+    --text: #f1ece0;
+    --text-muted: #b3ab99;
+    --text-faint: #948c78;
+    --accent: #f08a4b;
+    --accent-text: #12100c;
+    --focus: #f08a4b;
     --danger: #e08a82;
-    --success: #7fb79a;
+    --success: #7fc79a;
     --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow: 0 2px 10px -2px rgb(0 0 0 / 0.5);
   }
 }
 
 :root[data-theme='dark'] {
-  --surface: #0b0d10;
-  --surface-raised: #15181d;
-  --surface-sunken: #080a0c;
-  --border: #252a31;
-  --border-strong: #353b44;
-  --text: #e9ecef;
-  --text-muted: #a0a8b3;
-  --text-faint: #7e828b;
-  --accent: #7fb79a;
-  --accent-text: #0b0d10;
-  --focus: #7fb79a;
+  --surface: #12100c;
+  --surface-raised: #1c1913;
+  --surface-sunken: #0d0b08;
+  --border: #2f2a20;
+  --border-strong: #433c2e;
+  --text: #f1ece0;
+  --text-muted: #b3ab99;
+  --text-faint: #948c78;
+  --accent: #f08a4b;
+  --accent-text: #12100c;
+  --focus: #f08a4b;
   --danger: #e08a82;
-  --success: #7fb79a;
+  --success: #7fc79a;
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow: 0 2px 10px -2px rgb(0 0 0 / 0.5);
 }

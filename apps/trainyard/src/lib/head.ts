@@ -43,6 +43,9 @@ export interface Prediction {
   probability: number;
 }
 
+/** Index into a numeric array; a hole reads as 0 (never happens for in-range indexes). */
+const at = (a: ArrayLike<number>, i: number): number => a[i] ?? 0;
+
 /** Small deterministic PRNG (mulberry32) so training is reproducible. */
 function rng(seed: number): () => number {
   let a = seed >>> 0;
@@ -58,19 +61,19 @@ function rng(seed: number): () => number {
 export function l2Normalise(v: ArrayLike<number>): Float32Array {
   const out = new Float32Array(v.length);
   let sum = 0;
-  for (let i = 0; i < v.length; i++) sum += v[i]! * v[i]!;
+  for (let i = 0; i < v.length; i++) sum += at(v, i) ** 2;
   const norm = Math.sqrt(sum) || 1;
-  for (let i = 0; i < v.length; i++) out[i] = v[i]! / norm;
+  for (let i = 0; i < v.length; i++) out[i] = at(v, i) / norm;
   return out;
 }
 
 export function softmax(logits: ArrayLike<number>): number[] {
   let max = -Infinity;
-  for (let i = 0; i < logits.length; i++) max = Math.max(max, logits[i]!);
+  for (let i = 0; i < logits.length; i++) max = Math.max(max, at(logits, i));
   const exps: number[] = [];
   let sum = 0;
   for (let i = 0; i < logits.length; i++) {
-    const e = Math.exp(logits[i]! - max);
+    const e = Math.exp(at(logits, i) - max);
     exps.push(e);
     sum += e;
   }
@@ -79,14 +82,17 @@ export function softmax(logits: ArrayLike<number>): number[] {
 
 function logits(head: Omit<Head, 'labels'>, x: ArrayLike<number>): number[] {
   return head.weights.map((row, k) => {
-    let s = head.bias[k]!;
-    for (let i = 0; i < head.dim; i++) s += row[i]! * x[i]!;
+    let s = at(head.bias, k);
+    for (let i = 0; i < head.dim; i++) s += at(row, i) * at(x, i);
     return s;
   });
 }
 
 /** Class probabilities for one embedding, most likely first. */
-export function predict(head: Omit<Head, 'labels'>, embedding: ArrayLike<number>): Prediction[] {
+export function predict(
+  head: Omit<Head, 'labels'>,
+  embedding: ArrayLike<number>,
+): Prediction[] {
   const probs = softmax(logits(head, l2Normalise(embedding)));
   return probs
     .map((probability, index) => ({ index, probability }))
@@ -127,7 +133,7 @@ function* trainSteps(
   const { epochs = 200, learningRate = 4, l2 = 1e-4, seed = 1, onEpoch } = options;
   const n = set.x.length;
   if (n === 0) throw new Error('Nothing to train on.');
-  const dim = set.x[0]!.length;
+  const dim = set.x[0]?.length ?? 0;
   const K = set.classes;
   const random = rng(seed);
 
@@ -139,7 +145,7 @@ function* trainSteps(
   // Classes are rarely recorded in equal numbers; weight by inverse frequency so a
   // class with 150 frames does not drown one with 20.
   const counts = new Array<number>(K).fill(0);
-  for (const label of set.y) counts[label]!++;
+  for (const label of set.y) counts[label] = at(counts, label) + 1;
   const classWeight = counts.map((c) => (c === 0 ? 0 : n / (K * c)));
 
   let loss = 0;
@@ -148,26 +154,28 @@ function* trainSteps(
     const gB = new Float64Array(K);
     loss = 0;
     for (let s = 0; s < n; s++) {
-      const x = set.x[s]!;
-      const label = set.y[s]!;
-      const w = classWeight[label]!;
+      const x = set.x[s] ?? new Float32Array(dim);
+      const label = at(set.y, s);
+      const w = at(classWeight, label);
       const p = softmax(logits({ dim, weights, bias }, x));
-      loss -= w * Math.log(Math.max(p[label]!, 1e-12));
+      loss -= w * Math.log(Math.max(at(p, label), 1e-12));
       for (let k = 0; k < K; k++) {
-        const err = (p[k]! - (k === label ? 1 : 0)) * w;
-        gB[k]! += err;
-        const row = gW[k]!;
-        for (let i = 0; i < dim; i++) row[i]! += err * x[i]!;
+        const err = (at(p, k) - (k === label ? 1 : 0)) * w;
+        gB[k] = at(gB, k) + err;
+        const row = gW[k];
+        if (!row) continue;
+        for (let i = 0; i < dim; i++) row[i] = at(row, i) + err * at(x, i);
       }
     }
     loss /= n;
     // Plain gradient descent with a gentle decay: the problem is convex, so no tricks.
     const lr = learningRate / (1 + epoch / 150);
     for (let k = 0; k < K; k++) {
-      bias[k]! -= (lr * gB[k]!) / n;
-      const row = weights[k]!;
-      const g = gW[k]!;
-      for (let i = 0; i < dim; i++) row[i] = row[i]! - lr * (g[i]! / n + l2 * row[i]!);
+      bias[k] = at(bias, k) - (lr * at(gB, k)) / n;
+      const row = weights[k];
+      const g = gW[k];
+      if (!row || !g) continue;
+      for (let i = 0; i < dim; i++) row[i] = at(row, i) - lr * (at(g, i) / n + l2 * at(row, i));
     }
     onEpoch?.(epoch, loss);
     yield epoch;
@@ -181,7 +189,8 @@ export function accuracy(head: Omit<Head, 'labels'>, set: TrainingSet): number {
   if (set.x.length === 0) return 0;
   let right = 0;
   for (let s = 0; s < set.x.length; s++) {
-    if (predict(head, set.x[s]!)[0]!.index === set.y[s]) right++;
+    const x = set.x[s];
+    if (x && predict(head, x)[0]?.index === set.y[s]) right++;
   }
   return right / set.x.length;
 }
