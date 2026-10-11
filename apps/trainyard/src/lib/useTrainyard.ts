@@ -295,6 +295,12 @@ export function useTrainyard() {
 
   // ---- dataset edits ----
 
+  const freeClassName = (taken: string[]): string => {
+    let n = taken.length + 1;
+    while (taken.includes(`Class ${n}`)) n += 1;
+    return `Class ${n}`;
+  };
+
   const selectClass = (id: string) => {
     setRecording(false);
     setDataset((d) => ({ ...d, selectedId: id }));
@@ -316,7 +322,10 @@ export function useTrainyard() {
       const id = newId();
       return {
         ...d,
-        classes: [...d.classes, { id, name: `Class ${d.classes.length + 1}`, samples: [] }],
+        classes: [
+          ...d.classes,
+          { id, name: freeClassName(d.classes.map((c) => c.name)), samples: [] },
+        ],
         selectedId: id,
         head: null,
         accuracy: null,

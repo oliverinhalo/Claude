@@ -69,3 +69,8 @@ Check the dispatch permission first (at the start of the run) so a blocked publi
 
 ## Re-check, continue run 2026-10-11
 Re-ran the gate in a fresh container (9/9; needed `npx playwright install chromium` first). Dispatch still 403 — same cause. Still waiting on a manual Publish app run.
+
+## Continue run 2026-10-11 (later)
+Live URL re-checked: 200. Ledger entry already present. Fixed the QA leftover where adding a class after deleting one could
+duplicate a name (e.g. delete "Class 1", add → second "Class 2"); new names now take the first free "Class N". Gate 9/9.
+Not redeployed: the fix is on main only; pushing `staging/trainyard` would republish. No unit test added for it. Audio remains deferred.
