@@ -19,7 +19,7 @@ Work is saved in your browser. **Export** writes a model file you can keep or mo
 
 ## Why it exists
 
-Browser-based "teachable machine" demos are great but tie you to an account or a cloud. Trainyard is a no-account, installable-nowhere version you can use on a classroom laptop, and it works as a way to _see_ how few-shot learning works.
+Seeing a classifier learn is the fastest way to understand how machine learning works, but most tools hide the process behind a notebook, a server or an upload. Trainyard keeps it in one tab with nothing to install and nothing sent anywhere, so it is easy to use in a classroom or on a locked-down laptop.
 
 ## How it works
 
