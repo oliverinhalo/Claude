@@ -1,7 +1,7 @@
 {
   "name": "Trainyard",
   "short_name": "Trainyard",
-  "description": "Teach your webcam to recognise things. Record examples, label them, and train an image classifier that never leaves your browser.",
+  "description": "Record examples from your webcam, name them, and train an image classifier in seconds. Runs entirely in your browser: free, no account, nothing uploaded.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8f5ee",

@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Trainyard">
-  <!-- Phase 4 replaces this with the app's own mark. -->
-  <rect width="64" height="64" rx="14" fill="#2f5540" />
-  <path d="M18 40.5 32 20l14 20.5" fill="none" stroke="#f8f5ee" stroke-width="5"
-        stroke-linecap="round" stroke-linejoin="round" />
+  <rect width="64" height="64" rx="14" fill="#17150f" />
+  <path d="M8 44h48M8 52h48" stroke="#6b6558" stroke-width="3" stroke-linecap="round" />
+  <circle cx="18" cy="26" r="7" fill="#d9480f" />
+  <circle cx="32" cy="26" r="7" fill="#1c7ed6" />
+  <circle cx="46" cy="26" r="7" fill="#2f9e44" />
 </svg>

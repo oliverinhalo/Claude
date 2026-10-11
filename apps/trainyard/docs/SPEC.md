@@ -17,7 +17,7 @@ embedder can be added later without touching the dataset, the head or the UI.
 
 1. Open the page. Two empty classes are waiting, ready to be renamed.
 2. Press **Start camera** (the MobileNet feature extractor downloads once, with progress).
-3. Select a class and press **Record**; frames are captured about 8 per second until
+3. Select a class and press **Record**; frames are captured as fast as the device can embed them (about 4–8 per second) until
    Record is pressed again, or the class reaches 150 examples.
 4. Repeat for at least two classes. Add or remove classes freely (2–8).
 5. Press **Train**. A small softmax head trains on-device in a second or two; a loss line
@@ -71,14 +71,14 @@ Editing the dataset after training marks the model "out of date" but keeps predi
 
 ## The four states
 
-| State   | Behaviour |
-| ------- | --------- |
-| Empty   | Two named-by-you classes, a three-step "how this works" panel, Record disabled until the camera is on. |
+| State   | Behaviour                                                                                                                                                          |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Empty   | Two named-by-you classes, a three-step "how this works" panel, Record disabled until the camera is on.                                                             |
 | Error   | Camera denied/missing → plain explanation plus the Add-images path. Model download failure → retry button. Storage full → inline notice, work continues in memory. |
-| Slow    | Model download shows a determinate or indeterminate progress bar with size note (~5 MB, once). Training shows a live epoch counter. |
-| Offline | Everything except the first model download works; if the model is not cached the error state explains that it needs one online visit. |
+| Slow    | Model download shows a determinate or indeterminate progress bar with size note (~5 MB, once). Training shows a live epoch counter.                                |
+| Offline | Everything except the first model download works; if the model is not cached the error state explains that it needs one online visit.                              |
 
 ## The one thing that must be excellent
 
 The moment of Train → the live predictor snapping to the right label as you move an object
-in front of the camera. Confidence bars must feel immediate (≥ 8 predictions a second).
+in front of the camera. Confidence bars must feel immediate (as many predictions per second as the device can manage, ~8 on a laptop).
