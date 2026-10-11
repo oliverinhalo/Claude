@@ -142,12 +142,59 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Run the factory
+        id: claude
         if: steps.check.outputs.ready == 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: ${{ steps.prompt.outputs.text }}
-          claude_args: --max-turns 300
+          # Bash is DISABLED by default in this action. Without granting it the
+          # run ends in seconds with permission_denials and reports success —
+          # which is exactly what happened the first time. The pipeline runs npm,
+          # playwright, git, gh and its own scripts, so enumerating individual
+          # commands would just fail somewhere new each run; the runner is
+          # ephemeral and scoped to this repo, so the tool is granted whole.
+          claude_args: >-
+            --max-turns 300
+            --allowedTools Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch,TodoWrite
+
+      # A run that is blocked from acting still exits 0. Twice now that has looked
+      # like success and produced nothing, so check the evidence rather than the
+      # exit code.
+      - name: Check the run actually did something
+        if: steps.check.outputs.ready == 'true' && always()
+        run: |
+          set -uo pipefail
+          OUT="${RUNNER_TEMP}/claude-execution-output.json"
+          [ -f "$OUT" ] || { echo "::warning::No execution log at $OUT; cannot verify."; exit 0; }
+
+          read -r DENIALS TURNS ERR <<<"$(jq -rs '
+            (map(select(.type=="result")) | last) // {}
+            | "\(.permission_denials_count // 0) \(.num_turns // 0) \(.is_error // false)"
+          ' "$OUT" 2>/dev/null || echo "0 0 false")"
+
+          {
+            echo "### Claude run"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Turns | $TURNS |"
+            echo "| Permission denials | $DENIALS |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${DENIALS:-0}" -gt 0 ]; then
+            {
+              echo
+              echo "**Blocked.** Claude was denied $DENIALS tool call(s), so it could not do"
+              echo "the work. Grant the missing tool in \`claude_args --allowedTools\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Claude was denied $DENIALS tool call(s) — the run did nothing. See the summary."
+            exit 1
+          fi
+
+          if [ "${TURNS:-0}" -lt 15 ]; then
+            echo "::warning::Only $TURNS turns — short for a factory run. Check it did real work."
+          fi
 
       - name: Report where to look
         if: steps.check.outputs.ready == 'true' && always()
