@@ -39,6 +39,9 @@ permissions:
   issues: write
   actions: write
   pull-requests: write
+  # claude-code-action authenticates by exchanging a GitHub OIDC token. Without
+  # this it fails before doing anything: "Could not fetch an OIDC token."
+  id-token: write
 
 concurrency:
   group: factory-run
