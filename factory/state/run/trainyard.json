@@ -3,10 +3,16 @@
   "week": 1,
   "status": "in_progress",
   "started": "2026-10-11T10:45:45Z",
-  "updated": "2026-10-11T11:06:41Z",
+  "updated": "2026-10-11T11:07:48Z",
   "last_completed_phase": "gate",
-  "next_action": "Publish with publish.sh, verify live URL, then ledger, report, close issue #2",
-  "decisions": [],
-  "blockers": [],
+  "next_action": "App is built, gate passes, staging/trainyard is pushed. Dispatch publish-app.yml (slug=trainyard, branch=staging/trainyard) — the 403 below blocked the previous session. Then verify-live.mjs, ledger.sh add, report, close issue #2 with the URL.",
+  "decisions": [
+    "audio deferred; image classifier only",
+    "MobileNet v1 alpha 0.5 + TS softmax head; TF.js loaded from CDN at runtime to stay inside the 150kB budget",
+    "Lighthouse 99/100/100/100 locally"
+  ],
+  "blockers": [
+    "publish.sh dispatch returned 403 Resource not accessible by integration: the session token (claude[bot] app token) lacks actions:write, even though run-factory.yml grants it to the workflow token. A human must dispatch publish-app.yml, or the factory action must be given a token that can."
+  ],
   "live_url": null
 }
