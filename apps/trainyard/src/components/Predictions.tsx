@@ -35,7 +35,11 @@ export function Predictions({
           Start the camera to see live predictions.
         </p>
       )}
-      <ol className="mt-3 grid gap-3" aria-label="Predicted classes" aria-live="off">
+      <ol
+        className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-3"
+        aria-label="Predicted classes"
+        aria-live="off"
+      >
         {(predictions ?? head.labels.map((_, index) => ({ index, probability: 0 }))).map(
           (p, rank) => (
             <li key={p.index} style={{ ['--lamp' as string]: `var(--k-${p.index})` }}>

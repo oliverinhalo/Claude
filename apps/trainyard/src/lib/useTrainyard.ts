@@ -65,6 +65,7 @@ export function useTrainyard() {
   const [recording, setRecording] = useState(false);
   const [training, setTraining] = useState<{ epoch: number; epochs: number } | null>(null);
   const [predictions, setPredictions] = useState<Prediction[] | null>(null);
+  const [tested, setTested] = useState<{ name: string; thumb: string } | null>(null);
   const [thumbs, setThumbs] = useState<Record<string, string[]>>({});
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -84,6 +85,13 @@ export function useTrainyard() {
     }, 400);
     return () => clearTimeout(t);
   }, [dataset]);
+
+  // Closing or reloading the tab inside the debounce window must not lose the last edit.
+  useEffect(() => {
+    const flush = () => saveDataset(live.current.dataset);
+    window.addEventListener('pagehide', flush);
+    return () => window.removeEventListener('pagehide', flush);
+  }, []);
 
   const ensureEmbedder = useCallback(async (): Promise<Embedder | null> => {
     if (embedderRef.current) return embedderRef.current;
@@ -228,6 +236,26 @@ export function useTrainyard() {
     [ensureEmbedder, addSample],
   );
 
+  /** Classify one picture from disk, for people without a camera (or with a photo to hand). */
+  const testFile = useCallback(
+    async (file: File) => {
+      const head = live.current.dataset.head;
+      if (!head) return;
+      const embedder = await ensureEmbedder();
+      if (!embedder) return;
+      try {
+        const bitmap = await createImageBitmap(file);
+        const v = await embedder.embed(bitmap);
+        setTested({ name: file.name, thumb: thumbnail(bitmap) });
+        setPredictions(v.length === head.dim ? predict(head, v) : null);
+        bitmap.close();
+      } catch {
+        setNotice(`“${file.name}” is not an image the browser can read.`);
+      }
+    },
+    [ensureEmbedder],
+  );
+
   const train = useCallback(async () => {
     const d = live.current.dataset;
     if (trainBlocker(d) || training) return;
@@ -305,6 +333,7 @@ export function useTrainyard() {
   };
 
   const reset = () => {
+    setTested(null);
     setPredictions(null);
     setThumbs({});
     setRecording(false);
@@ -330,6 +359,7 @@ export function useTrainyard() {
       return;
     }
     setPredictions(null);
+    setTested(null);
     setThumbs({});
     setDataset(result.dataset);
     setNotice('Model imported.');
@@ -351,6 +381,8 @@ export function useTrainyard() {
     ensureEmbedder,
     toggleRecording,
     addFiles,
+    testFile,
+    tested,
     train,
     selectClass,
     renameClass,

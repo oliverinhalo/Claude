@@ -52,7 +52,7 @@ export function ClassCard({
           className={`btn btn-sm ${selected ? 'btn-primary' : ''}`}
           aria-pressed={selected}
           onClick={onSelect}
-          aria-label={`${selected ? 'Recording into' : 'Record into'} ${data.name}`}
+          aria-label={`${selected ? 'Selected:' : 'Select'} ${data.name}`}
         >
           {selected ? (recording ? 'Recording…' : 'Selected') : 'Select'}
         </button>

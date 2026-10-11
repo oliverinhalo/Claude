@@ -10,6 +10,7 @@ export function App() {
   const { dataset, camera, engine, recording, training } = t;
   const fileInput = useRef<HTMLInputElement>(null);
   const importInput = useRef<HTMLInputElement>(null);
+  const testInput = useRef<HTMLInputElement>(null);
 
   const selectedIndex = Math.max(
     0,
@@ -72,9 +73,9 @@ export function App() {
             </div>
           )}
 
-          <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_1fr]">
+          <div className="mt-8 grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             {/* ---- camera + examples ---- */}
-            <section aria-labelledby="camera-h" className="grid content-start gap-4">
+            <section aria-labelledby="camera-h" className="grid min-w-0 content-start gap-4">
               <h2 id="camera-h" className="eyebrow">
                 Camera
               </h2>
@@ -152,7 +153,7 @@ export function App() {
                   aria-label="Choose images to add to the selected class"
                   data-testid="image-input"
                   onChange={(e) => {
-                    if (e.target.files) void t.addFiles(e.target.files);
+                    if (e.target.files) void t.addFiles(Array.from(e.target.files));
                     e.target.value = '';
                   }}
                 />
@@ -164,7 +165,7 @@ export function App() {
             </section>
 
             {/* ---- classes ---- */}
-            <section aria-labelledby="classes-h" className="grid content-start gap-4">
+            <section aria-labelledby="classes-h" className="grid min-w-0 content-start gap-4">
               <div className="flex items-center justify-between">
                 <h2 id="classes-h" className="eyebrow">
                   Classes
@@ -178,7 +179,7 @@ export function App() {
                   Add class
                 </button>
               </div>
-              <ul className="grid gap-3">
+              <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
                 {dataset.classes.map((c, i) => (
                   <ClassCard
                     key={c.id}
@@ -245,6 +246,37 @@ export function App() {
                 />
               </div>
             </div>
+            {dataset.head && (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  className="btn btn-sm"
+                  disabled={engine.status === 'loading'}
+                  onClick={() => testInput.current?.click()}
+                >
+                  Test with an image…
+                </button>
+                {t.tested && (
+                  <span className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+                    <img src={t.tested.thumb} alt="" className="h-8 w-8 rounded" />
+                    Showing the result for {t.tested.name}
+                  </span>
+                )}
+                <input
+                  ref={testInput}
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  aria-label="Choose an image to classify"
+                  data-testid="test-input"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) void t.testFile(f);
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+            )}
             {blocker && <p className="mt-3 text-sm text-[var(--text-muted)]">{blocker}</p>}
             <div className="mt-4" aria-live="polite">
               <Predictions dataset={dataset} predictions={t.predictions} cameraOn={cameraOn} />
