@@ -43,3 +43,6 @@ Provisional **7/10** until it is live and tried on a real camera.
 
 ## One thing I'd do differently
 Check the dispatch permission first (at the start of the run) so a blocked publish is known before the build, not after.
+
+## Re-check, continue run 2026-10-11
+Re-ran the gate in a fresh container (9/9; needed `npx playwright install chromium` first). Dispatch still 403 — same cause. Still waiting on a manual Publish app run.
