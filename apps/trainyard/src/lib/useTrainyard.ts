@@ -195,12 +195,16 @@ export function useTrainyard() {
         videoRef.current.srcObject = stream;
         await videoRef.current.play().catch(() => undefined);
       }
-      if (embedder) setCamera({ status: 'on' });
-      else setCamera({ status: 'off' });
+      if (embedder) {
+        setCamera({ status: 'on' });
+      } else {
+        // No model, so nothing to do with the picture: release the camera, light and all.
+        stopCamera();
+      }
     } else {
       setCamera({ status: 'error', message: cameraMessage(stream) });
     }
-  }, [ensureEmbedder]);
+  }, [ensureEmbedder, stopCamera]);
 
   const toggleRecording = useCallback(() => setRecording((r) => !r), []);
 
@@ -264,12 +268,20 @@ export function useTrainyard() {
     const x = usable.flatMap(({ c }) => c.samples);
     const y = usable.flatMap(({ c, k }) => c.samples.map(() => k));
     const epochs = 200;
+    const classIds = d.classes.map((c) => c.id).join();
     setTraining({ epoch: 0, epochs });
     try {
       const result = await trainHeadAsync(
         { x, y, classes: d.classes.length },
         { epochs, onEpoch: (epoch) => epoch % 5 === 0 && setTraining({ epoch, epochs }) },
       );
+      if (live.current.dataset.classes.map((c) => c.id).join() !== classIds) {
+        // Classes were added or removed mid-training; the result no longer fits them.
+        setNotice(
+          'The classes changed while training, so that result was discarded. Train again.',
+        );
+        return;
+      }
       setDataset((cur) => ({
         ...cur,
         head: { ...result.head, labels: cur.classes.map((c) => c.name) },
@@ -283,7 +295,10 @@ export function useTrainyard() {
 
   // ---- dataset edits ----
 
-  const selectClass = (id: string) => setDataset((d) => ({ ...d, selectedId: id }));
+  const selectClass = (id: string) => {
+    setRecording(false);
+    setDataset((d) => ({ ...d, selectedId: id }));
+  };
 
   const renameClass = (id: string, name: string) =>
     setDataset((d) => ({
@@ -294,7 +309,8 @@ export function useTrainyard() {
         : null,
     }));
 
-  const addClass = () =>
+  const addClass = () => {
+    setRecording(false);
     setDataset((d) => {
       if (d.classes.length >= MAX_CLASSES) return d;
       const id = newId();
@@ -307,8 +323,10 @@ export function useTrainyard() {
         trainedOn: 0,
       };
     });
+  };
 
   const removeClass = (id: string) => {
+    setRecording(false);
     setPredictions(null);
     setDataset((d) => {
       if (d.classes.length <= MIN_CLASSES) return d;

@@ -67,7 +67,7 @@ Persisted: key "trainyard:state", versioned envelope (src/lib/storage.ts).
 
 Absent or corrupt → two empty classes, no head, and a one-line notice when data was
 recovered. A stored head is discarded if its dim/labels no longer match the dataset.
-Editing the dataset after training marks the model "out of date" but keeps predicting.
+Adding or clearing examples after training marks the model "out of date" but keeps predicting. Adding or removing a class discards the model (its outputs are per-class), as does a class change while training.
 
 ## The four states
 

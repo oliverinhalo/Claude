@@ -216,7 +216,7 @@ body {
 }
 
 .name-input {
-  min-width: 0;
+  min-width: 10ch;
   flex: 1;
   padding: var(--s-1) var(--s-2);
   border: 1px solid transparent;
@@ -235,6 +235,7 @@ body {
 
 .thumbs {
   display: flex;
+  min-width: 0;
   gap: var(--s-1);
   overflow: hidden;
 }

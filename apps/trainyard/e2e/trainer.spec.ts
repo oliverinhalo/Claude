@@ -140,6 +140,20 @@ test.describe('the core loop', () => {
     await expect(page.getByRole('progressbar', { name: 'Blue' })).toBeVisible();
   });
 
+  test('adding a class discards a model that no longer fits it', async ({ page }) => {
+    await page.goto('/');
+    await pick(page, 'image-input', '#d03020', 5);
+    await page
+      .getByRole('button', { name: /^Select / })
+      .first()
+      .click();
+    await pick(page, 'image-input', '#2040d0', 5);
+    await page.getByRole('button', { name: 'Train', exact: true }).click();
+    await expect(page.getByText(/right on its own training set/)).toBeVisible();
+    await page.getByRole('button', { name: 'Add class' }).click();
+    await expect(page.getByText(/Nothing is trained yet/)).toBeVisible();
+  });
+
   test('rejects a bad model file and changes nothing', async ({ page }) => {
     await page.goto('/');
     await page.getByLabel('Name of class 1').fill('Keep me');
@@ -171,9 +185,7 @@ test.describe('the core loop', () => {
     await page.keyboard.press('Tab');
     await expect(page.getByRole('button', { name: /^Selected: Mug/ })).toBeFocused();
     await page.keyboard.press('Tab');
-    await expect(
-      page.getByRole('button', { name: /Delete all examples in Mug/ }),
-    ).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Clear examples in Mug/ })).toBeDisabled();
   });
 });
 

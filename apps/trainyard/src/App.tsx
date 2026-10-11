@@ -287,7 +287,7 @@ export function App() {
             <p className="mt-6 text-sm">
               <button
                 type="button"
-                className="btn btn-quiet btn-sm"
+                className="btn btn-quiet btn-sm -ml-3"
                 onClick={() => {
                   if (window.confirm('Delete every class, example and the trained model?'))
                     t.reset();

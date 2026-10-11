@@ -37,7 +37,7 @@ export function ClassCard({
       }}
       data-testid="class-card"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="lamp" aria-hidden="true" />
         <input
           className="name-input"
@@ -78,7 +78,7 @@ export function ClassCard({
           className="btn btn-quiet btn-sm"
           disabled={n === 0}
           onClick={onClear}
-          aria-label={`Delete all examples in ${data.name}`}
+          aria-label={`Clear examples in ${data.name}`}
         >
           Clear examples
         </button>
