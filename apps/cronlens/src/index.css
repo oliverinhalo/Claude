@@ -450,3 +450,9 @@ body {
   color: var(--text-muted);
   text-underline-offset: 2px;
 }
+.how p {
+  margin: 0 0 var(--s-4);
+}
+.strip {
+  padding-bottom: 0;
+}
