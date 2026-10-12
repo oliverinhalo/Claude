@@ -244,7 +244,12 @@ export function App() {
                     like 31 February never happens.
                   </p>
                 ) : (
-                  <div className="table-wrap">
+                  <div
+                    className="table-wrap"
+                    tabIndex={0}
+                    role="region"
+                    aria-label="Next runs, scrollable"
+                  >
                     <table className="runs">
                       <thead>
                         <tr>
