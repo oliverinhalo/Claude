@@ -29,6 +29,8 @@ describe('describeSchedule', () => {
   });
 
   it('falls back to a compact form for busy schedules', () => {
-    expect(d('0,10,20,30 9-17 * * *')).toBe('At minute 0, 10, 20 and 30 past hour 9 to 17, every day');
+    expect(d('0,10,20,30 9-17 * * *')).toBe(
+      'At minute 0, 10, 20 and 30 past hour 9 to 17, every day',
+    );
   });
 });

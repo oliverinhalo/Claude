@@ -11,7 +11,10 @@ describe('share', () => {
     expect(state).toEqual({ expr: '0 0 * * *', zone: 'Asia/Tokyo' });
   });
   it('falls back on an unknown zone and says so', () => {
-    const { state, notice } = initialState('#z=Mars/Olympus', { expr: '1 1 * * *', zone: 'UTC' });
+    const { state, notice } = initialState('#z=Mars/Olympus', {
+      expr: '1 1 * * *',
+      zone: 'UTC',
+    });
     expect(state.zone).toBe('UTC');
     expect(notice).toContain('Mars/Olympus');
   });

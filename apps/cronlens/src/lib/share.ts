@@ -40,7 +40,10 @@ export function buildHash(state: State): string {
 }
 
 /** Resolve the starting state: link beats stored beats the example. */
-export function initialState(hash: string, stored: State): { state: State; notice: string | null } {
+export function initialState(
+  hash: string,
+  stored: State,
+): { state: State; notice: string | null } {
   const h = readHash(hash);
   const state: State = {
     expr: h.expr ?? stored.expr,

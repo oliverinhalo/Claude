@@ -113,8 +113,22 @@ export function clockChanges(zone: string, start: number, end: number): ClockCha
       if (after !== before) {
         out.push(
           after > before
-            ? { at, offsetBefore: before, offsetAfter: after, from: at + before, to: at + after, kind: 'skipped' }
-            : { at, offsetBefore: before, offsetAfter: after, from: at + after, to: at + before, kind: 'doubled' },
+            ? {
+                at,
+                offsetBefore: before,
+                offsetAfter: after,
+                from: at + before,
+                to: at + after,
+                kind: 'skipped',
+              }
+            : {
+                at,
+                offsetBefore: before,
+                offsetAfter: after,
+                from: at + after,
+                to: at + before,
+                kind: 'doubled',
+              },
         );
       }
     }
@@ -143,6 +157,18 @@ export function browserZone(): string {
   }
 }
 
+const MODERN_NAMES: Record<string, string> = {
+  'Asia/Calcutta': 'Asia/Kolkata',
+  'Asia/Katmandu': 'Asia/Kathmandu',
+  'Asia/Rangoon': 'Asia/Yangon',
+  'Asia/Saigon': 'Asia/Ho_Chi_Minh',
+  'Europe/Kiev': 'Europe/Kyiv',
+  'America/Godthab': 'America/Nuuk',
+  'Atlantic/Faeroe': 'Atlantic/Faroe',
+  'Pacific/Ponape': 'Pacific/Pohnpei',
+  'Pacific/Truk': 'Pacific/Chuuk',
+};
+
 export function allZones(): string[] {
   const intl = Intl as typeof Intl & { supportedValuesOf?: (key: string) => string[] };
   let zones: string[] = [];
@@ -151,6 +177,13 @@ export function allZones(): string[] {
   } catch {
     zones = [];
   }
+  // Engines list legacy canonical ids (Asia/Calcutta); people type the modern ones.
+  zones = zones.map((z) => {
+    const modern = MODERN_NAMES[z];
+    return modern && isValidZone(modern) ? modern : z;
+  });
   if (!zones.includes('UTC')) zones = ['UTC', ...zones];
-  return zones;
+  return [...new Set(zones)].sort((a, b) =>
+    a === 'UTC' ? -1 : b === 'UTC' ? 1 : a.localeCompare(b),
+  );
 }

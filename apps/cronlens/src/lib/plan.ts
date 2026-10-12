@@ -22,7 +22,8 @@ export function nextRuns(schedule: Schedule, zone: string, now: number, count: n
   for (let i = 0; i < MAX_SEARCH_DAYS && runs.length < count; i++) {
     const dayWall = startDay + i * DAY;
     const d = new Date(dayWall);
-    if (!dayMatches(schedule, d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate())) continue;
+    if (!dayMatches(schedule, d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()))
+      continue;
     const today: Run[] = [];
     for (const t of times) {
       const wall = dayWall + t * MINUTE;
@@ -86,7 +87,9 @@ export function analyse(expr: string, zone: string, now: number): AnalyseResult 
   const parsed = parseCron(expr);
   if (!parsed.ok) return { ok: false, error: parsed.error };
   const { schedule } = parsed;
-  const changes = clockChanges(zone, now, now + WINDOW_DAYS * DAY).map((c) => report(schedule, c));
+  const changes = clockChanges(zone, now, now + WINDOW_DAYS * DAY).map((c) =>
+    report(schedule, c),
+  );
   const runs = nextRuns(schedule, zone, now, 10);
   return {
     ok: true,

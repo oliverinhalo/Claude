@@ -20,7 +20,20 @@ const FIELDS: readonly FieldSpec[] = [
   { name: 'day of week', min: 0, max: 7 },
 ];
 
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const MONTHS = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+];
 const WEEKDAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 const MACROS: Record<string, string> = {
@@ -81,8 +94,9 @@ function parseField(text: string, spec: FieldSpec): number[] | string {
   const out = new Set<number>();
   for (const part of text.split(',')) {
     if (part === '') return `The ${spec.name} field has an empty item (a stray comma).`;
-    const [range, stepText, extra] = part.split('/');
-    if (extra !== undefined) return `"${part}" has more than one step in the ${spec.name} field.`;
+    const [range = '', stepText, extra] = part.split('/');
+    if (extra !== undefined)
+      return `"${part}" has more than one step in the ${spec.name} field.`;
     let step = 1;
     if (stepText !== undefined) {
       if (!/^\d+$/.test(stepText) || Number(stepText) < 1) {
@@ -95,8 +109,8 @@ function parseField(text: string, spec: FieldSpec): number[] | string {
     if (range === '*') {
       lo = spec.min;
       hi = spec.name === 'day of week' ? 6 : spec.max;
-    } else if (range!.includes('-')) {
-      const [a, b, more] = range!.split('-');
+    } else if (range.includes('-')) {
+      const [a, b, more] = range.split('-');
       if (more !== undefined || a === undefined || b === undefined) {
         return `"${range}" is not a valid range in the ${spec.name} field.`;
       }
@@ -104,16 +118,18 @@ function parseField(text: string, spec: FieldSpec): number[] | string {
       const y = parseNumber(b, spec);
       if (typeof x === 'string') return x;
       if (typeof y === 'string') return y;
-      if (x > y) return `"${range}" runs backwards. Write it as two ranges, for example 22-23,0-6.`;
+      if (x > y)
+        return `"${range}" runs backwards. Write it as two ranges, for example 22-23,0-6.`;
       lo = x;
       hi = y;
     } else {
-      const x = parseNumber(range!, spec);
+      const x = parseNumber(range, spec);
       if (typeof x === 'string') return x;
       lo = x;
       hi = stepText !== undefined ? (spec.name === 'day of week' ? 6 : spec.max) : x;
     }
-    for (let v = lo; v <= hi; v += step) out.add(spec.name === 'day of week' && v === 7 ? 0 : v);
+    for (let v = lo; v <= hi; v += step)
+      out.add(spec.name === 'day of week' && v === 7 ? 0 : v);
   }
   return [...out].sort((a, b) => a - b);
 }
@@ -141,28 +157,30 @@ export function parseCron(input: string): ParseResult {
     );
   }
   if (parts.length !== 5) {
-    return fail(`That has ${parts.length} fields; crontab needs five: minute hour day-of-month month day-of-week.`);
+    return fail(
+      `That has ${parts.length} fields; crontab needs five: minute hour day-of-month month day-of-week.`,
+    );
   }
 
   const parsed: number[][] = [];
-  for (let i = 0; i < 5; i++) {
-    const spec = FIELDS[i]!;
-    const result = parseField(parts[i]!, spec);
+  for (const [i, spec] of FIELDS.entries()) {
+    const result = parseField(parts[i] ?? '', spec);
     if (typeof result === 'string') return fail(result);
     parsed.push(result);
   }
+  const [minutes = [], hours = [], doms = [], months = [], dows = []] = parsed;
 
   return {
     ok: true,
     schedule: {
       source: input.trim().replace(/\s+/g, ' '),
-      minutes: parsed[0]!,
-      hours: parsed[1]!,
-      doms: parsed[2]!,
-      months: parsed[3]!,
-      dows: parsed[4]!,
-      domStar: parts[2]!.startsWith('*'),
-      dowStar: parts[4]!.startsWith('*'),
+      minutes,
+      hours,
+      doms,
+      months,
+      dows,
+      domStar: (parts[2] ?? '').startsWith('*'),
+      dowStar: (parts[4] ?? '').startsWith('*'),
     },
   };
 }

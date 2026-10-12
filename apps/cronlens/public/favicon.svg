@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Cronlens">
-  <!-- Phase 4 replaces this with the app's own mark. -->
-  <rect width="64" height="64" rx="14" fill="#2f5540" />
-  <path d="M18 40.5 32 20l14 20.5" fill="none" stroke="#fbfbfa" stroke-width="5"
-        stroke-linecap="round" stroke-linejoin="round" />
+  <rect width="64" height="64" fill="#16140f"/>
+  <rect x="8" y="26" width="48" height="12" fill="none" stroke="#e3a94a" stroke-width="3"/>
+  <path d="M24 26v12M40 26v12" stroke="#e3a94a" stroke-width="3"/>
+  <path d="M26 38l8-12M34 38l8-12" stroke="#e3a94a" stroke-width="2"/>
+  <rect x="8" y="44" width="48" height="4" fill="#e3a94a"/>
 </svg>

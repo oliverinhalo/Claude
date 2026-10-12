@@ -4,8 +4,8 @@
   "description": "See what a cron schedule really does on the day the clocks change.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fbfbfa",
-  "theme_color": "#0b0d10",
+  "background_color": "#f7f4ec",
+  "theme_color": "#0f0e0b",
   "icons": [
     {
       "src": "/favicon.svg",

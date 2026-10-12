@@ -49,12 +49,12 @@
 
 ## The four states
 
-| State   | Behaviour                                                                                                                                       |
-| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Empty   | Never empty on first load: the example is analysed. If the user clears the field, a one-line hint with example chips replaces the results.       |
-| Error   | Inline message under the input, naming field and legal range; the previous valid results are removed (they would describe the wrong schedule). |
+| State   | Behaviour                                                                                                                                                         |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Empty   | Never empty on first load: the example is analysed. If the user clears the field, a one-line hint with example chips replaces the results.                        |
+| Error   | Inline message under the input, naming field and legal range; the previous valid results are removed (they would describe the wrong schedule).                    |
 | Slow    | Analysis is synchronous and bounded (≤ 8 years of days, ≤ 2 000 minute checks per transition). A pathologically rare schedule shows "no run in the next 8 years". |
-| Offline | Nothing calls the network; no service worker (out of scope). A footer note says analysis runs locally. Reloading with no connection is not promised.                                               |
+| Offline | Nothing calls the network; no service worker (out of scope). A footer note says analysis runs locally. Reloading with no connection is not promised.              |
 
 ## The one thing that must be excellent
 
