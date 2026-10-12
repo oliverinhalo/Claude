@@ -17,6 +17,21 @@
       "signature_detail": "Per-class confidence lamps that light as the live prediction shifts.",
       "paid_tier_hypothesis": "More classes, more examples per class, and saved projects.",
       "notes": "From approved idea #2. Audio deferred; the Embedder interface is the seam for it. Score provisional at 7 until tried on a real camera — the e2e fake camera shows one scene for both classes, so real-world accuracy is unverified."
+    },
+    {
+      "week": 2,
+      "slug": "cronlens",
+      "name": "Cronlens",
+      "category": "developer-tool",
+      "sentence": "Shows which cron runs a daylight-saving change skips or repeats, for a given expression and time zone.",
+      "repo": "oliverinhalo/cronlens",
+      "url": "https://cronlens.pages.dev",
+      "host": "cloudflare-pages",
+      "shipped": "2026-10-12",
+      "score": 7,
+      "signature_detail": "A 24-hour strip per clock change with the missing or doubled hour hatched and runs plotted on it.",
+      "paid_tier_hypothesis": "Check many crontabs at once, import a crontab file, and scheduler-specific behaviour notes.",
+      "notes": "Own idea, not from the inbox. Lighthouse not measured this run. Scheduler-specific behaviour deliberately not claimed."
     }
   ]
 }
