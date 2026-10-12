@@ -39,7 +39,7 @@
 11. After load, zero network requests occur (asserted in e2e by failing all requests); the core loop still works.
 12. `analyse` takes `now` as a parameter; all date-dependent tests inject it. Criterion 1 is asserted with `now` fixed at 2025-01-01 and at 2025-06-01.
 13. The verdict sentence states the integer count of clock changes in the next 12 months that skip or double at least one run, and says `none` when 0 (asserted for the NY example and `Asia/Kolkata`).
-14. Each clock-change strip has 24 hour cells for the change day; the missing/doubled hour carries `data-kind="skipped|doubled"` and each run renders a mark with a time label. Also exposed as text for screen readers.
+14. Each clock-change strip is a 24-hour track with hour ticks; the missing/doubled hour carries `data-kind="skipped|doubled"` and each run renders a mark (hazard marks `data-hit="true"`). The same facts are stated in text for screen readers.
 
 ## Data model
 

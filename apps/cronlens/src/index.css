@@ -198,6 +198,7 @@ body {
   font-size: var(--t-sm);
   color: var(--text-faint);
   min-height: 1.3em;
+  overflow-wrap: anywhere;
 }
 .note-error {
   color: var(--danger);

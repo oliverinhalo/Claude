@@ -3,9 +3,9 @@
   "week": 2,
   "status": "in_progress",
   "started": "2026-10-12T17:01:05Z",
-  "updated": "2026-10-12T17:11:35Z",
-  "last_completed_phase": "gate",
-  "next_action": "Gate green. Polish: view screenshots, OG image, README, QA agent, then publish.sh cronlens",
+  "updated": "2026-10-12T17:14:44Z",
+  "last_completed_phase": "publish",
+  "next_action": "Run factory/scripts/publish.sh cronlens --watch, verify live URL, then ledger/report",
   "decisions": [],
   "blockers": [],
   "live_url": null

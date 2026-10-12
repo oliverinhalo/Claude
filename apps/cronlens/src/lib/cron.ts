@@ -67,6 +67,8 @@ export type ParseResult = { ok: true; schedule: Schedule } | { ok: false; error:
 
 const fail = (error: string): ParseResult => ({ ok: false, error });
 
+const clip = (t: string) => (t.length > 16 ? `${t.slice(0, 16)}…` : t);
+
 function parseNumber(token: string, spec: FieldSpec): number | string {
   const upper = token.toUpperCase();
   if (spec.name === 'month') {
@@ -79,13 +81,13 @@ function parseNumber(token: string, spec: FieldSpec): number | string {
   }
   if (!/^\d+$/.test(token)) {
     if (/[LW#?]/i.test(token) && !/^[A-Z]{3}$/i.test(token)) {
-      return `"${token}" is Quartz syntax. Cronlens reads standard five-field crontab, which has no L, W, # or ?.`;
+      return `"${clip(token)}" is Quartz syntax. Cronlens reads standard five-field crontab, which has no L, W, # or ?.`;
     }
-    return `"${token}" is not a number in the ${spec.name} field.`;
+    return `"${clip(token)}" is not a number in the ${spec.name} field.`;
   }
   const n = Number(token);
   if (n < spec.min || n > spec.max) {
-    return `${token} is outside the ${spec.name} range ${spec.min}–${spec.max}.`;
+    return `${clip(token)} is outside the ${spec.name} range ${spec.min}–${spec.max}.`;
   }
   return n;
 }
@@ -96,11 +98,11 @@ function parseField(text: string, spec: FieldSpec): number[] | string {
     if (part === '') return `The ${spec.name} field has an empty item (a stray comma).`;
     const [range = '', stepText, extra] = part.split('/');
     if (extra !== undefined)
-      return `"${part}" has more than one step in the ${spec.name} field.`;
+      return `"${clip(part)}" has more than one step in the ${spec.name} field.`;
     let step = 1;
     if (stepText !== undefined) {
       if (!/^\d+$/.test(stepText) || Number(stepText) < 1) {
-        return `The step in "${part}" must be a whole number of at least 1.`;
+        return `The step in "${clip(part)}" must be a whole number of at least 1.`;
       }
       step = Number(stepText);
     }
@@ -112,14 +114,14 @@ function parseField(text: string, spec: FieldSpec): number[] | string {
     } else if (range.includes('-')) {
       const [a, b, more] = range.split('-');
       if (more !== undefined || a === undefined || b === undefined) {
-        return `"${range}" is not a valid range in the ${spec.name} field.`;
+        return `"${clip(range)}" is not a valid range in the ${spec.name} field.`;
       }
       const x = parseNumber(a, spec);
       const y = parseNumber(b, spec);
       if (typeof x === 'string') return x;
       if (typeof y === 'string') return y;
       if (x > y)
-        return `"${range}" runs backwards. Write it as two ranges, for example 22-23,0-6.`;
+        return `"${clip(range)}" runs backwards. Write it as two ranges, for example 22-23,0-6.`;
       lo = x;
       hi = y;
     } else {
@@ -144,7 +146,7 @@ export function parseCron(input: string): ParseResult {
       return fail(
         text.toLowerCase() === '@reboot'
           ? '@reboot runs once at boot, so there is no clock to check.'
-          : `${text} is not a macro Cronlens knows. Try @hourly, @daily, @weekly, @monthly or @yearly.`,
+          : `${clip(text)} is not a macro Cronlens knows. Try @hourly, @daily, @weekly, @monthly or @yearly.`,
       );
     }
     text = macro;
@@ -158,7 +160,7 @@ export function parseCron(input: string): ParseResult {
   }
   if (parts.length !== 5) {
     return fail(
-      `That has ${parts.length} fields; crontab needs five: minute hour day-of-month month day-of-week.`,
+      `That has ${parts.length} ${parts.length === 1 ? 'field' : 'fields'}; crontab needs five: minute hour day-of-month month day-of-week.`,
     );
   }
 

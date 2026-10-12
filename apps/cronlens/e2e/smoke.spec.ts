@@ -89,6 +89,28 @@ test.describe('smoke', () => {
   });
 });
 
+test.describe('hostile input', () => {
+  test('a 50,000-character paste does not break the layout at 320px', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/');
+    await page.getByLabel('Cron expression').fill(`${'9'.repeat(50_000)} * * * *`);
+    await expect(page.getByLabel('Cron expression')).toHaveAttribute('aria-invalid', 'true');
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test('changing the hash in the same tab updates the page', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => {
+      window.location.hash = '#c=5+5+*+*+*&z=Europe/Paris';
+    });
+    await expect(page.getByLabel('Cron expression')).toHaveValue('5 5 * * *');
+    await expect(page.getByLabel('Time zone')).toHaveValue('Europe/Paris');
+  });
+});
+
 test.describe('accessibility', () => {
   for (const theme of ['light', 'dark'] as const) {
     for (const hash of ['', '#c=61+*+*+*+*&z=UTC']) {

@@ -26,3 +26,14 @@ describe('share', () => {
     expect(readHash(`#c=${'9'.repeat(500)}`).expr).toBeUndefined();
   });
 });
+
+describe('unknown zone in a link', () => {
+  it('uses the browser zone, not the stored one', () => {
+    const { state } = initialState('#z=Bad%2FZone', {
+      expr: '1 1 * * *',
+      zone: 'Pacific/Auckland',
+    });
+    expect(state.zone).not.toBe('Pacific/Auckland');
+    expect(state.zone).not.toBe('Bad/Zone');
+  });
+});

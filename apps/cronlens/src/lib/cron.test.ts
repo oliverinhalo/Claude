@@ -86,3 +86,12 @@ describe('day matching', () => {
     expect(wallMatches(s, Date.UTC(2025, 2, 9, 2, 31))).toBe(false);
   });
 });
+
+describe('error text', () => {
+  it('clips echoed tokens so a huge paste cannot blow up the layout', () => {
+    expect((err(`${'9'.repeat(50_000)} * * * *`) ?? '').length).toBeLessThan(200);
+  });
+  it('uses the singular for one field', () => {
+    expect(err('*')).toMatch(/1 field;/);
+  });
+});

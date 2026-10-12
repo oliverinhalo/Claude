@@ -108,6 +108,17 @@ export function App() {
     window.history.replaceState(null, '', buildHash({ expr, zone }));
   }, [result.ok, expr, zone]);
 
+  useEffect(() => {
+    const onHash = () => {
+      const next = initialState(window.location.hash, { expr, zone });
+      setExpr(next.state.expr);
+      setZone(next.state.zone);
+      setNotice(next.notice);
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, [expr, zone]);
+
   const zoneOptions = zones.includes(zone) ? zones : [zone, ...zones];
 
   async function copyLink() {
@@ -236,7 +247,7 @@ export function App() {
 
               <section aria-labelledby="runs">
                 <h2 id="runs" className="h2">
-                  Next {analysis.runs.length === 10 ? 'ten' : analysis.runs.length} runs
+                  {analysis.runs.length === 10 ? 'Next ten runs' : 'Upcoming runs'}
                 </h2>
                 {analysis.neverRuns ? (
                   <p className="empty">

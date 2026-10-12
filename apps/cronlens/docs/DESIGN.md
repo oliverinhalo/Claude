@@ -6,7 +6,7 @@
 
 ## Type
 
-- Display and UI: **Instrument Sans**-like feel is not available offline, so the app uses a system humanist stack for UI text and a mono stack for expressions and times. No third-party font request (privacy, offline, LCP). The identity comes from scale, weight, and the mono-first treatment of everything that is a time.
+- UI and display: **Instrument Sans** (variable, self-hosted via @fontsource, latin subset). Expressions and every time: **JetBrains Mono**. No third-party font request.
 - Scale: 1.25 (12 / 14 / 16 / 20 / 25 / 31 / 39). Tabular numerals on all times.
 
 ## Colour

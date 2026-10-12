@@ -47,7 +47,9 @@ export function initialState(
   const h = readHash(hash);
   const state: State = {
     expr: h.expr ?? stored.expr,
-    zone: h.zone ?? (isValidZone(stored.zone) ? stored.zone : browserZone()),
+    zone:
+      h.zone ??
+      (h.rejectedZone === undefined && isValidZone(stored.zone) ? stored.zone : browserZone()),
   };
   const notice = h.rejectedZone
     ? `This browser does not know the time zone "${h.rejectedZone}", so Cronlens is using ${state.zone}.`
