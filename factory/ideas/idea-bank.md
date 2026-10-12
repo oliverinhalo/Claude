@@ -132,3 +132,46 @@ Mark shipped ideas with `✅ <slug>` and rejected ones with `✗ <reason>` inlin
 - **Damp or condensation** — a renter works out which, and what to do and ask for. *(home-tool)*
 - **Allergy season tracker for here** — a sufferer sees the local pollen curve and their own log. *(health-tool)*
 - **Fitness readiness, honestly** — resting HR, sleep and soreness into a simple go/no-go. *(health-tool)*
+
+## Added 2026-10-12 — run 2 (on-demand), wide pass
+
+- **Cronlens** — a developer pastes a cron expression and a timezone and sees exactly which runs a DST change skips or doubles, plus a plain-English reading. *(developer-tool)* ✅ cronlens
+- **Meeting cost clock** — a manager sees what a meeting costs per second from attendee rates. *(calculator)*
+- **Lease vs buy** — a small business compares equipment lease and purchase over its real horizon. *(finance-tool)*
+- **Sourdough schedule** — a baker works backwards from a bake time with room-temperature adjustments. *(planner)*
+- **Rent split by room** — housemates split rent by room size, light and ensuite, fairly. *(calculator)*
+- **ICS builder** — a club secretary writes a recurring event and exports a correct .ics. *(generator)*
+- **Json to types** — a developer pastes JSON and gets TypeScript, Zod or Go types, with optional-field inference. *(developer-tool)*
+- **Glossary of a codebase** — a new hire pastes a README and gets a term list. *(reference)*
+- **Slack status scheduler** — plan status text across a working week. *(planner)*
+- **Wedding day timeline** — a planner works backwards from the ceremony. *(planner)*
+- **Garden sowing calendar** — sowing and harvest windows by last-frost date. *(home-tool)*
+- **Loan payoff snowball** — a debtor orders debts and sees the date they are free. *(finance-tool)*
+- **Score sheet for board games** — one screen, any game, remembers players. *(tracker)*
+- **Podcast chapter marker** — timestamps to chapters in four formats. *(editor)*
+- **Date difference without the traps** — working days, bank holidays, inclusive/exclusive explained. *(calculator)*
+- **Sprint capacity** — a team lead adjusts capacity for leave and holidays. *(planner)*
+- **Spreadsheet formula explainer** — paste a formula, get it in words. *(teaching-tool)*
+- **Git command finder by situation** — describe the mess, get the safe command. *(developer-tool)*
+- **Rounding rules tester** — shows how banker's, half-up and float rounding differ. *(teaching-tool)*
+- **Tip and tax by country** — traveller sees local norms. *(travel-tool)*
+- **Baby feed log** — one-hand logging at 3am. *(parenting-tool)*
+- **Allowance planner** — parents plan pocket money goals. *(parenting-tool)*
+- **Stretch routine builder** — desk worker picks areas, gets a timed routine. *(health-tool)*
+- **Carbon of a meal** — honest ranges, not false precision. *(reference)*
+- **Cable length and voltage drop** — electrician-adjacent calculator. *(calculator)*
+- **Bookmark deduper** — paste an export, find near-duplicates. *(editor)*
+- **Word count by deadline** — a writer sets a target and gets daily counts. *(writing-tool)*
+- **Contract clause highlighter** — flags unusual clauses, locally. *(analyser)*
+- **Roadtrip fuel stops** — range and stop planner. *(travel-tool)*
+- **Poll maker without accounts** — shareable through URL state. *(generator)*
+- **Habit of one: weekly review prompts** — a single page review. *(tracker)*
+- **Mortgage overpay timeline** — see the date you finish. *(finance-tool)*
+- **Epub reading speed** — estimate from your own pace. *(reference)*
+- **API rate-limit simulator** — see token bucket vs leaky bucket. *(simulator)*
+- **Queue simulator** — why the other line is faster. *(simulator)*
+- **Birthday paradox toy** — felt probability. *(teaching-tool)*
+- **Lighting plan for a room** — lumens per square metre. *(home-tool)*
+- **Photo print sizes** — crop ratios for common print sizes. *(editor)*
+- **Time-zone-safe deadline** — convert "5pm Friday" for a distributed team. *(planner)*
+- **Typography pairing checker** — see two Google Fonts together. *(generator)*
