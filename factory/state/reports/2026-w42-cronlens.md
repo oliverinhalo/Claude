@@ -40,3 +40,7 @@ The clock-change strip. A decision that cost something: no scheduler-behaviour c
 
 ## Do differently
 Measure Lighthouse before publishing, and add a "suggest a safe time" fix, which is the thing users will ask for next.
+
+## Continue run 2026-10-14
+Built the "nearest safe time" suggestion (whole-hour shift of the hour field, never crossing midnight, verified hazard-free over the same 12-month window; one-click apply). 5 new unit tests, 1 new e2e test. Gate 9/9. Lighthouse measured on local preview: 95 / 100 / 100 / 100. Redeployed via the staging push; live URL verified (verify-live green, new bundle contains the feature).
+Not done: suggestion only shifts the hour field (no minute shifts, no macros like `@daily`). Idea #3 (budgeter) is approved but not BUILD NEXT; left for a build run rather than starting a new app in CONTINUE mode.
