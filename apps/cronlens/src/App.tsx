@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useState } from 'react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { Strip } from './components/Strip';
-import { analyse, type ChangeReport } from './lib/plan';
+import { analyse, suggestSafe, type ChangeReport } from './lib/plan';
 import { buildHash, EXAMPLE, initialState, isState, type State } from './lib/share';
 import { createStore } from './lib/storage';
 import { formatClock, formatDate, formatUtc, offsetLabel } from './lib/format';
@@ -119,6 +119,11 @@ export function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, [expr, zone]);
 
+  const suggestion = useMemo(
+    () => (result.ok ? suggestSafe(expr, zone, now) : null),
+    [result.ok, expr, zone, now],
+  );
+
   const zoneOptions = zones.includes(zone) ? zones : [zone, ...zones];
 
   async function copyLink() {
@@ -222,6 +227,25 @@ export function App() {
                   {verdict.text}
                 </h2>
                 <p className="mono reading">{analysis.description}</p>
+                {suggestion && (
+                  <p className="suggest">
+                    Nearest safe time: <strong className="mono tnum">{suggestion.expr}</strong>,
+                    which is {Math.abs(suggestion.shiftHours)}{' '}
+                    {Math.abs(suggestion.shiftHours) === 1 ? 'hour' : 'hours'}{' '}
+                    {suggestion.shiftHours > 0 ? 'later' : 'earlier'}. No clock change in the
+                    next 12 months skips or repeats it.{' '}
+                    <button
+                      type="button"
+                      className="btn btn-inline"
+                      onClick={() => {
+                        setExpr(suggestion.expr);
+                        setNotice(`Schedule changed to ${suggestion.expr}.`);
+                      }}
+                    >
+                      Use this schedule
+                    </button>
+                  </p>
+                )}
                 <button type="button" className="btn" onClick={copyLink}>
                   Copy link to this check
                 </button>

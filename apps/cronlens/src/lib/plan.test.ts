@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseCron } from './cron';
-import { analyse, nextRuns } from './plan';
+import { analyse, nextRuns, suggestSafe } from './plan';
 
 const NY = 'America/New_York';
 const sched = (expr: string) => {
@@ -111,5 +111,29 @@ describe('analyse', () => {
 
   it('reports a schedule that never runs', () => {
     expect(ana('0 0 31 2 *', 'UTC', Date.UTC(2025, 0, 1)).neverRuns).toBe(true);
+  });
+});
+
+describe('suggestSafe', () => {
+  const now = Date.UTC(2026, 0, 15);
+  it('moves a 02:30 New York job to 03:30', () => {
+    const s = suggestSafe('30 2 * * *', 'America/New_York', now);
+    expect(s).toEqual({ expr: '30 3 * * *', shiftHours: 1 });
+  });
+  it('returns null when already safe', () => {
+    expect(suggestSafe('30 12 * * *', 'America/New_York', now)).toBeNull();
+  });
+  it('returns null in a zone without clock changes', () => {
+    expect(suggestSafe('30 2 * * *', 'Asia/Tokyo', now)).toBeNull();
+  });
+  it('returns null for invalid input and every-hour schedules', () => {
+    expect(suggestSafe('nope', 'America/New_York', now)).toBeNull();
+    expect(suggestSafe('30 * * * *', 'America/New_York', now)).toBeNull();
+  });
+  it('keeps the suggestion itself free of hazards', () => {
+    const s = suggestSafe('15 1,2 * * *', 'Europe/London', now);
+    if (!s) throw new Error('expected a suggestion');
+    const r = analyse(s.expr, 'Europe/London', now);
+    expect(r.ok && r.analysis.hazardCount).toBe(0);
   });
 });

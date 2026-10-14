@@ -457,3 +457,12 @@ body {
 .strip {
   padding-bottom: 0;
 }
+
+.suggest {
+  margin: var(--s-3) 0;
+  font-size: var(--t-sm);
+  line-height: 1.6;
+}
+.btn-inline {
+  margin-top: var(--s-2);
+}

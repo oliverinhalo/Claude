@@ -104,4 +104,39 @@ export function analyse(expr: string, zone: string, now: number): AnalyseResult 
   };
 }
 
+export interface Suggestion {
+  expr: string;
+  /** Whole hours the schedule moves by; positive is later. */
+  shiftHours: number;
+}
+
+/**
+ * The nearest whole-hour shift of the hour field that leaves no run skipped or repeated
+ * in the next 12 months. Never crosses midnight, so day fields keep their meaning.
+ * Null when the schedule is already safe, runs every hour, or cannot be rewritten.
+ */
+export function suggestSafe(expr: string, zone: string, now: number): Suggestion | null {
+  const parsed = parseCron(expr);
+  if (!parsed.ok) return null;
+  const { schedule } = parsed;
+  const parts = expr.trim().split(/\s+/);
+  if (parts.length !== 5 || schedule.hours.length === 0 || schedule.hours.length === 24)
+    return null;
+  const changes = clockChanges(zone, now, now + WINDOW_DAYS * DAY);
+  const hazards = (s: Schedule) => changes.some((c) => report(s, c).affected.length > 0);
+  if (!hazards(schedule)) return null;
+  const lo = Math.min(...schedule.hours);
+  const hi = Math.max(...schedule.hours);
+  for (let step = 1; step <= 23; step++) {
+    for (const shift of [step, -step]) {
+      if (lo + shift < 0 || hi + shift > 23) continue;
+      const hours = schedule.hours.map((h) => h + shift);
+      if (hazards({ ...schedule, hours })) continue;
+      const field = [...hours].sort((a, b) => a - b).join(',');
+      return { expr: [parts[0], field, ...parts.slice(2)].join(' '), shiftHours: shift };
+    }
+  }
+  return null;
+}
+
 export { offsetAt };

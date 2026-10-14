@@ -16,6 +16,14 @@ test.describe('smoke', () => {
     expect(errors, `console errors: ${errors.join(' | ')}`).toEqual([]);
   });
 
+  test('suggests a safe time and applies it', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText('Nearest safe time:')).toBeVisible();
+    await page.getByRole('button', { name: 'Use this schedule' }).click();
+    await expect(page.getByLabel('Cron expression')).toHaveValue('30 3 * * *');
+    await expect(page.getByText('Nearest safe time:')).toHaveCount(0);
+  });
+
   test('has a title and a meta description', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/.{10,}/);
