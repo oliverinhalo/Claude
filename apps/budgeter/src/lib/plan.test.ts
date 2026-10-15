@@ -9,8 +9,14 @@ describe('plan validation', () => {
     ['negative salary', { ...EXAMPLE_PLAN, salary: -1 }],
     ['bad loan', { ...EXAMPLE_PLAN, loan: 'plan9' }],
     ['pension > 100', { ...EXAMPLE_PLAN, pensionPct: 101 }],
-    ['NaN amount', { ...EXAMPLE_PLAN, expenses: [{ ...EXAMPLE_PLAN.expenses[0], amount: NaN }] }],
-    ['short days', { ...EXAMPLE_PLAN, expenses: [{ ...EXAMPLE_PLAN.expenses[0], days: [true] }] }],
+    [
+      'NaN amount',
+      { ...EXAMPLE_PLAN, expenses: [{ ...EXAMPLE_PLAN.expenses[0], amount: NaN }] },
+    ],
+    [
+      'short days',
+      { ...EXAMPLE_PLAN, expenses: [{ ...EXAMPLE_PLAN.expenses[0], days: [true] }] },
+    ],
     ['null', null],
   ])('rejects %s', (_n, v) => expect(isPlan(v)).toBe(false));
 });
@@ -19,7 +25,7 @@ describe('share links', () => {
   it('round-trips, including non-ASCII names', () => {
     const plan = {
       ...EXAMPLE_PLAN,
-      expenses: [{ ...EXAMPLE_PLAN.expenses[0]!, name: 'Café ☕ 食' }],
+      expenses: EXAMPLE_PLAN.expenses.map((e) => ({ ...e, name: 'Café ☕ 食' })),
     };
     expect(decodePlan(encodePlan(plan))).toEqual(plan);
   });

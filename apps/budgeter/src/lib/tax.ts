@@ -53,9 +53,7 @@ export function incomeTax(taxable: number): number {
 }
 
 export function nationalInsurance(gross: number): number {
-  return (
-    pos(Math.min(gross, NI_UPPER) - NI_THRESHOLD) * 0.08 + pos(gross - NI_UPPER) * 0.02
-  );
+  return pos(Math.min(gross, NI_UPPER) - NI_THRESHOLD) * 0.08 + pos(gross - NI_UPPER) * 0.02;
 }
 
 export function studentLoan(gross: number, plan: LoanPlan, postgrad: boolean): number {

@@ -1,5 +1,6 @@
 @import './styles/tokens.css';
 @import 'tailwindcss';
+@import './styles/app.css';
 
 /* Expose the tokens to Tailwind utilities so `bg-surface`, `text-muted` etc. work
  * and components never need a raw colour. */
