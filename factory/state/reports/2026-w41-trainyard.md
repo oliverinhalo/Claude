@@ -74,3 +74,7 @@ Re-ran the gate in a fresh container (9/9; needed `npx playwright install chromi
 Live URL re-checked: 200. Ledger entry already present. Fixed the QA leftover where adding a class after deleting one could
 duplicate a name (e.g. delete "Class 1", add → second "Class 2"); new names now take the first free "Class N". Gate 9/9.
 Not redeployed: the fix is on main only; pushing `staging/trainyard` would republish. No unit test added for it. Audio remains deferred.
+
+## Continue run 2026-10-15
+Moved `freeClassName` into `dataset.ts` and added 3 unit tests (the earlier fix had none). Gate 9/9. Redeployed via `staging/trainyard`; verify-live green (200, title, h1/main, clean console, no 320px overflow), so the class-name fix is now live.
+Not done: audio still deferred; real-camera accuracy unverified. Idea #3 (budgeter) is approved but not BUILD NEXT; left for a build run.
