@@ -106,7 +106,12 @@ test.describe('budgeter core loop', () => {
     await expect(page.getByRole('alert')).toBeVisible();
     await page.getByLabel(/annual salary/i).fill('-100');
     await expect(page.getByRole('alert')).toBeVisible();
-    await page.getByRole('button', { name: /add an expense/i }).dblclick();
+    // Two clicks in the same tick: the button moves after the first, so a real
+    // double-click cannot land twice, but the state update must not lose one.
+    await page.getByRole('button', { name: /add an expense/i }).evaluate((b: HTMLElement) => {
+      b.click();
+      b.click();
+    });
     await expect(page.getByTestId('expense')).toHaveCount(5);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
