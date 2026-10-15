@@ -5,6 +5,7 @@ import {
   MIN_CLASSES,
   emptyDataset,
   exportModel,
+  freeClassName,
   importModel,
   loadDataset,
   newId,
@@ -294,12 +295,6 @@ export function useTrainyard() {
   }, [training]);
 
   // ---- dataset edits ----
-
-  const freeClassName = (taken: string[]): string => {
-    let n = taken.length + 1;
-    while (taken.includes(`Class ${n}`)) n += 1;
-    return `Class ${n}`;
-  };
 
   const selectClass = (id: string) => {
     setRecording(false);

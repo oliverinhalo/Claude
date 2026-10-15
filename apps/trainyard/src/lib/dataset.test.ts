@@ -5,6 +5,7 @@ import {
   emptyDataset,
   encodeVector,
   exportModel,
+  freeClassName,
   importModel,
   loadDataset,
   saveDataset,
@@ -126,5 +127,20 @@ describe('model files', () => {
     const r = importModel(text);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.message.length).toBeGreaterThan(20);
+  });
+});
+
+describe('freeClassName', () => {
+  it('numbers from the count when nothing collides', () => {
+    expect(freeClassName(['Class 1', 'Class 2'])).toBe('Class 3');
+  });
+
+  it('skips a name left behind by a deleted class', () => {
+    expect(freeClassName(['Class 2', 'Class 3'])).toBe('Class 4');
+    expect(freeClassName(['Class 2', 'Class 3', 'Class 4'])).toBe('Class 5');
+  });
+
+  it('ignores custom names', () => {
+    expect(freeClassName(['Cat', 'Dog'])).toBe('Class 3');
   });
 });

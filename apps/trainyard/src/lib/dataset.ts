@@ -13,6 +13,13 @@ export const MAX_CLASSES = 8;
 export const MAX_SAMPLES = 150;
 export const MIN_TO_TRAIN = 5;
 
+/** The first "Class N" not already taken, so deleting then adding never duplicates a name. */
+export function freeClassName(taken: string[]): string {
+  let n = taken.length + 1;
+  while (taken.includes(`Class ${n}`)) n += 1;
+  return `Class ${n}`;
+}
+
 export interface ClassData {
   id: string;
   name: string;
