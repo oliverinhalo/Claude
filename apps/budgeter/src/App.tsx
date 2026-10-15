@@ -160,10 +160,12 @@ export function App() {
                     expense={e}
                     index={i}
                     onChange={(next) =>
-                      update({ expenses: plan.expenses.map((x) => (x.id === e.id ? next : x)) })
+                      update((p) => ({
+                        expenses: p.expenses.map((x) => (x.id === e.id ? next : x)),
+                      }))
                     }
                     onRemove={() =>
-                      update({ expenses: plan.expenses.filter((x) => x.id !== e.id) })
+                      update((p) => ({ expenses: p.expenses.filter((x) => x.id !== e.id) }))
                     }
                   />
                 ))}
@@ -173,7 +175,7 @@ export function App() {
               type="button"
               className="btn"
               disabled={plan.expenses.length >= MAX_EXPENSES}
-              onClick={() => update({ expenses: [...plan.expenses, blankExpense()] })}
+              onClick={() => update((p) => ({ expenses: [...p.expenses, blankExpense()] }))}
             >
               Add an expense
             </button>

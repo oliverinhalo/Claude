@@ -67,3 +67,78 @@ test.describe('accessibility', () => {
     });
   }
 });
+
+test.describe('budgeter core loop', () => {
+  test('shows a worked example with no input', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByTestId('takehome-month')).toContainText('£');
+    await expect(page.getByTestId('expense')).toHaveCount(3);
+  });
+
+  test('£5 a day Mon–Fri is £108.33 a month, by keyboard', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /add an expense/i }).click();
+    const rows = page.getByTestId('expense');
+    const row = rows.last();
+    await row.getByLabel(/^Name of/).fill('Coffee');
+    await row.getByLabel(/^Amount for/).fill('5');
+    await expect(row).toContainText('£108.33 a month');
+    await row.getByRole('button', { name: 'Fri' }).click();
+    await expect(row).toContainText('£86.67 a month');
+  });
+
+  test('salary of £30,000 with no pension takes home £2,093.30 a month', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel(/pension contribution/i).fill('0');
+    await page.getByLabel(/annual salary/i).fill('£30,000');
+    await expect(page.getByTestId('takehome-month')).toContainText('£2,093.30');
+  });
+
+  test('says so in words when spending exceeds take-home', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel(/annual salary/i).fill('12000');
+    await expect(page.getByTestId('left-month')).toContainText('short');
+  });
+
+  test('survives hostile input', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel(/annual salary/i).fill('9'.repeat(50_000));
+    await expect(page.getByRole('alert')).toBeVisible();
+    await page.getByLabel(/annual salary/i).fill('-100');
+    await expect(page.getByRole('alert')).toBeVisible();
+    await page.getByRole('button', { name: /add an expense/i }).dblclick();
+    await expect(page.getByTestId('expense')).toHaveCount(5);
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test('edits persist across reload', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel(/annual salary/i).fill('52000');
+    await page.reload();
+    await expect(page.getByLabel(/annual salary/i)).toHaveValue('52000');
+  });
+
+  test('a shared link restores the plan, and a bad link falls back', async ({
+    page,
+    context,
+  }) => {
+    await context
+      .grantPermissions(['clipboard-read', 'clipboard-write'])
+      .catch(() => undefined);
+    await page.goto('/');
+    await page.getByLabel(/annual salary/i).fill('61000');
+    await page.getByRole('button', { name: /copy link/i }).click();
+    const url = await page.getByLabel('Plan link').inputValue();
+    expect(url).toContain('#p=');
+    const fresh = await context.newPage();
+    await fresh.addInitScript(() => localStorage.clear());
+    await fresh.goto(url);
+    await expect(fresh.getByLabel(/annual salary/i)).toHaveValue('61000');
+
+    await fresh.goto('/#p=garbage');
+    await expect(fresh.getByText(/could not be read/)).toBeVisible();
+  });
+});

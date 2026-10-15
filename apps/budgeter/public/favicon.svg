@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Budgeter">
-  <!-- Phase 4 replaces this with the app's own mark. -->
-  <rect width="64" height="64" rx="14" fill="#2f5540" />
-  <path d="M18 40.5 32 20l14 20.5" fill="none" stroke="#fbfbfa" stroke-width="5"
-        stroke-linecap="round" stroke-linejoin="round" />
+  <rect width="64" height="64" rx="4" fill="#274d7f" />
+  <rect x="10" y="26" width="44" height="12" fill="none" stroke="#faf8f3" stroke-width="3" />
+  <rect x="10" y="26" width="30" height="12" fill="#faf8f3" />
+  <rect x="40" y="26" width="8" height="12" fill="#e0916a" />
 </svg>
