@@ -2,6 +2,7 @@ import type { FactoryData } from '../lib/useFactory';
 import type { Client } from '../lib/github';
 import { meanScore, nextRun, relative, weeksCompleted, weeksElapsed } from '../lib/parse';
 import { RunNow } from './RunNow';
+import { FactoryControls } from './FactoryControls';
 
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
@@ -17,10 +18,14 @@ export function Overview({
   data,
   client,
   canRun,
+  onOpenProblems,
+  onChanged,
 }: {
   data: FactoryData;
   client: Client;
   canRun: boolean;
+  onOpenProblems: () => void;
+  onChanged: () => void;
 }) {
   const { ledger, checkpoints, requests, submitted, pending } = data;
   const shipped = ledger.apps.length;
@@ -33,6 +38,25 @@ export function Overview({
 
   return (
     <div className="space-y-8">
+      {data.problems.length > 0 ? (
+        <button
+          type="button"
+          onClick={onOpenProblems}
+          className="w-full rounded-[var(--radius-lg)] border border-[var(--danger)] bg-[var(--surface-raised)] p-4 text-left transition-opacity duration-[var(--dur-state)] hover:opacity-90"
+        >
+          <p className="font-medium text-[var(--danger)]">
+            {data.problems.length === 1
+              ? 'Something needs attention'
+              : `${data.problems.length} things need attention`}
+          </p>
+          <p className="mt-1 text-[var(--text-muted)]">
+            {data.problems[0]?.title}
+            {data.problems.length > 1 ? ` and ${data.problems.length - 1} more` : ''} — see
+            Problems.
+          </p>
+        </button>
+      ) : null}
+
       <section aria-labelledby="progress-heading">
         <h2 id="progress-heading" className="sr-only">
           Progress
@@ -78,6 +102,14 @@ export function Overview({
       </section>
 
       <RunNow client={client} canRun={canRun} />
+
+      <FactoryControls
+        client={client}
+        canAct={canRun}
+        scheduleState={data.scheduleState}
+        running={data.running}
+        onChanged={onChanged}
+      />
 
       <section aria-labelledby="now-heading">
         <h2 id="now-heading" className="text-[length:var(--t-lg)] font-semibold">

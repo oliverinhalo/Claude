@@ -129,6 +129,15 @@ export interface Client {
   addLabel(number: number, label: string): Promise<void>;
   runs(limit?: number): Promise<RawRun[]>;
   dispatch(workflow: string, inputs?: Record<string, string>): Promise<void>;
+  /** Jobs of one run, with their steps — tells you which step failed. */
+  jobs(runId: number): Promise<RawJob[]>;
+  /** The ::error:: and ::warning:: messages a job emitted. */
+  annotations(jobId: number): Promise<RawAnnotation[]>;
+  /** "active" | "disabled_manually" | "disabled_inactivity" */
+  workflowState(workflow: string): Promise<string | null>;
+  setWorkflowEnabled(workflow: string, enabled: boolean): Promise<void>;
+  cancelRun(runId: number): Promise<void>;
+  rerunRun(runId: number): Promise<void>;
 }
 
 export interface RawIssue {
@@ -150,6 +159,19 @@ export interface RawRun {
   conclusion: string | null;
   created_at: string;
   html_url: string;
+}
+
+export interface RawJob {
+  id: number;
+  name: string;
+  conclusion: string | null;
+  steps?: Array<{ name: string; conclusion: string | null }>;
+}
+
+export interface RawAnnotation {
+  annotation_level: string | null;
+  message: string | null;
+  title: string | null;
 }
 
 export function createClient(token: string | null, repo: string): Client {
@@ -234,10 +256,63 @@ export function createClient(token: string | null, repo: string): Client {
     },
 
     async dispatch(workflow, inputs = {}) {
+      requireToken();
       await request(token, `${base}/actions/workflows/${workflow}/dispatches`, {
         method: 'POST',
         body: JSON.stringify({ ref: 'main', inputs }),
       });
+    },
+
+    async jobs(runId) {
+      const res = await request<{ jobs: RawJob[] }>(
+        token,
+        `${base}/actions/runs/${runId}/jobs`,
+      );
+      return res.jobs;
+    },
+
+    async annotations(jobId) {
+      // An Actions job is also a check run, so its annotations carry the
+      // ::error:: lines the workflow printed — the actual reason, not just
+      // "a step failed".
+      try {
+        return await request<RawAnnotation[]>(token, `${base}/check-runs/${jobId}/annotations`);
+      } catch {
+        return [];
+      }
+    },
+
+    async workflowState(workflow) {
+      try {
+        const res = await request<{ state: string }>(
+          token,
+          `${base}/actions/workflows/${workflow}`,
+        );
+        return res.state;
+      } catch {
+        return null;
+      }
+    },
+
+    async setWorkflowEnabled(workflow, enabled) {
+      requireToken();
+      await request(
+        token,
+        `${base}/actions/workflows/${workflow}/${enabled ? 'enable' : 'disable'}`,
+        {
+          method: 'PUT',
+        },
+      );
+    },
+
+    async cancelRun(runId) {
+      requireToken();
+      await request(token, `${base}/actions/runs/${runId}/cancel`, { method: 'POST' });
+    },
+
+    async rerunRun(runId) {
+      requireToken();
+      await request(token, `${base}/actions/runs/${runId}/rerun`, { method: 'POST' });
     },
   };
 }

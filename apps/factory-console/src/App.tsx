@@ -5,13 +5,15 @@ import { Overview } from './components/Overview';
 import { AppsView } from './components/AppsView';
 import { IdeasView } from './components/IdeasView';
 import { ControlView } from './components/ControlView';
+import { BuildView } from './components/BuildView';
+import { ProblemsView } from './components/ProblemsView';
 import { PendingView } from './components/PendingView';
 import { SignIn } from './components/SignIn';
 import { authAvailable, captureSessionFromUrl, whoAmI, type Viewer } from './lib/auth';
 import { createClient, readRepo, readToken, writeRepo, writeToken } from './lib/github';
 import { useFactory } from './lib/useFactory';
 
-const BASE_TABS = ['Overview', 'Apps', 'Ideas', 'Control'] as const;
+const BASE_TABS = ['Overview', 'Build', 'Apps', 'Ideas', 'Problems', 'Control'] as const;
 type Tab = (typeof BASE_TABS)[number] | 'Pending';
 
 export function App() {
@@ -36,7 +38,9 @@ export function App() {
 
   const pendingCount =
     state.status === 'ready' && viewer?.admin ? state.data.pending.length : 0;
+  const problemCount = state.status === 'ready' ? state.data.problems.length : 0;
   const tabs: Tab[] = viewer?.admin ? [...BASE_TABS, 'Pending'] : [...BASE_TABS];
+  const canAct = client.canWrite || viewer?.admin === true;
 
   const connect = useCallback((nextToken: string, nextRepo: string) => {
     writeToken(nextToken);
@@ -129,6 +133,11 @@ export function App() {
                   {pendingCount}
                 </span>
               ) : null}
+              {name === 'Problems' && problemCount > 0 ? (
+                <span className="ml-1.5 rounded-full bg-[var(--danger)] px-1.5 py-0.5 text-xs text-[var(--surface)] tnum">
+                  {problemCount}
+                </span>
+              ) : null}
             </button>
           ))}
         </nav>
@@ -176,6 +185,20 @@ export function App() {
                 </button>
               </div>
             </div>
+          ) : tab === 'Build' ? (
+            <BuildView
+              client={client}
+              viewer={viewer}
+              onConnect={() => setWantsToken(true)}
+              onChanged={() => void reload()}
+            />
+          ) : tab === 'Problems' ? (
+            <ProblemsView
+              problems={state.data.problems}
+              client={client}
+              canAct={canAct}
+              onChanged={() => void reload()}
+            />
           ) : tab === 'Pending' ? (
             <PendingView
               pending={state.data.pending}
@@ -186,10 +209,12 @@ export function App() {
             <Overview
               data={state.data}
               client={client}
-              canRun={client.canWrite || viewer?.admin === true}
+              canRun={canAct}
+              onOpenProblems={() => setTab('Problems')}
+              onChanged={() => void reload()}
             />
           ) : tab === 'Apps' ? (
-            <AppsView apps={state.data.ledger.apps} />
+            <AppsView apps={state.data.ledger.apps} client={client} canAct={canAct} />
           ) : tab === 'Ideas' ? (
             <IdeasView
               bank={state.data.bank}

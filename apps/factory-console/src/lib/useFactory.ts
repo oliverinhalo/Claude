@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Client } from './github';
 import { GitHubError } from './github';
 import { parseIdeaBank } from './parse';
-import type { Checkpoint, Idea, Ledger, LoadState, Request, Run } from './types';
+import { checkpointProblems, runProblems } from './problems';
+import type { Checkpoint, Idea, Ledger, LoadState, Problem, Request, Run } from './types';
 
 export interface FactoryData {
   ledger: Ledger;
@@ -13,6 +14,12 @@ export interface FactoryData {
   checkpoints: Checkpoint[];
   reports: string[];
   runs: Run[];
+  /** Every failure worth showing, newest first. */
+  problems: Problem[];
+  /** A run in flight right now, if any. */
+  running: Run | null;
+  /** State of run-factory.yml: "active", "disabled_manually", or null. */
+  scheduleState: string | null;
   /** Paths that could not be read, so the UI can say what is missing. */
   warnings: string[];
 }
@@ -71,6 +78,9 @@ export function useFactory(client: Client | null) {
       let pending: Idea[] = [];
       let requests: Request[] = [];
       let runs: Run[] = [];
+      let problems: Problem[] = [];
+      let running: Run | null = null;
+      let scheduleState: string | null = null;
 
       try {
         const raw = await client.issues('idea', 'open');
@@ -123,7 +133,8 @@ export function useFactory(client: Client | null) {
       }
 
       try {
-        runs = (await client.runs(12)).map((r) => ({
+        const raw = await client.runs(20);
+        runs = raw.map((r) => ({
           id: r.id,
           name: r.name,
           status: r.status,
@@ -131,11 +142,29 @@ export function useFactory(client: Client | null) {
           createdAt: r.created_at,
           url: r.html_url,
         }));
+        running = runs.find((r) => r.status !== 'completed') ?? null;
+        // Fetching the reason for each failure costs extra calls, so a failure
+        // here must not lose the rest of the dashboard.
+        try {
+          problems = await runProblems(client, raw);
+        } catch {
+          warnings.push('Could not read why a run failed; the run list is still below.');
+        }
       } catch {
         if (client.canWrite) {
           warnings.push('Workflow activity is hidden — the token has no Actions permission.');
         }
       }
+
+      try {
+        scheduleState = await client.workflowState('run-factory.yml');
+      } catch {
+        scheduleState = null;
+      }
+
+      problems = [...problems, ...checkpointProblems(checkpoints)].sort((a, b) =>
+        a.when < b.when ? 1 : -1,
+      );
 
       hasData.current = true;
       setState({
@@ -152,6 +181,9 @@ export function useFactory(client: Client | null) {
             .sort()
             .reverse(),
           runs,
+          problems,
+          running,
+          scheduleState,
           warnings,
         },
       });

@@ -66,6 +66,17 @@ export interface Run {
   url: string;
 }
 
+/** A failure the console should surface rather than leave in a log. */
+export interface Problem {
+  kind: 'run' | 'blocker' | 'checkpoint';
+  title: string;
+  detail: string;
+  when: string;
+  url?: string;
+  /** Present for a failed run, so it can be re-run from the console. */
+  runId?: number;
+}
+
 export type LoadState<T> =
   | { status: 'idle' }
   | { status: 'loading' }

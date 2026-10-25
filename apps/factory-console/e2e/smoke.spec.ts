@@ -42,6 +42,9 @@ async function mockGitHub(page: Page) {
     if (url.includes('contents/factory/state/run')) return json([]);
     if (url.includes('contents/factory/state/reports')) return json([]);
     if (url.includes('/issues?')) return json([]);
+    if (url.includes('/actions/workflows/run-factory.yml/dispatches'))
+      return route.fulfill({ status: 204, body: '' });
+    if (url.includes('/actions/workflows/run-factory.yml')) return json({ state: 'active' });
     if (url.includes('/actions/runs')) return json({ workflow_runs: [] });
     if (url.includes('/issues'))
       return json({
@@ -90,6 +93,13 @@ test.describe('anonymous', () => {
     await browse(page);
     await page.getByRole('button', { name: 'Control' }).click();
     await expect(page.getByRole('button', { name: /connect to send this/i })).toBeVisible();
+  });
+
+  test('shows the factory state and that nothing is broken', async ({ page }) => {
+    await browse(page);
+    await expect(page.getByRole('heading', { name: 'The factory' })).toBeVisible();
+    await page.getByRole('button', { name: 'Problems' }).click();
+    await expect(page.getByText(/nothing is broken/i)).toBeVisible();
   });
 
   test('has a title and a meta description', async ({ page }) => {
@@ -159,6 +169,38 @@ test.describe('connected', () => {
     await page.getByRole('button', { name: 'Ideas' }).click();
     await page.getByPlaceholder(/search by name/i).fill('zzzzzz');
     await expect(page.getByText(/nothing matches/i)).toBeVisible();
+  });
+
+  test('a brief will not send without a must-have, then does', async ({ page }) => {
+    await connect(page);
+    await page.getByRole('button', { name: 'Build' }).click();
+    await page.getByLabel(/what is it called/i).fill('Shift swap planner');
+    await page.getByRole('button', { name: /send it to the factory/i }).click();
+    await expect(page.getByText(/at least one thing it must do/i)).toBeVisible();
+
+    await page
+      .getByLabel(/who is it for/i)
+      .fill('A nurse swapping a shift sees whose rota it fits.');
+    await page.getByLabel(/it must do these/i).fill('Import a rota from CSV');
+    await page.getByRole('button', { name: /send it to the factory/i }).click();
+    await expect(page.getByText(/sent as #42/i)).toBeVisible();
+  });
+
+  test('shows the exact brief text before sending it', async ({ page }) => {
+    await connect(page);
+    await page.getByRole('button', { name: 'Build' }).click();
+    await page.getByLabel(/it must do these/i).fill('Import a rota from CSV');
+    await page.getByRole('button', { name: /show exactly what the factory/i }).click();
+    await expect(
+      page.getByRole('heading', { name: /what the factory will read/i }),
+    ).toBeVisible();
+    await expect(page.getByText(/contract, not a/)).toBeVisible();
+  });
+
+  test('can pause and resume the schedule', async ({ page }) => {
+    await connect(page);
+    await expect(page.getByText(/running on schedule/i)).toBeVisible();
+    await expect(page.getByRole('button', { name: /pause scheduled runs/i })).toBeVisible();
   });
 
   test('can send an instruction to the factory', async ({ page }) => {

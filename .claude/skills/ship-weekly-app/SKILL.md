@@ -30,6 +30,18 @@ instruction is not a suggestion to weigh against your own plan — it replaces i
 - An idea marked **BUILD NEXT** is this run's app, unless it hits a hard
   disqualifier in `references/idea-rubric.md` — and then you say so on the issue
   rather than quietly choosing something else.
+- **A brief is a contract.** An issue from the console carries headings:
+  *What it is for*, **Must have — do not cut these**, *Nice to have*, *Do not
+  include*. Every must-have gets built. If one genuinely cannot be — it needs a
+  paid service, it cannot work client-side, or it will not fit alongside the
+  others — comment on the issue with your reasoning **before** building, and
+  build the rest. Never drop a must-have silently, never swap in something
+  adjacent, and never let the polish ladder eat one.
+  If the must-haves together are too big for one run, **split across runs rather
+  than cutting**: ship what is complete, keep the checkpoint open, say on the
+  issue what remains, and finish it on the next run. Honour *Do not include* as
+  strictly as the must-haves — effort spent there is effort the owner said they
+  did not want.
 - **Only ideas labelled `approved` may be built.** An idea labelled
   `pending-approval` came from someone who is not an admin and the owner has not
   cleared it. Never build one, never approve one yourself, and never fold it into
@@ -74,6 +86,9 @@ Sources to push against, in this order:
 
 Append every new candidate to `factory/ideas/idea-bank.md` with its date. The bank
 is append-only — ideas you reject this week are the shortlist in month seven.
+
+> Week 1 shipped with its audio half cut, from a one-line request, because the
+> scope was decided unilaterally. That is what the must-have list exists to stop.
 
 ## Phase 2 — Select (scored, written down, defensible)
 

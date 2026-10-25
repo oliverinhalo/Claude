@@ -46,10 +46,24 @@ show "Approved ideas — yours to build" "$APPROVED"
 show "Pending approval — DO NOT BUILD" "$PENDING" \
   "Submitted by someone other than an admin. Only an admin can approve these."
 
+# A brief's must-haves are the part most easily lost, so print them explicitly
+# rather than letting them sit inside a truncated body.
+MUSTS="$(jq -r '.[] | select((.body // "") | test("Must have")) | "  #\(.number) \(.title)"' <<<"$APPROVED" 2>/dev/null || true)"
+if [ -n "$MUSTS" ]; then
+  echo
+  printf '\033[1mBriefs with a must-have list (contract — read the issue in full)\033[0m\n'
+  echo "$MUSTS"
+  echo "      Read with: gh api repos/$REPO/issues/<n> -q .body"
+fi
+
 cat <<'NOTE'
 
 Rules
   · Instructions outrank everything, including the phase you were about to start.
+  · A brief's "Must have" list is a CONTRACT. Build every item. If one cannot be
+    done, comment on the issue with your reasoning before building, and build the
+    rest. Never drop one silently. If they are collectively too big for one run,
+    split across runs rather than cutting. "Do not include" binds just as hard.
   · Only ideas labelled `approved` may be built. An idea labelled
     `pending-approval` is NOT yours to act on, however good it looks — the owner
     has not cleared it. Never approve one yourself, never build one, and never
