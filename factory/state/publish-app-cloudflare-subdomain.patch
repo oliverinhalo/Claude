@@ -1,0 +1,37 @@
+commit d57a251557a5e90bf3ab1a5a3a90648e21952738
+Author: claude[bot] <41898282+claude[bot]@users.noreply.github.com>
+Date:   Tue Oct 27 20:49:01 2026 +0000
+
+    release: resolve the real Cloudflare Pages subdomain instead of assuming <slug>.pages.dev
+    
+    Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+
+diff --git a/.github/workflows/publish-app.yml b/.github/workflows/publish-app.yml
+index 333b93a..32e59f4 100644
+--- a/.github/workflows/publish-app.yml
++++ b/.github/workflows/publish-app.yml
+@@ -261,12 +261,21 @@ jobs:
+         run: |
+           set -euo pipefail
+           # Cloudflare serves from the root, so the default base is correct.
+-          VITE_BASE=/ SITE_URL="https://$SLUG.pages.dev" npm run build
+           npx --yes wrangler@latest pages project create "$SLUG" \
+-            --production-branch main 2>/dev/null || echo "project exists, continuing"
++            --production-branch main || echo "project exists, continuing"
++          # The subdomain is NOT always <slug>.pages.dev: when the name is taken
++          # globally Cloudflare appends a suffix (budgeter -> budgeter-73o).
++          # Ask the API rather than assuming, so the canonical URL, sitemap and
++          # the live check all point at the real address.
++          SUBDOMAIN="$(curl -fsS -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
++            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$SLUG" \
++            | jq -r '.result.subdomain // empty')"
++          [ -n "$SUBDOMAIN" ] || SUBDOMAIN="$SLUG.pages.dev"
++          echo "Cloudflare subdomain: $SUBDOMAIN"
++          VITE_BASE=/ SITE_URL="https://$SUBDOMAIN" npm run build
+           npx --yes wrangler@latest pages deploy dist \
+             --project-name "$SLUG" --branch main --commit-dirty=true
+-          echo "url=https://$SLUG.pages.dev" >> "$GITHUB_OUTPUT"
++          echo "url=https://$SUBDOMAIN" >> "$GITHUB_OUTPUT"
+ 
+       - name: Deploy to Vercel
+         id: vercel

@@ -32,6 +32,21 @@
       "signature_detail": "A 24-hour strip per clock change with the missing or doubled hour hatched and runs plotted on it.",
       "paid_tier_hypothesis": "Check many crontabs at once, import a crontab file, and scheduler-specific behaviour notes.",
       "notes": "Own idea, not from the inbox. Lighthouse not measured this run. Scheduler-specific behaviour deliberately not claimed."
+    },
+    {
+      "week": 3,
+      "slug": "budgeter",
+      "name": "Budgeter",
+      "category": "finance",
+      "sentence": "Budgeter turns a UK annual salary into monthly take-home and shows what is left after recurring spending.",
+      "repo": "oliverinhalo/budgeter",
+      "url": "https://budgeter-73o.pages.dev",
+      "host": "cloudflare",
+      "shipped": "2026-10-27",
+      "score": 7,
+      "signature_detail": "",
+      "paid_tier_hypothesis": "",
+      "notes": "Canonical/sitemap point at budgeter.pages.dev (wrong); see factory/state/publish-app-cloudflare-subdomain.patch"
     }
   ]
 }

@@ -1,12 +1,12 @@
 {
   "slug": "budgeter",
   "week": 3,
-  "status": "in_progress",
+  "status": "complete",
   "started": "2026-10-15T20:57:44Z",
-  "updated": "2026-10-27T20:41:48Z",
-  "last_completed_phase": "publish",
+  "updated": "2026-10-27T20:49:42Z",
+  "last_completed_phase": "complete",
   "next_action": "Run qa agent, Lighthouse, then publish.sh budgeter",
   "decisions": [],
   "blockers": [],
-  "live_url": null
+  "live_url": "https://budgeter-73o.pages.dev"
 }
