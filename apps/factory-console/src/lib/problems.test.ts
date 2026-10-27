@@ -102,6 +102,7 @@ describe('runProblems', () => {
 
   const client = (over: Partial<Client> = {}) =>
     ({
+      canWrite: true,
       jobs: vi.fn().mockResolvedValue([
         {
           id: 9,
@@ -144,6 +145,18 @@ describe('runProblems', () => {
   it('caps how many failures it reports', async () => {
     const runs = Array.from({ length: 9 }, (_, i) => run({ id: i + 1 }));
     expect(await runProblems(client(), runs)).toHaveLength(5);
+  });
+
+  it('skips the costly detail lookup for anonymous viewers', async () => {
+    const jobs = vi.fn();
+    const anon = client({ canWrite: false, jobs });
+    const [p] = await runProblems(anon, [run({})]);
+    // Still reported — just without the two extra API calls per failure, which
+    // would exhaust the 60-per-hour anonymous budget.
+    expect(p?.title).toContain('failure');
+    expect(p?.url).toContain('/actions/runs/1');
+    expect(p?.detail).toMatch(/Sign in to see why/);
+    expect(jobs).not.toHaveBeenCalled();
   });
 
   it('treats a cancelled run as a problem too', async () => {

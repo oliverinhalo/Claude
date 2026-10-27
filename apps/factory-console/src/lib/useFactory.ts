@@ -156,10 +156,13 @@ export function useFactory(client: Client | null) {
         }
       }
 
-      try {
-        scheduleState = await client.workflowState('run-factory.yml');
-      } catch {
-        scheduleState = null;
+      // One more call, and only useful to someone who can act on it.
+      if (client.canWrite) {
+        try {
+          scheduleState = await client.workflowState('run-factory.yml');
+        } catch {
+          scheduleState = null;
+        }
       }
 
       problems = [...problems, ...checkpointProblems(checkpoints)].sort((a, b) =>
