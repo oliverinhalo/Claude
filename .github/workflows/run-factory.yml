@@ -141,6 +141,11 @@ jobs:
             echo 'PROMPT_EOF'
           } >> "$GITHUB_OUTPUT"
 
+      - name: Note the starting commit
+        id: before
+        if: steps.check.outputs.ready == 'true'
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Run the factory
         id: claude
         if: steps.check.outputs.ready == 'true'
@@ -158,20 +163,44 @@ jobs:
             --max-turns 300
             --allowedTools Bash,Read,Write,Edit,Glob,Grep,Task,WebSearch,WebFetch,TodoWrite
 
-      # A run that is blocked from acting still exits 0. Twice now that has looked
-      # like success and produced nothing, so check the evidence rather than the
-      # exit code.
+      # A run that does nothing still exits 0. For ten days every scheduled run
+      # reported success, did 8-12 turns, and advanced nothing — and the first
+      # version of this check could not tell, because it parsed the execution log
+      # wrongly and read zeros. So: parse it properly, and judge on whether the
+      # repository actually changed.
       - name: Check the run actually did something
         if: steps.check.outputs.ready == 'true' && always()
+        env:
+          BEFORE: ${{ steps.before.outputs.sha }}
         run: |
           set -uo pipefail
           OUT="${RUNNER_TEMP}/claude-execution-output.json"
-          [ -f "$OUT" ] || { echo "::warning::No execution log at $OUT; cannot verify."; exit 0; }
 
-          read -r DENIALS TURNS ERR <<<"$(jq -rs '
-            (map(select(.type=="result")) | last) // {}
-            | "\(.permission_denials_count // 0) \(.num_turns // 0) \(.is_error // false)"
-          ' "$OUT" 2>/dev/null || echo "0 0 false")"
+          TURNS=0; DENIALS=0; ERR=false; SAID=""
+          if [ -f "$OUT" ]; then
+            # The file is a JSON array of stream events, so slurping it yields a
+            # nested array. flatten handles both that and newline-delimited JSON.
+            read -r DENIALS TURNS ERR <<<"$(jq -rs '
+              flatten | map(select(type=="object" and .type=="result")) | last // {}
+              | "\(.permission_denials_count // 0) \(.num_turns // 0) \(.is_error // false)"
+            ' "$OUT" 2>/dev/null || echo "0 0 false")"
+
+            # The agent's last words: the single most useful line for diagnosis.
+            SAID="$(jq -rs '
+              flatten
+              | map(select(type=="object" and .type=="assistant")
+                    | .message.content // [] | map(select(.type=="text") | .text) | join(" "))
+              | map(select(length > 0)) | last // ""
+            ' "$OUT" 2>/dev/null | head -c 1500)"
+          else
+            echo "::warning::No execution log at $OUT."
+          fi
+
+          AFTER="$(git rev-parse HEAD)"
+          git fetch -q origin "$(git rev-parse --abbrev-ref HEAD)" 2>/dev/null || true
+          NEW_COMMITS="$(git rev-list --count "${BEFORE}..${AFTER}" 2>/dev/null || echo 0)"
+          PUSHED="$(git rev-list --count "${BEFORE}..origin/$(git rev-parse --abbrev-ref HEAD)" 2>/dev/null || echo 0)"
+          CHANGED=$(( NEW_COMMITS > PUSHED ? NEW_COMMITS : PUSHED ))
 
           {
             echo "### Claude run"
@@ -180,21 +209,44 @@ jobs:
             echo "|---|---|"
             echo "| Turns | $TURNS |"
             echo "| Permission denials | $DENIALS |"
+            echo "| Commits made | $CHANGED |"
+            if [ -n "$SAID" ]; then
+              echo
+              echo "**It finished by saying:**"
+              echo
+              echo "> $SAID"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
 
           if [ "${DENIALS:-0}" -gt 0 ]; then
-            {
-              echo
-              echo "**Blocked.** Claude was denied $DENIALS tool call(s), so it could not do"
-              echo "the work. Grant the missing tool in \`claude_args --allowedTools\`."
-            } >> "$GITHUB_STEP_SUMMARY"
-            echo "::error::Claude was denied $DENIALS tool call(s) — the run did nothing. See the summary."
+            echo "::error::Claude was denied $DENIALS tool call(s). Grant the tool in claude_args --allowedTools."
             exit 1
           fi
 
-          if [ "${TURNS:-0}" -lt 15 ]; then
-            echo "::warning::Only $TURNS turns — short for a factory run. Check it did real work."
+          # The real test: did anything change? A run that commits nothing and
+          # barely took a turn did not do the job, whatever it exited with.
+          if [ "$CHANGED" -eq 0 ] && [ "${TURNS:-0}" -lt 25 ]; then
+            {
+              echo
+              echo "**This run changed nothing.** $TURNS turns, no commits. A factory run"
+              echo "that builds, polishes or publishes anything commits as it goes."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Run made no commits in $TURNS turns — it did not do the work. See the summary for what it said."
+            exit 1
           fi
+
+          if [ "$CHANGED" -eq 0 ]; then
+            echo "::warning::$TURNS turns but no commits — check the summary for what it decided."
+          fi
+
+      - name: Keep the transcript
+        if: steps.check.outputs.ready == 'true' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: claude-transcript-${{ github.run_id }}
+          path: ${{ runner.temp }}/claude-execution-output.json
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Report where to look
         if: steps.check.outputs.ready == 'true' && always()
