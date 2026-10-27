@@ -31,6 +31,12 @@ export function NumberField({
   const [draft, setDraft] = useState(() => plainNumber(value));
   const [bad, setBad] = useState(false);
 
+  // The plan can change underneath us (Reset, a pasted share link). If the
+  // committed value no longer matches what the box says, show the real value.
+  if (!bad && parseMoney(draft, max) !== value) {
+    setDraft(plainNumber(value));
+  }
+
   function change(text: string) {
     setDraft(text);
     const n = parseMoney(text, max);

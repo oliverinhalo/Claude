@@ -96,4 +96,13 @@ describe('Budgeter', () => {
     expect(screen.getByText(/could not be read/)).toBeInTheDocument();
     expect(screen.getAllByTestId('expense')).toHaveLength(3);
   });
+
+  it('reset puts the example salary back in the salary box', async () => {
+    render(<App />);
+    const salary = screen.getByLabelText('Annual salary before tax') as HTMLInputElement;
+    await userEvent.clear(salary);
+    await userEvent.type(salary, '10000');
+    await userEvent.click(screen.getByRole('button', { name: /reset to the example/i }));
+    expect(salary.value).toBe('35000');
+  });
 });
