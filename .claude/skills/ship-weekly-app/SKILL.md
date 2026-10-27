@@ -16,6 +16,7 @@ Not when the code is written. Not when the tests pass. When it is live and good.
 ## Before anything: orient
 
 ```bash
+factory/scripts/queue.sh              # THE BUILD ORDER — position 1 is this run's app
 factory/scripts/inbox.sh              # what the owner has asked for — READ FIRST
 factory/scripts/preflight.sh          # what capabilities exist this run
 cat factory/state/ledger.json | jq '.apps[-5:] | .[] | {slug,category,shipped}'
@@ -65,6 +66,34 @@ factory/scripts/checkpoint.sh <slug> <phase> <status>
 ```
 
 ---
+
+## Phase 0 — The queue decides, not you
+
+```bash
+factory/scripts/queue.sh
+```
+
+**If the queue is not empty, position 1 is this run's app.** The owner put it
+there, in that order, from the console. Phases 1 and 2 are skipped entirely —
+there is nothing to ideate or score, the choice is already made.
+
+- Build position 1. Not position 2 because it looks easier, not something from
+  the bank because it seems better, not a fresh idea of your own.
+- Its `brief.mustHave` is a contract, exactly as a brief on an issue is: build
+  every item, and if one genuinely cannot be done say so before building rather
+  than cutting it.
+- When it has shipped: `factory/scripts/queue.sh --done <id>`.
+- If position 1 genuinely cannot be built — it needs a paid service, it cannot
+  work client-side — then **stop and say so**: comment on its issue if it has
+  one, otherwise write the reason into the run report, and leave it in the queue
+  for the owner to decide. Do not silently move to position 2.
+- Never reorder or remove a queue item yourself. That list is the owner's.
+
+An item with no brief is a bare title pulled from the bank; treat the title as
+the whole requirement and use your judgement for the rest, exactly as you would
+for an idea you chose yourself.
+
+Only when the queue is **empty** do you choose, and then Phases 1 and 2 apply.
 
 ## Phase 1 — Ideate (wide, then stop)
 

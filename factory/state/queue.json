@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "updated": "2026-10-27T22:36:43Z",
+  "items": [
+    {
+      "id": "q_guitarcam",
+      "title": "Guitar cam",
+      "source": "issue",
+      "issue": 4,
+      "addedAt": "2026-10-27T22:36:43Z",
+      "brief": {
+        "purpose": "Carried over from issue #4, which was pinned `next` before the queue existed. Read the issue for what was asked."
+      }
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Client } from '../lib/github';
 import { authAvailable, signIn, submitIdea, type Viewer } from '../lib/auth';
 import { EMPTY_BRIEF, renderBrief, toLines, validate, type Brief } from '../lib/brief';
+import { appendToQueue } from '../lib/queue';
 
 interface Props {
   client: Client;
@@ -54,7 +55,11 @@ export function BuildView({ client, viewer, onConnect, onChanged }: Props) {
   const [touched, setTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const [sent, setSent] = useState<{ number: number; approved: boolean } | null>(null);
+  const [sent, setSent] = useState<{
+    number: number;
+    approved: boolean;
+    position?: number | undefined;
+  } | null>(null);
 
   const brief: Brief = {
     ...EMPTY_BRIEF,
@@ -92,6 +97,28 @@ export function BuildView({ client, viewer, onConnect, onChanged }: Props) {
           ...(buildNext ? ['next'] : []),
         ]);
         setSent({ number: issue.number, approved: true });
+      }
+      // The issue is where it is discussed; the queue is what the factory reads.
+      let position: number | undefined;
+      if (isAdmin && client.canWrite) {
+        try {
+          ({ position } = await appendToQueue(client, {
+            title: brief.name.trim(),
+            source: 'console',
+            brief: {
+              purpose: brief.purpose.trim(),
+              mustHave: brief.mustHave,
+              niceToHave: brief.niceToHave,
+              exclude: brief.exclude,
+              notes: brief.notes.trim(),
+            },
+          }));
+          setSent((s) => (s ? { ...s, position } : s));
+        } catch {
+          setProblem(
+            'Filed as an issue, but could not be added to the queue — add it by hand.',
+          );
+        }
       }
       setName('');
       setPurpose('');
@@ -278,7 +305,9 @@ export function BuildView({ client, viewer, onConnect, onChanged }: Props) {
             {sent ? (
               <p role="status" className="text-sm text-[var(--success)]">
                 {sent.approved
-                  ? `Sent as #${sent.number}.`
+                  ? sent.position
+                    ? `Sent as #${sent.number}, queued at position ${sent.position}.`
+                    : `Sent as #${sent.number}.`
                   : `Submitted as #${sent.number} — it needs approval first.`}
               </p>
             ) : null}

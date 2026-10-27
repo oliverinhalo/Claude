@@ -88,6 +88,9 @@ async function request<T>(token: string | null, path: string, init?: RequestInit
       403,
     );
   }
+  if (res.status === 409) {
+    throw new GitHubError('Someone else changed this first — reload and try again.', 409);
+  }
   if (res.status === 404) {
     throw new GitHubError(
       token
@@ -109,6 +112,14 @@ async function request<T>(token: string | null, path: string, init?: RequestInit
   return (await res.json()) as T;
 }
 
+/** Encode UTF-8 text as base64, which the Contents API requires. */
+function encodeBase64(text: string): string {
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+}
+
 /** Decode a base64 payload that may contain multi-byte UTF-8. */
 function decodeBase64(data: string): string {
   const binary = atob(data.replace(/\n/g, ''));
@@ -122,6 +133,15 @@ export interface Client {
   canWrite: boolean;
   whoami(): Promise<{ login: string; avatar: string }>;
   file(path: string): Promise<string | null>;
+  /** Content plus the blob sha, which a write must quote to avoid clobbering. */
+  fileWithSha(path: string): Promise<{ content: string | null; sha: string | null }>;
+  /** Commit a file. A stale sha is rejected by GitHub rather than overwriting. */
+  writeFile(
+    path: string,
+    content: string,
+    sha: string | null,
+    message: string,
+  ): Promise<string>;
   dir(path: string): Promise<string[]>;
   issues(label: string, state?: 'open' | 'closed' | 'all'): Promise<RawIssue[]>;
   createIssue(title: string, body: string, labels: string[]): Promise<RawIssue>;
@@ -201,6 +221,44 @@ export function createClient(token: string | null, repo: string): Client {
         if (error instanceof GitHubError && error.status === 404) return null;
         throw error;
       }
+    },
+
+    async fileWithSha(path) {
+      try {
+        const res = await request<{ content?: string; sha?: string }>(
+          token,
+          `${base}/contents/${path}`,
+        );
+        return {
+          content: res.content ? decodeBase64(res.content) : null,
+          sha: res.sha ?? null,
+        };
+      } catch (error) {
+        if (error instanceof GitHubError && error.status === 404)
+          return { content: null, sha: null };
+        throw error;
+      }
+    },
+
+    async writeFile(path, content, sha, message) {
+      requireToken();
+      // Quoting the sha makes this a compare-and-set: if a factory run changed
+      // the file since it was read, GitHub returns 409 and the caller refetches
+      // rather than silently discarding the other side's edit.
+      const res = await request<{ content: { sha: string } }>(
+        token,
+        `${base}/contents/${path}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            message,
+            content: encodeBase64(content),
+            ...(sha ? { sha } : {}),
+            branch: 'main',
+          }),
+        },
+      );
+      return res.content.sha;
     },
 
     async dir(path) {

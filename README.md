@@ -37,6 +37,37 @@ Ideas and instructions you send become issues labelled `idea` and `request`. Eve
 run reads those first, acts on them, and closes each one with a reply — so the page
 is a control surface, not a dashboard.
 
+## How you drive it
+
+```
+   Ideas tab              Build tab
+   139 pre-generated      your own, with a brief
+          │                     │
+          └──── Add to queue ───┘
+                      │
+                      ▼
+            ┌──────────────────┐
+            │  Queue tab       │   ← the order, numbered
+            │  1. next ────────┼──► the next run builds this,
+            │  2.              │    then removes it
+            │  3.              │
+            └──────────────────┘
+              reorder · edit · remove
+                      │
+                      ▼
+              Apps tab: live, with a
+              "change something" box
+```
+
+**The queue is the whole answer to "what is it building next?"** Position 1 is
+next. The run builds it, removes it, and moves on. Nothing else decides the
+order — no scoring, no the-agent-thought-of-something-better. With the queue
+empty, and only then, a run picks its own idea.
+
+Everything in the queue can be edited: rename it, write what it is for, add
+must-haves, say what to leave out. A must-have is a contract — the factory
+builds every one or says on the issue why it cannot, before building.
+
 ## Start here
 
 | If you want to… | Read |

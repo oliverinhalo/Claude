@@ -39,6 +39,22 @@ async function mockGitHub(page: Page) {
     if (url.includes('ledger.json'))
       return json({ content: b64(JSON.stringify(LEDGER)), encoding: 'base64' });
     if (url.includes('idea-bank.md')) return json({ content: b64(BANK), encoding: 'base64' });
+    if (url.includes('contents/factory/state/queue.json')) {
+      if (route.request().method() === 'PUT') return json({ content: { sha: 'sha2' } });
+      return json({
+        content: b64(
+          JSON.stringify({
+            version: 1,
+            items: [
+              { id: 'a', title: 'Guitar cam', source: 'issue', issue: 4 },
+              { id: 'b', title: 'Shift swap planner', source: 'console' },
+            ],
+          }),
+        ),
+        encoding: 'base64',
+        sha: 'sha1',
+      });
+    }
     if (url.includes('contents/factory/state/run')) return json([]);
     if (url.includes('contents/factory/state/reports')) return json([]);
     if (url.includes('/issues?')) return json([]);
@@ -93,6 +109,15 @@ test.describe('anonymous', () => {
     await browse(page);
     await page.getByRole('button', { name: 'Control' }).click();
     await expect(page.getByRole('button', { name: /connect to send this/i })).toBeVisible();
+  });
+
+  test('shows the build order, numbered, with the next one marked', async ({ page }) => {
+    await browse(page);
+    await page.getByRole('button', { name: 'Queue' }).click();
+    const items = page.getByRole('listitem');
+    await expect(items.first()).toContainText('Guitar cam');
+    await expect(items.first()).toContainText('next');
+    await expect(items.nth(1)).toContainText('Shift swap planner');
   });
 
   test('shows the factory state and that nothing is broken', async ({ page }) => {
@@ -195,6 +220,23 @@ test.describe('connected', () => {
       page.getByRole('heading', { name: /what the factory will read/i }),
     ).toBeVisible();
     await expect(page.getByText(/contract, not a/)).toBeVisible();
+  });
+
+  test('can reorder the queue and save it', async ({ page }) => {
+    await connect(page);
+    await page.getByRole('button', { name: 'Queue' }).click();
+    await page.getByRole('button', { name: /move Guitar cam down/i }).click();
+    await expect(page.getByRole('listitem').first()).toContainText('Shift swap planner');
+    await expect(page.getByText(/not saved yet/i)).toBeVisible();
+    await page.getByRole('button', { name: /save the order/i }).click();
+    await expect(page.getByText(/the next run follows this order/i)).toBeVisible();
+  });
+
+  test('can remove something from the queue', async ({ page }) => {
+    await connect(page);
+    await page.getByRole('button', { name: 'Queue' }).click();
+    await page.getByRole('button', { name: /remove Guitar cam/i }).click();
+    await expect(page.getByRole('listitem')).toHaveCount(1);
   });
 
   test('can pause and resume the schedule', async ({ page }) => {

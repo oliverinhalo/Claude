@@ -11,6 +11,7 @@ app into its *own* new GitHub repository.
 | `.claude/skills/ship-weekly-app/` | The pipeline the weekly agent executes. Start here. |
 | `.claude/agents/` | Role sub-agents (PM, architect, designer, builder, QA, release, growth). |
 | `factory/ideas/idea-bank.md` | Durable idea backlog. Append-only; never delete rejected ideas. |
+| `factory/state/queue.json` | **The build order.** Position 1 is the next app. Owned by the console; never reordered by a run. |
 | `factory/state/ledger.json` | Machine-readable record of every app shipped. Source of truth. |
 | `factory/state/shipped.md` | Human-readable index of shipped apps. |
 | `factory/state/run/` | Per-run checkpoints so an interrupted run can resume. |
@@ -31,13 +32,18 @@ app into its *own* new GitHub repository.
 4. **The quality gate is not advisory.** `factory/scripts/quality-gate.sh` must
    exit 0 before anything is published. Do not weaken a gate to make it pass.
 5. **Append to the ledger only after the app is live** and its URL returns 200.
-6. **Never build a `pending-approval` idea, and never approve one.** Approval is
+6. **The queue decides what gets built.** If `factory/state/queue.json` is not
+   empty, build position 1 — no ideation, no scoring, no substituting something
+   that looks better. Remove it with `queue.sh --done <id>` once it is live. If
+   it cannot be built, say why and leave it in place; never reorder or drop an
+   item, and never skip to position 2.
+7. **Never build a `pending-approval` idea, and never approve one.** Approval is
    the owner's, through the console. Building an unapproved idea is the one way
    this pipeline can do something nobody asked for.
-7. **Sub-agents run in the foreground.** Always `run_in_background: false`. A
+8. **Sub-agents run in the foreground.** Always `run_in_background: false`. A
    factory run is headless — ending a turn to wait for a background agent kills
    the run, silently, mid-build. Never end a turn with work outstanding.
-8. **Work is checkpointed.** Update `factory/state/run/<slug>.json` at every phase
+9. **Work is checkpointed.** Update `factory/state/run/<slug>.json` at every phase
    boundary; a run that is cut off mid-flight resumes from there.
 
 ## Conventions

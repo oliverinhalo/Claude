@@ -193,6 +193,24 @@ what to focus on.
 
 ---
 
+## Using it day to day
+
+| You want to | Where |
+|---|---|
+| See what is being built next, and after that | **Queue** — position 1 is next |
+| Change the order | **Queue** — ↑ ↓ or *Build next* |
+| Drop something | **Queue** — *Remove* |
+| Sharpen what an item means | **Queue** — *Edit*: purpose, must-haves, exclusions |
+| Ask for something specific | **Build** — a full brief, lands in the queue |
+| Pull one out of the 139 pre-generated | **Ideas** — *Add to queue*, then edit it |
+| Change an app that already shipped | **Apps** — *Change something about this* |
+| See what broke | **Problems** |
+| Stop it for a while | **Overview** — *Pause scheduled runs* |
+
+Changes to the queue are not live until you press **Save the order** — a
+reorder is usually several moves, and committing each one separately would make
+the history unreadable.
+
 ## Verifying the setup
 
 A Claude session **cannot** check whether your secrets exist — the proxy blocks the

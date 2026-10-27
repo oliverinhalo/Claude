@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { Client } from '../lib/github';
 import { authAvailable, signIn, submitIdea, type Viewer } from '../lib/auth';
+import { appendToQueue } from '../lib/queue';
 import { groupByCategory, matches, relative } from '../lib/parse';
 import type { Idea } from '../lib/types';
 
@@ -22,6 +23,26 @@ export function IdeasView({ bank, submitted, client, viewer, onConnect, onChange
   const [sent, setSent] = useState<{ number: number; approved: boolean } | null>(null);
   // Signed in → the Worker files it and decides approval. Otherwise fall back to
   // the pasted token, which only the owner has.
+  const [queued, setQueued] = useState<Record<string, number>>({});
+  const [queueError, setQueueError] = useState<string | null>(null);
+
+  async function addBankIdea(idea: Idea) {
+    setQueueError(null);
+    try {
+      const { position } = await appendToQueue(client, {
+        title: idea.name,
+        source: 'bank',
+        brief: { purpose: idea.description },
+      });
+      setQueued((q) => ({ ...q, [idea.name]: position }));
+      onChanged();
+    } catch (error) {
+      setQueueError(
+        error instanceof Error ? error.message : 'Could not add that to the queue.',
+      );
+    }
+  }
+
   const viaWorker = authAvailable && viewer !== null;
   const canSubmit = viaWorker || client.canWrite;
 
@@ -244,6 +265,12 @@ export function IdeasView({ bank, submitted, client, viewer, onConnect, onChange
           is a shortlist entry in month seven.
         </p>
 
+        {queueError ? (
+          <p role="alert" className="mt-2 text-sm text-[var(--danger)]">
+            {queueError}
+          </p>
+        ) : null}
+
         <label className="sr-only" htmlFor="idea-search">
           Search ideas
         </label>
@@ -269,15 +296,35 @@ export function IdeasView({ bank, submitted, client, viewer, onConnect, onChange
                 </h3>
                 <ul className="mt-2 space-y-1.5">
                   {ideas.map((idea) => (
-                    <li key={`${category}-${idea.name}`} className="text-pretty">
-                      <span
-                        className={
-                          idea.state === 'done' ? 'line-through opacity-60' : 'font-medium'
-                        }
-                      >
-                        {idea.name}
+                    <li
+                      key={`${category}-${idea.name}`}
+                      className="flex flex-wrap items-baseline gap-x-2 text-pretty"
+                    >
+                      <span className="flex-1">
+                        <span
+                          className={
+                            idea.state === 'done' ? 'line-through opacity-60' : 'font-medium'
+                          }
+                        >
+                          {idea.name}
+                        </span>
+                        <span className="text-[var(--text-muted)]"> — {idea.description}</span>
                       </span>
-                      <span className="text-[var(--text-muted)]"> — {idea.description}</span>
+                      {client.canWrite ? (
+                        queued[idea.name] ? (
+                          <span className="shrink-0 text-sm text-[var(--success)] tnum">
+                            queued #{queued[idea.name]}
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => void addBankIdea(idea)}
+                            className="shrink-0 rounded-[var(--radius)] border border-[var(--border)] px-2 py-1 text-sm text-[var(--text-muted)] transition-colors duration-[var(--dur-state)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                          >
+                            Add to queue
+                          </button>
+                        )
+                      ) : null}
                     </li>
                   ))}
                 </ul>

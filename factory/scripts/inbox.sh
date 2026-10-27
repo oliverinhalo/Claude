@@ -41,6 +41,10 @@ PENDING="$(jq '[.[] | select([.labels[]?.name] | index("pending-approval"))]' <<
 
 echo "Inbox from the Factory Console"
 echo "=============================="
+
+# The queue is the order the owner set. It outranks scoring, the idea bank, and
+# your own preferences about what would be interesting to build.
+"$(dirname "${BASH_SOURCE[0]}")/queue.sh" || true
 show "Instructions — act on these first" "$REQUESTS"
 show "Approved ideas — yours to build" "$APPROVED"
 show "Pending approval — DO NOT BUILD" "$PENDING" \

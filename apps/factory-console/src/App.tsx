@@ -7,13 +7,22 @@ import { IdeasView } from './components/IdeasView';
 import { ControlView } from './components/ControlView';
 import { BuildView } from './components/BuildView';
 import { ProblemsView } from './components/ProblemsView';
+import { QueueView } from './components/QueueView';
 import { PendingView } from './components/PendingView';
 import { SignIn } from './components/SignIn';
 import { authAvailable, captureSessionFromUrl, whoAmI, type Viewer } from './lib/auth';
 import { createClient, readRepo, readToken, writeRepo, writeToken } from './lib/github';
 import { useFactory } from './lib/useFactory';
 
-const BASE_TABS = ['Overview', 'Build', 'Apps', 'Ideas', 'Problems', 'Control'] as const;
+const BASE_TABS = [
+  'Overview',
+  'Queue',
+  'Build',
+  'Apps',
+  'Ideas',
+  'Problems',
+  'Control',
+] as const;
 type Tab = (typeof BASE_TABS)[number] | 'Pending';
 
 export function App() {
@@ -185,6 +194,8 @@ export function App() {
                 </button>
               </div>
             </div>
+          ) : tab === 'Queue' ? (
+            <QueueView client={client} canEdit={canAct} onChanged={() => void reload()} />
           ) : tab === 'Build' ? (
             <BuildView
               client={client}

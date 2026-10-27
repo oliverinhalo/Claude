@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Build queue",
+  "description": "The order the factory builds things in. Position 1 is next. Edited from the console; read by every run.",
+  "type": "object",
+  "required": ["version", "items"],
+  "properties": {
+    "version": { "const": 1 },
+    "updated": { "type": "string" },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "source"],
+        "properties": {
+          "id": { "type": "string", "description": "Stable id, so reordering never confuses one item for another." },
+          "title": { "type": "string" },
+          "source": { "enum": ["console", "bank", "issue"] },
+          "issue": { "type": "integer", "description": "The GitHub issue holding discussion, if any." },
+          "addedAt": { "type": "string" },
+          "brief": {
+            "type": "object",
+            "description": "Same shape the Build form produces. mustHave is a contract.",
+            "properties": {
+              "purpose": { "type": "string" },
+              "mustHave": { "type": "array", "items": { "type": "string" } },
+              "niceToHave": { "type": "array", "items": { "type": "string" } },
+              "exclude": { "type": "array", "items": { "type": "string" } },
+              "notes": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
