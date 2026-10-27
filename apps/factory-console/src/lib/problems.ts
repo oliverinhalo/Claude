@@ -54,6 +54,11 @@ export function checkpointProblems(checkpoints: Checkpoint[]): Problem[] {
  * failure with no explanation is still a failure worth seeing.
  */
 export async function runProblems(client: Client, runs: RawRun[]): Promise<Problem[]> {
+  // Unauthenticated GitHub allows 60 requests an hour per IP, and the reason for
+  // a failure costs two more calls each. Anonymous viewers get the failure
+  // without the detail rather than a rate-limited page with nothing on it.
+  const withDetail = client.canWrite;
+
   const failed = runs
     .filter(
       (r) =>
@@ -64,6 +69,18 @@ export async function runProblems(client: Client, runs: RawRun[]): Promise<Probl
   const out: Problem[] = [];
   for (const run of failed) {
     let detail = '';
+    if (!withDetail) {
+      out.push({
+        kind: 'run',
+        title: `${run.name} ${run.conclusion ?? 'failed'}`,
+        detail:
+          'Sign in to see why — reading the reason costs API calls anonymous viewers do not have.',
+        when: run.created_at,
+        url: run.html_url,
+        runId: run.id,
+      });
+      continue;
+    }
     try {
       const jobs = await client.jobs(run.id);
       const steps = failedSteps(jobs);
