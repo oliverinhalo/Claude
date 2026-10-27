@@ -127,6 +127,18 @@ jobs:
               echo "  $FOCUS"
             fi
             echo
+            echo "HEADLESS RUN — THE RULE THAT MATTERS MOST:"
+            echo "You are running non-interactively. There is no next turn. If you end"
+            echo "your turn, this run ends and everything uncommitted is lost."
+            echo "- Run EVERY sub-agent with run_in_background: false. You need its result"
+            echo "  to continue, which is exactly when foreground is right."
+            echo "- Never say you will wait for something, check back later, or sleep."
+            echo "  Nothing will wake you."
+            echo "- Commit and push before you stop, for any reason."
+            echo "Ten runs in a row died here: each spawned the qa agent, said it was"
+            echo "waiting for it, ended the turn, and shipped nothing — while reporting"
+            echo "success. Do not repeat it."
+            echo
             echo "Hard rules that still apply:"
             echo "- Only ideas labelled 'approved' may be built. Never build or approve a"
             echo "  'pending-approval' idea — that decision is the owner's alone."

@@ -174,7 +174,8 @@ smoke test, and automated accessibility audit. All of it, exit 0.
 big — fix the bundle. A gate you lowered is a gate you no longer have, for all 52
 apps, forever.
 
-Then run the `qa` sub-agent against the acceptance criteria from the spec. It tests
+Then run the `qa` sub-agent — **with `run_in_background: false`** — against the
+acceptance criteria from the spec. It tests
 the *product*, not the code: every criterion, by hand, through the UI, including the
 paths you did not think of.
 
@@ -253,6 +254,29 @@ what is worth doing next — and lists "nothing further, end the run" as a legit
 answer. Do not invent work to fill time.
 
 ---
+
+## Sub-agents: always in the foreground
+
+**Every sub-agent must be run with `run_in_background: false`.**
+
+A factory run is headless. There is no next turn: if you end your turn waiting
+for a background agent, the process exits and the whole run is lost — the build
+is abandoned mid-phase, nothing is committed, and the job still reports success.
+
+This is not hypothetical. Ten consecutive runs died exactly here: each spawned
+the `qa` agent, said *"waiting for QA to finish"*, ended the turn, and stopped.
+Twelve days passed with nothing shipped and every run green.
+
+So:
+
+- Pass `run_in_background: false` on every `Agent` call. You need the result
+  before you can continue, which is precisely when foreground is correct.
+- **Never end a turn with work outstanding.** No "I'll wait for", no "let me
+  check back", no sleeping to pass the time. There is nothing to come back to.
+- If a sub-agent would take too long to wait for, do the work yourself inline
+  rather than backgrounding it.
+- Before you stop for any reason, commit and push. An uncommitted run is a run
+  that did not happen.
 
 ## Operating as a team, not a person
 

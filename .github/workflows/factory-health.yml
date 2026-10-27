@@ -6,7 +6,10 @@ name: Factory health
 
 on:
   schedule:
-    - cron: '41 9 * * 3' # Wednesdays, mid-week, after a Monday run should have landed
+    # Daily. It used to run weekly with a 10-day threshold, and missed a
+    # twelve-day stall: on the one Wednesday it ran, the gap was nine days.
+    # With runs happening every day, a silent week is already far too long.
+    - cron: '23 16 * * *'
   workflow_dispatch:
 
 permissions:
@@ -40,7 +43,9 @@ jobs:
           BEHIND=$(( WEEKS - COUNT ))
           echo "behind=$BEHIND"  >> "$GITHUB_OUTPUT"
           STALLED=false
-          [ "$DAYS" -gt 10 ] && STALLED=true
+          # Runs happen daily, so four days of nothing means something is wrong,
+          # not that the week is young.
+          [ "$DAYS" -gt 4 ] && STALLED=true
           echo "stalled=$STALLED" >> "$GITHUB_OUTPUT"
           {
             echo "### Factory health"
@@ -83,6 +88,10 @@ jobs:
               `2. Has \`FACTORY_GH_TOKEN\` expired? \`docs/SETUP.md\` step 1.`,
               `3. Is there an interrupted run in \`factory/state/run/\` waiting to resume?`,
               `4. Did the last **Publish app** workflow fail?`,
+              `5. Did recent **Run factory now** runs report success but commit nothing?`,
+              `   Open one and read its summary — it names the turn count, the commits`,
+              `   made, and what the agent said before stopping. A run that ends after a`,
+              `   handful of turns with no commits did not do the work, whatever its tick says.`,
               ``,
               `To resume immediately, start a session in this repository and say:`,
               `*"Resume the factory run"* — the pipeline picks up from its checkpoint.`,

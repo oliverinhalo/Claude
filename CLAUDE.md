@@ -34,7 +34,10 @@ app into its *own* new GitHub repository.
 6. **Never build a `pending-approval` idea, and never approve one.** Approval is
    the owner's, through the console. Building an unapproved idea is the one way
    this pipeline can do something nobody asked for.
-7. **Work is checkpointed.** Update `factory/state/run/<slug>.json` at every phase
+7. **Sub-agents run in the foreground.** Always `run_in_background: false`. A
+   factory run is headless — ending a turn to wait for a background agent kills
+   the run, silently, mid-build. Never end a turn with work outstanding.
+8. **Work is checkpointed.** Update `factory/state/run/<slug>.json` at every phase
    boundary; a run that is cut off mid-flight resumes from there.
 
 ## Conventions
