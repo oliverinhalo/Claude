@@ -1,3 +1,4 @@
+import { must } from '../test-helpers';
 import { describe, expect, it } from 'vitest';
 import { buildExport, quantize, toAsciiTab, toJson, toMidi, toMusicXml } from './export';
 import { isTake, parseTake, toTabEvent, type Take, type TabEvent } from './take';
@@ -87,11 +88,11 @@ describe('MusicXML', () => {
       expect(n.querySelector('string')).not.toBeNull();
       expect(n.querySelector('fret')).not.toBeNull();
     }
-    const first = notes[0]!;
+    const first = must(notes[0]);
     expect(first.querySelector('step')?.textContent).toBe('E');
     expect(first.querySelector('octave')?.textContent).toBe('2');
-    expect(notes[2]!.querySelector('fret')?.textContent).toBe('0');
-    expect(notes[3]!.querySelector('chord')).not.toBeNull();
+    expect(must(notes[2]).querySelector('fret')?.textContent).toBe('0');
+    expect(must(notes[3]).querySelector('chord')).not.toBeNull();
   });
   it('fills every measure exactly', () => {
     const doc = new DOMParser().parseFromString(xml, 'application/xml');
@@ -129,7 +130,11 @@ describe('MIDI', () => {
     expect(text(0, 4)).toBe('MThd');
     expect([...bytes.slice(8, 14)]).toEqual([0, 0, 0, 1, 1, 0xe0]);
     expect(text(14, 4)).toBe('MTrk');
-    const len = (bytes[18]! << 24) | (bytes[19]! << 16) | (bytes[20]! << 8) | bytes[21]!;
+    const len =
+      (must(bytes[18]) << 24) |
+      (must(bytes[19]) << 16) |
+      (must(bytes[20]) << 8) |
+      must(bytes[21]);
     expect(bytes.length).toBe(22 + len);
   });
   it('encodes 120 BPM as 500000 µs per quarter', () => {
@@ -139,7 +144,7 @@ describe('MIDI', () => {
   it('plays E2 (40), G2 (43), then E, B, E for the chord', () => {
     const ons: number[] = [];
     for (let i = 22; i < bytes.length - 2; i++) {
-      if (bytes[i] === 0x90 && bytes[i + 2] === 90) ons.push(bytes[i + 1]!);
+      if (bytes[i] === 0x90 && bytes[i + 2] === 90) ons.push(must(bytes[i + 1]));
     }
     expect(ons).toEqual([40, 43, 40, 47, 52]);
   });
@@ -168,13 +173,17 @@ describe('JSON and packaging', () => {
 
 describe('toTabEvent', () => {
   it('keeps a melody near the previous position', () => {
-    const first = toTabEvent({ kind: 'note', t0: 0, t1: 200, midi: 64 }, DEFAULT_TUNING, null)!;
+    const first = must(
+      toTabEvent({ kind: 'note', t0: 0, t1: 200, midi: 64 }, DEFAULT_TUNING, null),
+    );
     expect(first.notes[0]).toEqual({ string: 1, fret: 0 });
-    const second = toTabEvent(
-      { kind: 'note', t0: 200, t1: 400, midi: 67 },
-      DEFAULT_TUNING,
-      first.notes[0]!,
-    )!;
+    const second = must(
+      toTabEvent(
+        { kind: 'note', t0: 200, t1: 400, midi: 67 },
+        DEFAULT_TUNING,
+        must(first.notes[0]),
+      ),
+    );
     expect(second.notes[0]).toEqual({ string: 1, fret: 3 });
   });
 });

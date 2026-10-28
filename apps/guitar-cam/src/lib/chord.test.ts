@@ -1,3 +1,4 @@
+import { must } from '../test-helpers';
 import { describe, expect, it } from 'vitest';
 import { chordPositions, identifyChord, voicingFor } from './chord';
 import { strum } from './synth';
@@ -37,22 +38,22 @@ describe('identifyChord', () => {
 describe('voicingFor', () => {
   it('finds a playable voicing that spells the chord with the root in the bass', () => {
     for (const name of ['E', 'Am', 'G', 'C', 'D7']) {
-      const chord = identifyChord(strum(SHAPES[name]!, SR, N, 3000), SR)!;
-      const frets = voicingFor(chord, DEFAULT_TUNING)!;
+      const chord = must(identifyChord(strum(must(SHAPES[name]), SR, N, 3000), SR));
+      const frets = must(voicingFor(chord, DEFAULT_TUNING));
       expect(frets, name).not.toBeNull();
       const notes = frets.flatMap((f, i) =>
         f === null ? [] : [pitchAt({ string: 6 - i, fret: f }, DEFAULT_TUNING)],
       );
       expect(notes.length).toBeGreaterThanOrEqual(4);
       expect(new Set(notes.map((n) => n % 12))).toEqual(new Set(chord.tones));
-      expect(notes[0]! % 12).toBe(chord.root);
+      expect(must(notes[0]) % 12).toBe(chord.root);
     }
   });
 });
 
 describe('chordPositions', () => {
   it('only lists positions whose pitch class is in the chord', () => {
-    const chord = identifyChord(strum(SHAPES.G!, SR, N, 3000), SR)!;
+    const chord = must(identifyChord(strum(must(SHAPES.G), SR, N, 3000), SR));
     for (const p of chordPositions(chord, DEFAULT_TUNING)) {
       expect(chord.tones).toContain(pitchAt(p, DEFAULT_TUNING) % 12);
     }

@@ -16,6 +16,7 @@ export function pluck(
   const harmonics = 8;
   for (let i = 0; i < length; i++) {
     const t = (i + startSample) / sampleRate;
+    if (t < 0) continue; // this string has not been plucked yet
     let v = 0;
     for (let h = 1; h <= harmonics; h++) {
       if (f0 * h > sampleRate / 2.2) break;
