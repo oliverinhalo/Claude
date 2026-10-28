@@ -66,9 +66,9 @@ Anything that fails validation is replaced by the default and the user is told.
 
 ## The four states
 
-| State   | Behaviour                                                                                  |
-| ------- | ------------------------------------------------------------------------------------------ |
-| Empty   | Readout says "Play a note" with the demo offered; Take panel says "Nothing recorded yet".  |
-| Error   | Mic denied / absent / no secure context: named cause and what to do; demo still works.     |
-| Slow    | Mic permission pending shows "Waiting for microphone permission…"; Listen disabled.        |
-| Offline | Everything is client-side; the page works offline once loaded. Stated in the footer.       |
+| State   | Behaviour                                                                                 |
+| ------- | ----------------------------------------------------------------------------------------- |
+| Empty   | Readout says "Play a note" with the demo offered; Take panel says "Nothing recorded yet". |
+| Error   | Mic denied / absent / no secure context: named cause and what to do; demo still works.    |
+| Slow    | Mic permission pending shows "Waiting for microphone permission…"; Listen disabled.       |
+| Offline | Everything is client-side; the page works offline once loaded. Stated in the footer.      |
