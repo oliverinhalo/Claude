@@ -95,7 +95,8 @@ export function createAnalyzer(): Analyzer {
     }
     // A chord is believed once steady, and then kept for as long as it is still the best fit:
     // the strings decay at different rates, so its chroma drifts after it has been named.
-    if (chord && voices >= 3 && (sustained || chord.name === holding)) {
+    // Once named, it only has to stay audible: as strings die away they drop out of the count.
+    if (chord && ((sustained && voices >= 3) || (chord.name === holding && voices >= 2))) {
       holding = chord.name;
       return { kind: 'chord', chord };
     }

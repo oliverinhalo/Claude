@@ -22,6 +22,18 @@ function heardAt(frameMs: number, offsetMs: number): string[] {
 const WRITTEN = ['n45', 'n48', 'n50', 'n52', 'n55', 'n52', 'n50', 'n48', 'Em', 'C', 'G', 'D'];
 
 describe('demo performance', () => {
+  it('holds each chord for most of the time it rings, not just its first instant', () => {
+    const analyze = createAnalyzer();
+    const tracker = new Tracker();
+    const held: Record<string, number> = {};
+    for (let t = 0; t < DEMO_LENGTH_MS; t += 33) {
+      for (const e of tracker.push(t, analyze(demoWindow(t, SR, WINDOW), SR, t))) {
+        if (e.kind === 'chord') held[e.chord.name] = e.t1 - e.t0;
+      }
+    }
+    for (const name of ['Em', 'C', 'G', 'D']) expect(held[name]).toBeGreaterThan(900);
+  });
+
   // Real frames arrive at uneven phases; the answer must not depend on where they land.
   for (const [frame, offset] of [
     [33, 0],
