@@ -1,6 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Guitar Cam">
-  <!-- Phase 4 replaces this with the app's own mark. -->
-  <rect width="64" height="64" rx="14" fill="#2f5540" />
-  <path d="M18 40.5 32 20l14 20.5" fill="none" stroke="#fbfbfa" stroke-width="5"
-        stroke-linecap="round" stroke-linejoin="round" />
+  <rect width="64" height="64" rx="14" fill="#2a1a12" />
+  <g stroke="#e8dfc9" stroke-width="2" opacity="0.85">
+    <path d="M10 20h44M10 29h44M10 38h44M10 47h44" />
+  </g>
+  <g stroke="#cfc7b8" stroke-width="2" opacity="0.5">
+    <path d="M24 14v38M40 14v38" />
+  </g>
+  <circle cx="32" cy="38" r="8" fill="#e3a94c" />
+  <circle cx="32" cy="38" r="12" fill="none" stroke="#e3a94c" stroke-width="2" opacity="0.6" />
 </svg>
