@@ -25,7 +25,6 @@ export const QUALITIES: readonly ChordQuality[] = [
   { id: 'sus2', suffix: 'sus2', tones: [0, 2, 7] },
   { id: 'sus4', suffix: 'sus4', tones: [0, 5, 7] },
   { id: 'dim', suffix: 'dim', tones: [0, 3, 6] },
-  { id: '5', suffix: '5', tones: [0, 7] },
 ];
 
 export interface Chord {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WINDOW, analyze } from './analyzer';
+import { WINDOW, createAnalyzer, type Reading } from './analyzer';
 import { noise, pluck, strum } from './synth';
 
 const SHAPES: Record<string, number[]> = {
@@ -15,6 +15,13 @@ const SHAPES: Record<string, number[]> = {
   A7: [45, 52, 55, 61, 64],
   D7: [50, 57, 60, 66],
 };
+
+/** What the analyser says about a sound that has been held steady for a while. */
+function analyze(samples: Float32Array, sr: number): Reading {
+  const a = createAnalyzer();
+  a(samples, sr, 0);
+  return a(samples, sr, 200);
+}
 
 for (const sr of [44100, 48000]) {
   describe(`analyze @ ${sr} Hz`, () => {

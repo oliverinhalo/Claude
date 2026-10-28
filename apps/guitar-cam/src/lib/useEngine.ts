@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { WINDOW, analyze, type Reading } from './analyzer';
+import { WINDOW, createAnalyzer, type Reading } from './analyzer';
 import { demoWindow } from './demo';
 import { Tracker, type Held } from './tracker';
 import type { RawEvent } from './take';
@@ -84,6 +84,7 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
       read: (t: number) => { samples: Float32Array; rate: number },
     ) => {
       tracker.current = new Tracker();
+      const analyze = createAnalyzer();
       const origin = performance.now();
       let last = 0;
       let raf = 0;
@@ -94,7 +95,7 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
         if (now - last < FRAME_MS) return;
         last = now;
         const { samples, rate } = read(now - origin);
-        const reading = analyze(samples, rate);
+        const reading = analyze(samples, rate, now - origin);
         for (const e of tracker.current.push(now - origin, reading)) onEventRef.current(e);
 
         let sum = 0;

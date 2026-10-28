@@ -345,7 +345,7 @@ export function App() {
               ],
               [
                 'Chords',
-                'A strum is matched against major, minor, seventh, suspended and power chords, and lit across the neck.',
+                'A strum is matched against major, minor, seventh, suspended and diminished chords, and lit across the neck.',
               ],
               [
                 'Export',

@@ -46,9 +46,11 @@ Microphone access needs `https://` or `localhost`.
 - **Single notes** use the McLeod pitch method on the latest 4096 samples
   (`src/lib/pitch.ts`), accurate to a few cents across the guitar's range.
 - **Chords** fold a 16384-sample spectrum into twelve pitch classes, subtract the overtones a
-  string produces on its own, and match against nine chord qualities (`src/lib/chord.ts`).
-  A signal with three or more genuine pitch classes is a chord even when it is periodic
-  enough to look like a note (a D chord almost is one harmonic series).
+  string produces on its own, and match against eight chord qualities (`src/lib/chord.ts`).
+  A chord needs three genuinely sounding pitch classes, so a power chord reads as its root
+  note. A chord is only believed once its pitch content has stopped changing
+  (`src/lib/analyzer.ts`): right after a melody moves, the long window holds two notes at
+  once, and that blend looks exactly like a chord.
 - **The tracker** (`src/lib/tracker.ts`) turns per-frame guesses into played events: it needs
   three agreeing frames to start one, and rides out the flicker of a decaying string.
 - **Export** quantises to a sixteenth-note grid at your tempo (`src/lib/export.ts`). MusicXML
