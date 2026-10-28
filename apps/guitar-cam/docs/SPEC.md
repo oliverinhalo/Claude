@@ -25,7 +25,7 @@ Anything basic, anything unprofessional: no accounts, no ads, no fake data, no u
 
 ## The core loop
 
-1. Open the page. A demo plays through the real analyser so the fretboard is alive at once.
+1. Open the page. **Try the demo** plays a performance through the real analyser, no microphone needed.
 2. Press **Listen**; allow the microphone.
 3. Play. The readout shows note, octave, cents sharp/flat; the fretboard lights the position.
 4. Strum. The readout shows the chord name; chord tones light on the fretboard.

@@ -8,7 +8,7 @@ import { chordPositions, voicingFor } from './lib/chord';
 import type { Target } from './lib/drill';
 import { TUNINGS, choosePosition, noteName, positionsFor, tuningById } from './lib/music';
 import type { FretPosition } from './lib/music';
-import { DEFAULT_STATE, clampBpm, store } from './lib/state';
+import { clampBpm, store } from './lib/state';
 import { lastPosition, toTabEvent, type RawEvent, type Take } from './lib/take';
 import { useEngine } from './lib/useEngine';
 
@@ -50,8 +50,8 @@ export function App() {
   const live = snap.status === 'listening' || snap.status === 'demo';
 
   useEffect(() => {
-    store.save({ tuning: tuningId, bpm, take: recording ? DEFAULT_STATE.take : take });
-  }, [tuningId, bpm, take, recording]);
+    store.save({ tuning: tuningId, bpm, take });
+  }, [tuningId, bpm, take]);
 
   const toggleRecord = () => {
     if (recordingRef.current) {
@@ -70,12 +70,13 @@ export function App() {
     setRecording(true);
   };
 
-  const changeStatusStop = () => {
+  const stopListening = () => {
+    // Stopping flushes the note still ringing; it must reach the take before recording ends.
+    stop();
     if (recordingRef.current) {
       recordingRef.current = false;
       setRecording(false);
     }
-    stop();
   };
 
   // Where the player is on the neck: remembered, so the next note stays nearby.
@@ -179,7 +180,7 @@ export function App() {
               {live ? (
                 <button
                   type="button"
-                  onClick={changeStatusStop}
+                  onClick={stopListening}
                   className={`${button} border border-[var(--border-strong)] bg-[var(--surface-raised)] text-[var(--text)] hover:border-[var(--accent)]`}
                 >
                   Stop
@@ -312,6 +313,7 @@ export function App() {
                 onBpm={(n) => setBpm(clampBpm(n))}
                 onRecord={toggleRecord}
                 onClear={() => setTake(null)}
+                onImport={setTake}
               />
             </div>
             <div

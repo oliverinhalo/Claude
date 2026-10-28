@@ -78,4 +78,27 @@ describe('Guitar Cam states', () => {
       ).toBeInTheDocument(),
     );
   });
+
+  it('releases a microphone that arrives after the demo has taken over', async () => {
+    let grant: (stream: MediaStream) => void = () => undefined;
+    const stopTrack = vi.fn();
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      mediaDevices: {
+        getUserMedia: () =>
+          new Promise<MediaStream>((resolve) => {
+            grant = resolve;
+          }),
+      },
+    });
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: /^listen$/i }));
+    expect(screen.getByTestId('status')).toHaveTextContent(/waiting for microphone/i);
+    await userEvent.click(screen.getByRole('button', { name: /try the demo/i }));
+    grant({ getTracks: () => [{ stop: stopTrack }] } as unknown as MediaStream);
+    await waitFor(() => expect(stopTrack).toHaveBeenCalled());
+    expect(screen.getByTestId('status')).toHaveTextContent(/demo/i);
+    await userEvent.click(screen.getByRole('button', { name: /^stop$/i }));
+    expect(screen.getByTestId('status')).toHaveTextContent(/not listening/i);
+  });
 });

@@ -76,7 +76,7 @@ function render(sampleRate: number): Float32Array {
 /** The most recent `length` samples of the demo, as heard at time `ms` (looping). */
 export function demoWindow(ms: number, sampleRate: number, length: number): Float32Array {
   const loop = render(sampleRate);
-  const end = Math.round(((ms % DEMO_LENGTH_MS) / 1000) * sampleRate);
+  const end = Math.round(((Math.max(0, ms) % DEMO_LENGTH_MS) / 1000) * sampleRate);
   const start = end - length;
   const out = new Float32Array(length);
   const from = Math.max(0, start);

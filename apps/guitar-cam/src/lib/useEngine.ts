@@ -57,16 +57,26 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
   }, [onEvent]);
 
   const cleanup = useRef<(() => void) | null>(null);
+  // Bumped by every start and stop, so a microphone request that resolves late can tell it
+  // has been overtaken and release what it was given instead of replacing the new session.
+  const session = useRef(0);
   const tracker = useRef(new Tracker());
 
   const stop = useCallback(() => {
+    session.current += 1;
     cleanup.current?.();
     cleanup.current = null;
     for (const e of tracker.current.flush(performance.now())) onEventRef.current(e);
     setSnap(IDLE);
   }, []);
 
-  useEffect(() => () => cleanup.current?.(), []);
+  useEffect(
+    () => () => {
+      session.current += 1;
+      cleanup.current?.();
+    },
+    [],
+  );
 
   const run = useCallback(
     (
@@ -119,6 +129,7 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
   );
 
   const startDemo = useCallback(() => {
+    session.current += 1;
     cleanup.current?.();
     const rate = 44100;
     const dispose = run('demo', (t) => ({ samples: demoWindow(t, rate, WINDOW), rate }));
@@ -129,6 +140,7 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
   const startMic = useCallback(async () => {
     cleanup.current?.();
     cleanup.current = null;
+    const mine = ++session.current;
     if (!navigator.mediaDevices?.getUserMedia) {
       setSnap({
         ...IDLE,
@@ -146,7 +158,13 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
     } catch (err) {
-      setSnap({ ...IDLE, status: 'error', error: describeMicError(err) });
+      if (session.current === mine) {
+        setSnap({ ...IDLE, status: 'error', error: describeMicError(err) });
+      }
+      return;
+    }
+    if (session.current !== mine) {
+      for (const track of stream.getTracks()) track.stop();
       return;
     }
     const ctx = new AudioContext();

@@ -3,9 +3,9 @@
   "week": 4,
   "status": "in_progress",
   "started": "2026-10-28T14:05:05Z",
-  "updated": "2026-10-28T14:21:40Z",
-  "last_completed_phase": "gate",
-  "next_action": "qa agent, then publish",
+  "updated": "2026-10-28T14:27:24Z",
+  "last_completed_phase": "publish",
+  "next_action": "publish.sh then verify-live",
   "decisions": [],
   "blockers": [],
   "live_url": null

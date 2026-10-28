@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { buildExport, toAsciiTab, MAX_BPM, MIN_BPM, type ExportFormat } from '../lib/export';
-import type { Take } from '../lib/take';
+import { parseTake, type Take } from '../lib/take';
 
 interface Props {
   take: Take | null;
@@ -10,6 +10,7 @@ interface Props {
   onBpm: (n: number) => void;
   onRecord: () => void;
   onClear: () => void;
+  onImport: (take: Take) => void;
 }
 
 const FORMATS: ReadonlyArray<{ id: ExportFormat; label: string; hint: string }> = [
@@ -43,8 +44,11 @@ export function TakePanel({
   onBpm,
   onRecord,
   onClear,
+  onImport,
 }: Props) {
   const [copied, setCopied] = useState(false);
+  const [importError, setImportError] = useState('');
+  const fileInput = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState(String(bpm));
   useEffect(() => setDraft(String(bpm)), [bpm]);
   const events = take?.events ?? [];
@@ -57,6 +61,20 @@ export function TakePanel({
       setTimeout(() => setCopied(false), 1800);
     } catch {
       setCopied(false);
+    }
+  };
+
+  const importFile = async (file: File | undefined) => {
+    if (!file) return;
+    // A take is a few hundred kilobytes at the very most; refuse anything absurd unread.
+    const parsed = file.size > 5_000_000 ? null : parseTake(await file.text());
+    if (parsed) {
+      setImportError('');
+      onImport(parsed);
+    } else {
+      setImportError(
+        'That file is not a Guitar Cam take. Import a .json file exported from here.',
+      );
     }
   };
 
@@ -166,6 +184,35 @@ export function TakePanel({
           {copied ? 'Copied' : 'Copy tab to clipboard'}
         </button>
       </fieldset>
+
+      <div>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="application/json,.json"
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+          data-testid="import-file"
+          onChange={(e) => {
+            void importFile(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => fileInput.current?.click()}
+          disabled={recording}
+          className={button}
+        >
+          Import a saved take (JSON)
+        </button>
+        {importError && (
+          <p role="alert" className="mt-2 text-sm text-[var(--danger)]">
+            {importError}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

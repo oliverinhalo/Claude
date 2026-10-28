@@ -121,4 +121,34 @@ test.describe('guitar cam', () => {
     await expect(page.getByTestId('status')).toHaveText(/not listening|playing the demo/i);
     expect(errors).toEqual([]);
   });
+
+  test('a take exported as JSON imports again, and a bad file is refused', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /try the demo/i }).click();
+    await page.getByRole('button', { name: /^record$/i }).click();
+    await expect(page.getByTestId('tab')).toBeVisible({ timeout: 15000 });
+    await page.getByRole('button', { name: /stop recording/i }).click();
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByTestId('export-json').click(),
+    ]);
+    const saved = await readFile(await download.path());
+    const before = await page.getByTestId('tab').innerText();
+
+    await page.getByRole('button', { name: /clear take/i }).click();
+    await expect(page.getByTestId('tab')).toHaveCount(0);
+    await page.getByTestId('import-file').setInputFiles({
+      name: 'take.json',
+      mimeType: 'application/json',
+      buffer: saved,
+    });
+    await expect(page.getByTestId('tab')).toHaveText(before);
+
+    await page.getByTestId('import-file').setInputFiles({
+      name: 'nope.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from('{"hello":1}'),
+    });
+    await expect(page.getByRole('alert')).toContainText(/not a guitar cam take/i);
+  });
 });
