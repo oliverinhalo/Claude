@@ -1,0 +1,12 @@
+{
+  "slug": "guitar-cam",
+  "week": 4,
+  "status": "in_progress",
+  "started": "2026-10-28T14:05:05Z",
+  "updated": "2026-10-28T14:08:59Z",
+  "last_completed_phase": "build",
+  "next_action": "lib done: pitch/chord/analyzer; next tracker, tab, exports, UI",
+  "decisions": [],
+  "blockers": [],
+  "live_url": null
+}
