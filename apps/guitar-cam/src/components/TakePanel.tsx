@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { buildExport, toAsciiTab, MAX_BPM, MIN_BPM, type ExportFormat } from '../lib/export';
 import type { Take } from '../lib/take';
 
@@ -45,6 +45,8 @@ export function TakePanel({
   onClear,
 }: Props) {
   const [copied, setCopied] = useState(false);
+  const [draft, setDraft] = useState(String(bpm));
+  useEffect(() => setDraft(String(bpm)), [bpm]);
   const events = take?.events ?? [];
   const tab = take ? toAsciiTab(take, bpm) : '';
 
@@ -81,8 +83,22 @@ export function TakePanel({
             inputMode="numeric"
             min={MIN_BPM}
             max={MAX_BPM}
-            value={bpm}
-            onChange={(e) => onBpm(Number(e.target.value))}
+            value={draft}
+            onChange={(e) => {
+              // Let people type "132" without "1" being clamped to 40 on the way.
+              setDraft(e.target.value);
+              const n = e.target.valueAsNumber;
+              if (Number.isInteger(n) && n >= MIN_BPM && n <= MAX_BPM) onBpm(n);
+            }}
+            onBlur={() => {
+              const n = Number(draft);
+              onBpm(draft === '' ? bpm : n);
+              setDraft(
+                String(
+                  draft === '' ? bpm : Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(n))),
+                ),
+              );
+            }}
             className="tnum min-h-11 w-20 rounded-[var(--radius)] border border-[var(--border-strong)] bg-[var(--surface-raised)] px-2 font-mono text-[var(--text)]"
           />
           BPM

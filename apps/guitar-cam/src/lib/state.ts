@@ -32,4 +32,4 @@ export const store = createStore<Saved>({
 });
 
 export const clampBpm = (n: number): number =>
-  Number.isFinite(n) ? Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(n))) : DEFAULT_STATE.bpm;
+  Number.isNaN(n) ? DEFAULT_STATE.bpm : Math.min(MAX_BPM, Math.max(MIN_BPM, Math.round(n)));

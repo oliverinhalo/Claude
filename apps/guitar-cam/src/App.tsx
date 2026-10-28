@@ -17,9 +17,8 @@ type Tab = 'record' | 'drill';
 const button =
   'inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--radius)] px-5 text-sm font-semibold transition-colors duration-[var(--dur-state)]';
 
-const loaded = store.load();
-
 export function App() {
+  const [loaded] = useState(() => store.load());
   const [tuningId, setTuningId] = useState(loaded.value.tuning);
   const [bpm, setBpm] = useState(loaded.value.bpm);
   const [take, setTake] = useState<Take | null>(loaded.value.take);

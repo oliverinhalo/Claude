@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
@@ -32,5 +32,50 @@ describe('App shell', () => {
     expect(localStorage.getItem('theme')).toBe('dark');
     await userEvent.click(toggle);
     expect(document.documentElement.dataset.theme).toBeUndefined();
+  });
+});
+
+describe('Guitar Cam states', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  it('starts empty, with the demo on offer and nothing recorded', () => {
+    render(<App />);
+    expect(screen.getByRole('button', { name: /^listen$/i })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /try the demo/i })).toBeEnabled();
+    expect(screen.getByText(/nothing recorded yet/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^record$/i })).toBeDisabled();
+  });
+
+  it('names the cause when the microphone is blocked, and keeps the demo', async () => {
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      mediaDevices: {
+        getUserMedia: () => Promise.reject(new DOMException('no', 'NotAllowedError')),
+      },
+    });
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: /^listen$/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/blocked/i);
+    expect(screen.getByRole('button', { name: /try the demo/i })).toBeEnabled();
+  });
+
+  it('says so when there is no microphone API at all', async () => {
+    vi.stubGlobal('navigator', { ...navigator, mediaDevices: undefined });
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: /^listen$/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/secure/i);
+  });
+
+  it('recovers from corrupt saved data and says so', async () => {
+    localStorage.setItem('guitar-cam:state', '{"v":1,"d":{"tuning":"nope"}}');
+    render(<App />);
+    await waitFor(() =>
+      expect(
+        screen.getByText(/could not be read, so guitar cam started fresh/i),
+      ).toBeInTheDocument(),
+    );
   });
 });

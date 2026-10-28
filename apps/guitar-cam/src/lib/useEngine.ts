@@ -78,6 +78,7 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
       let last = 0;
       let raf = 0;
       let lastKey = '';
+      let lastHeld: Held | null = null;
       const tick = (now: number) => {
         raf = requestAnimationFrame(tick);
         if (now - last < FRAME_MS) return;
@@ -90,8 +91,12 @@ export function useEngine(onEvent: (event: RawEvent) => void) {
         for (let i = samples.length - 2048; i < samples.length; i++)
           sum += (samples[i] as number) ** 2;
         const level = Math.min(1, Math.sqrt(sum / 2048) * 6);
-        const held = tracker.current.held;
-        const sounding = reading.kind === 'note' || reading.kind === 'chord';
+        // The tracker rides out the flicker of a decaying string; keep the last thing
+        // played on screen, dimmed, rather than blanking the readout between notes.
+        const active = tracker.current.held;
+        if (active) lastHeld = active;
+        const held = active ?? lastHeld;
+        const sounding = active !== null;
         // Re-render only when something visible changed.
         const key = [
           reading.kind,
