@@ -1,12 +1,12 @@
 {
   "slug": "guitar-cam",
   "week": 4,
-  "status": "in_progress",
+  "status": "complete",
   "started": "2026-10-28T14:05:05Z",
-  "updated": "2026-10-28T14:27:24Z",
+  "updated": "2026-10-30T14:23:48Z",
   "last_completed_phase": "publish",
   "next_action": "publish.sh then verify-live",
   "decisions": [],
   "blockers": [],
-  "live_url": null
+  "live_url": "https://guitar-cam.pages.dev"
 }

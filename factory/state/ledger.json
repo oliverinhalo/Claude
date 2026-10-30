@@ -47,6 +47,21 @@
       "signature_detail": "",
       "paid_tier_hypothesis": "",
       "notes": "Canonical/sitemap point at budgeter.pages.dev (wrong); see factory/state/publish-app-cloudflare-subdomain.patch"
+    },
+    {
+      "week": 4,
+      "slug": "guitar-cam",
+      "name": "Guitar Cam",
+      "category": "music-tool",
+      "sentence": "",
+      "repo": "oliverinhalo/guitar-cam",
+      "url": "https://guitar-cam.pages.dev",
+      "host": "cloudflare",
+      "shipped": "2026-10-30",
+      "score": 7,
+      "signature_detail": "",
+      "paid_tier_hypothesis": "",
+      "notes": "Live note/chord detection, fretboard, tab; exports MusicXML, MIDI, ASCII tab, JSON (no native .gp)."
     }
   ]
 }
