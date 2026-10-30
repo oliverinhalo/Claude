@@ -1,55 +1,5 @@
 {
   "version": 1,
-  "updated": "2026-10-28T21:14:45.864Z",
-  "items": [
-    {
-      "id": "q_guitarcam",
-      "title": "Guitar cam",
-      "source": "issue",
-      "issue": 4,
-      "addedAt": "2026-10-27T22:36:43Z",
-      "brief": {
-        "purpose": "Carried over from issue #4, which was pinned `next` before the queue existed. Read the issue for what was asked.",
-        "mustHave": [
-          "https://www.skool.com/guitar-gang-music-maestros-5041/about",
-          "Let's say I wanna harmonize this.",
-          "This also works on phones and tablets as well,",
-          "so you can just tap things in really fast.",
-          "Now it takes what I tapped out and converts it to tab.",
-          "Now I just tap my rhythm, make sure it's the same that I want it to be.",
-          "Great. And then from here you just go harmonize.",
-          "And then I'm just gonna go,",
-          "this is where you don't need theory work.",
-          "Detect from melody",
-          "and then it's just gonna tell you what the scale is that you should be using.",
-          "And then you just click what type of harmony you want.",
-          "If you want thirds, fourths,",
-          "fifth, sixth,",
-          "sevens, generate harmony.",
-          "And we've got our original the harmony and then play it together.",
-          "Now, if I want to take it a step further and not superimpose it",
-          "and want it to come from the chord that is actually coming from,",
-          "I can type in what the chords are.",
-          "So first chord, G sharp, minor,",
-          "2nd chord, E,",
-          "3rd chord, B,",
-          "4th chord, F sharp.",
-          "I go back to my harmonise section and I'm gonna go harmonic to chord, tone,",
-          "generate. And now everything is nicely patched in the chords.",
-          "Now my last step is to just learn this harmony section.",
-          "And now I record Them on top of each other.",
-          "Do you wanna try out the Harmonizer?",
-          "There's a 7 day free trial in Music Mastery",
-          "where this is available to all of my members.",
-          "You also get these tools too.",
-          "So if you wanna try it out,",
-          "sign up, give it a go.",
-          "No commitments. If you don't like it,",
-          "you don't have to stay. If you do like it, stay.",
-          "Cost you less than a cup of coffee at the end of the month."
-        ],
-        "exclude": []
-      }
-    }
-  ]
+  "updated": "2026-10-30T14:23:48Z",
+  "items": []
 }
