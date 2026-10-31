@@ -67,3 +67,13 @@ test.describe('accessibility', () => {
     });
   }
 });
+
+test('reloads and runs with the network off once it has loaded', async ({ page, context }) => {
+  await page.goto('/');
+  await page.evaluate(() => navigator.serviceWorker.ready);
+  await page.reload(); // let the worker take control and cache the shell
+  await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Try the demo' })).toBeVisible();
+});
