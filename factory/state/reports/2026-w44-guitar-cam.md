@@ -13,3 +13,8 @@ Owner brief: issue #4 — track the fretboard, tell me the note/chord playing, e
 
 ## Not done
 - QA agent and polish ladder/Lighthouse not re-run this run. Self-score 7/10.
+
+## Continue run (2026-10-31)
+- QA agent run (previously not done): all 10 criteria pass; gate 9/9.
+- Fixed: footer claimed "works offline" but no service worker existed. Added network-first `public/sw.js` + e2e test. Redeployed; verify-live passes, sw.js returns 200.
+- Remaining minor: importing a zero-event take is silently accepted (should say "that take is empty"). Lighthouse not measured.
