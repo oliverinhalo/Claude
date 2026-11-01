@@ -18,3 +18,7 @@ Owner brief: issue #4 — track the fretboard, tell me the note/chord playing, e
 - QA agent run (previously not done): all 10 criteria pass; gate 9/9.
 - Fixed: footer claimed "works offline" but no service worker existed. Added network-first `public/sw.js` + e2e test. Redeployed; verify-live passes, sw.js returns 200.
 - Remaining minor: importing a zero-event take is silently accepted (should say "that take is empty"). Lighthouse not measured.
+
+## Continue run (2026-11-01)
+- Fixed the leftover: importing a take with zero events now says "That take is empty…" instead of loading silently. Gate 9/9.
+- Lighthouse still not measured (no browser audit tooling wired in); self-score unchanged at 7/10.

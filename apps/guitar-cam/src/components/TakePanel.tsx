@@ -68,7 +68,9 @@ export function TakePanel({
     if (!file) return;
     // A take is a few hundred kilobytes at the very most; refuse anything absurd unread.
     const parsed = file.size > 5_000_000 ? null : parseTake(await file.text());
-    if (parsed) {
+    if (parsed && parsed.events.length === 0) {
+      setImportError('That take is empty: it has no notes in it, so there is nothing to load.');
+    } else if (parsed) {
       setImportError('');
       onImport(parsed);
     } else {
