@@ -35,7 +35,7 @@ export function fromHash(hash: string): HuekeepState | null {
   const fg = p.get('fg');
   const bg = p.get('bg');
   const t = Number(p.get('t') ?? 4.5);
-  if (fg === null || bg === null || !isTarget(t)) return null;
+  if (!fg || !bg || fg.includes('\uFFFD') || bg.includes('\uFFFD') || !isTarget(t)) return null;
   const s = { fg, bg, target: t };
   return isState(s) ? s : null;
 }

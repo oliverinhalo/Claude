@@ -48,7 +48,7 @@ export function FixCard({ fix, fg, bg, target, onUse, onCopy }: Props) {
           <dd className="font-mono text-[length:var(--t-base)] font-semibold">{fix.hex}</dd>
           <dt className="text-[var(--text-muted)]">Contrast</dt>
           <dd>
-            {fix.ratio.toFixed(2)} : 1{' '}
+            {(Math.floor(fix.ratio * 100 + 1e-9) / 100).toFixed(2)} : 1{' '}
             <span className="text-[var(--success)]">✓ {target} : 1</span>
           </dd>
           <dt className="text-[var(--text-muted)]">Moved</dt>

@@ -123,3 +123,29 @@ test.describe('core loop', () => {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 });
+
+test.describe('regressions from QA', () => {
+  test('edits made after opening a share link survive a reload', async ({ page }) => {
+    await page.goto('/#fg=%239d3800&bg=%23ffffff&t=7');
+    await page.getByLabel('Text colour', { exact: true }).fill('#123456');
+    await page.reload();
+    await expect(page.getByLabel('Text colour', { exact: true })).toHaveValue('#123456');
+  });
+
+  test('ratio just under the target never reads as the target', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Text colour', { exact: true }).fill('#ec140b');
+    await expect(page.getByText('Needs 4.5 : 1')).toBeVisible();
+    await expect(page.getByText(/^4\.49/).first()).toBeVisible();
+  });
+
+  test('reloads while offline once visited', async ({ page, context }) => {
+    await page.goto('/');
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload(); // let the worker take control and cache the shell
+    await context.setOffline(true);
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await context.setOffline(false);
+  });
+});

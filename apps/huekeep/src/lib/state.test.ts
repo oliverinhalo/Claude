@@ -49,3 +49,9 @@ describe('store', () => {
     expect(isState({ ...SEED, target: 5 })).toBe(false);
   });
 });
+
+describe('malformed hash (QA F5)', () => {
+  it('rejects broken percent-encoding', () => {
+    expect(fromHash('#fg=%E0%A4%A&bg=x')).toBeNull();
+  });
+});

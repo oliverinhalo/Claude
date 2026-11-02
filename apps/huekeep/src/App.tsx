@@ -6,13 +6,20 @@ import { contrast, parseColor, type RGB } from './lib/color';
 import { TARGETS, solve, type Fix, type Target } from './lib/fix';
 import { SEED, fromHash, store, toHash, type HuekeepState } from './lib/state';
 
-function initial(): HuekeepState {
-  if (typeof location !== 'undefined') {
-    const shared = fromHash(location.hash);
-    if (shared) return shared;
-  }
-  return store.load().value;
+/** A shared link is read once, then removed from the address bar so reloads keep later edits. */
+function takeSharedLink(): HuekeepState | null {
+  if (typeof location === 'undefined' || !location.hash) return null;
+  const shared = fromHash(location.hash);
+  if (shared) history.replaceState(null, '', location.pathname + location.search);
+  return shared;
 }
+
+function initial(): HuekeepState {
+  return takeSharedLink() ?? store.load().value;
+}
+
+/** WCAG does not round up: 4.4954 is not 4.50. Floor to two decimals. */
+const show = (ratio: number) => (Math.floor(ratio * 100 + 1e-9) / 100).toFixed(2);
 
 export function App() {
   const [state, setState] = useState<HuekeepState>(initial);
@@ -22,7 +29,7 @@ export function App() {
   // A share link pasted into an already-open tab only changes the hash.
   useEffect(() => {
     const onHash = () => {
-      const shared = fromHash(location.hash);
+      const shared = takeSharedLink();
       if (shared) setState(shared);
     };
     window.addEventListener('hashchange', onHash);
@@ -67,7 +74,26 @@ export function App() {
     setStatus('Back to the example.');
   };
   const share = () =>
-    copy(location.origin + location.pathname + toHash(state), 'the share link');
+    !fgP.ok || !bgP.ok
+      ? setStatus('Fix the highlighted colour first, then copy the link.')
+      : copy(location.origin + location.pathname + toHash(state), 'the share link');
+
+  const onTargetKey = (e: React.KeyboardEvent) => {
+    const i = TARGETS.findIndex((t) => t.value === state.target);
+    const step =
+      e.key === 'ArrowRight' || e.key === 'ArrowDown'
+        ? 1
+        : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+          ? -1
+          : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = TARGETS[(i + step + TARGETS.length) % TARGETS.length];
+    if (next) {
+      set({ target: next.value });
+      requestAnimationFrame(() => document.getElementById(`target-${next.value}`)?.focus());
+    }
+  };
 
   const passes = ratio >= state.target;
 
@@ -119,11 +145,14 @@ export function App() {
                 <div
                   role="radiogroup"
                   aria-label="Contrast target"
+                  onKeyDown={onTargetKey}
                   className="flex flex-wrap gap-2"
                 >
                   {TARGETS.map((t) => (
                     <button
                       key={t.value}
+                      id={`target-${t.value}`}
+                      tabIndex={state.target === t.value ? 0 : -1}
                       type="button"
                       role="radio"
                       aria-checked={state.target === t.value}
@@ -152,7 +181,7 @@ export function App() {
             </h2>
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-[var(--text)] pt-4">
               <p className="tnum text-[length:var(--t-3xl)] leading-none font-semibold">
-                {ratio.toFixed(2)}
+                {show(ratio)}
                 <span className="text-[length:var(--t-lg)] text-[var(--text-muted)]"> : 1</span>
               </p>
               <p

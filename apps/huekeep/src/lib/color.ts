@@ -53,13 +53,13 @@ function channel(token: string): number | null {
 }
 
 export function parseColor(input: string): ParseResult {
-  if (input.length > MAX_INPUT_LENGTH) {
+  const s = input.trim().toLowerCase();
+  if (s.length > MAX_INPUT_LENGTH) {
     return {
       ok: false,
-      reason: `That is ${input.length} characters; a colour is under ${MAX_INPUT_LENGTH}.`,
+      reason: `That is ${s.length} characters; a colour is under ${MAX_INPUT_LENGTH}.`,
     };
   }
-  const s = input.trim().toLowerCase();
   if (s === '') {
     return {
       ok: false,
@@ -127,7 +127,9 @@ export function parseColor(input: string): ParseResult {
         rgb: vals.map((v) => Math.round(clamp(v as number, 0, 255))) as unknown as RGB,
       };
     }
-    const hue = Number((parts[0] ?? '').replace(/deg$/, ''));
+    const hue = /^[+-]?\d*\.?\d+(deg)?$/.test(parts[0] ?? '')
+      ? Number((parts[0] ?? '').replace(/deg$/, ''))
+      : NaN;
     const sat = channel(parts[1] ?? '');
     const lig = channel(parts[2] ?? '');
     if (

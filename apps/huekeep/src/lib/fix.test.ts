@@ -101,3 +101,32 @@ describe('ribbon', () => {
     expect(r.at(-1)?.pass).toBe(false); // near white fails on white
   });
 });
+
+describe('hue held near black and white (QA F1)', () => {
+  it.each([
+    ['#00e4f1', '#ffffff', 7],
+    ['#19f0bc', '#ffffff', 7],
+    ['#eca507', '#000000', 7],
+    ['#aa0846', '#000000', 7],
+    ['#aa0846', '#111111', 7],
+  ] as const)('%s on %s at %s keeps hue or declines', (a, b, target) => {
+    const fg = rgb(a);
+    const fix = nearestPassing(fg, rgb(b), target, 'text');
+    if (!fix) return; // declining is allowed; drifting is not
+    expect(hueDelta(rgbToOklch(fix.rgb).h, rgbToOklch(fg).h)).toBeLessThanOrEqual(2);
+    expect(contrast(fix.rgb, rgb(b))).toBeGreaterThanOrEqual(target);
+  });
+
+  it('never drifts across a random sweep', () => {
+    let seed = 7;
+    const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    for (let n = 0; n < 300; n++) {
+      const a: RGB = [rnd() * 255, rnd() * 255, rnd() * 255].map(Math.round) as unknown as RGB;
+      const b: RGB = [rnd() * 255, rnd() * 255, rnd() * 255].map(Math.round) as unknown as RGB;
+      const fix = nearestPassing(a, b, 7, 'text');
+      const o = rgbToOklch(a);
+      if (fix && o.c >= 0.04)
+        expect(hueDelta(rgbToOklch(fix.rgb).h, o.h)).toBeLessThanOrEqual(2);
+    }
+  });
+});

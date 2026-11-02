@@ -112,3 +112,13 @@ describe('OKLCH', () => {
     expect(hueDelta(359, 1)).toBe(2);
   });
 });
+
+describe('parser strictness (QA M2, padded input)', () => {
+  it('rejects odd hue notations', () => {
+    expect(parseColor('hsl(0x10 100% 50%)').ok).toBe(false);
+    expect(parseColor('hsl(1e3 100% 50%)').ok).toBe(false);
+  });
+  it('accepts padded valid input past the raw length limit', () => {
+    expect(parseColor(' '.repeat(100) + '#fff').ok).toBe(true);
+  });
+});
