@@ -1,4 +1,12 @@
-import { contrast, distance, oklchToRgb, rgbToOklch, toHex, type Oklch, type RGB } from './color';
+import {
+  contrast,
+  distance,
+  oklchToRgb,
+  rgbToOklch,
+  toHex,
+  type Oklch,
+  type RGB,
+} from './color';
 
 export type Target = 3 | 4.5 | 7;
 export const TARGETS: readonly { value: Target; label: string; hint: string }[] = [
@@ -35,14 +43,19 @@ const STEPS = 1000;
  * original in both directions and tests the *rounded* 8-bit result, so a fix
  * never passes only in floating point.
  */
-export function nearestPassing(moving: RGB, fixed: RGB, target: Target, role: Role): Fix | null {
+export function nearestPassing(
+  moving: RGB,
+  fixed: RGB,
+  target: Target,
+  role: Role,
+): Fix | null {
   const origin = rgbToOklch(moving);
   let best: Fix | null = null;
 
   for (const dir of [1, -1] as const) {
     const limit = dir === 1 ? 1 - origin.l : origin.l;
     for (let i = 1; i <= STEPS; i++) {
-      const l = origin.l + dir * (limit * i) / STEPS;
+      const l = origin.l + (dir * (limit * i)) / STEPS;
       const candidate: Oklch = { l, c: origin.c, h: origin.h };
       const rgb = oklchToRgb(candidate);
       const ratio = contrast(rgb, fixed);
@@ -72,7 +85,9 @@ export function solve(fg: RGB, bg: RGB, target: Target): Outcome {
   if (ratio >= target) return { status: 'passes', ratio };
   const text = nearestPassing(fg, bg, target, 'text');
   const background = nearestPassing(bg, fg, target, 'background');
-  const fixes = [text, background].filter((f): f is Fix => f !== null).sort((a, b) => a.moved - b.moved);
+  const fixes = [text, background]
+    .filter((f): f is Fix => f !== null)
+    .sort((a, b) => a.moved - b.moved);
   const impossible: Role[] = [];
   if (!text) impossible.push('text');
   if (!background) impossible.push('background');

@@ -34,3 +34,26 @@ describe('App shell', () => {
     expect(document.documentElement.dataset.theme).toBeUndefined();
   });
 });
+
+describe('Huekeep core loop', () => {
+  it('opens on a failing pair with fixes', () => {
+    render(<App />);
+    expect(screen.getByText('Needs 4.5 : 1')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /^Use #/ }).length).toBeGreaterThan(0);
+  });
+
+  it('applying a fix makes the pair pass', async () => {
+    render(<App />);
+    await userEvent.click(screen.getAllByRole('button', { name: /^Use #/ })[0]!);
+    expect(screen.getByText('Passes 4.5 : 1')).toBeInTheDocument();
+  });
+
+  it('explains invalid input instead of crashing', async () => {
+    render(<App />);
+    const field = screen.getByLabelText('Text colour', { selector: 'input[type=text]' });
+    await userEvent.clear(field);
+    await userEvent.type(field, 'banana');
+    expect(screen.getByText(/not a colour I know/)).toBeInTheDocument();
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+  });
+});

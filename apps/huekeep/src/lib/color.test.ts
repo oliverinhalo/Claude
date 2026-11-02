@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { contrast, hueDelta, oklchToRgb, parseColor, rgbToOklch, toHex, type RGB } from './color';
+import {
+  contrast,
+  hueDelta,
+  oklchToRgb,
+  parseColor,
+  rgbToOklch,
+  toHex,
+  type RGB,
+} from './color';
 
 const rgb = (s: string): RGB => {
   const r = parseColor(s);
@@ -24,20 +32,30 @@ describe('parseColor', () => {
     expect(toHex(rgb(input))).toBe(hex);
   });
 
-  it.each(['', '   ', '#12', '#12345', 'rgb(1,2)', 'rgb(a b c)', 'hsl(1 2 3)', 'banana', '#ggg'])(
-    'rejects %j with a reason',
+  it.each([
+    '',
+    '   ',
+    '#12',
+    '#12345',
+    'rgb(1,2)',
+    'rgb(a b c)',
+    'hsl(1 2 3)',
+    'banana',
+    '#ggg',
+  ])('rejects %j with a reason', (input) => {
+    const r = parseColor(input);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason.length).toBeGreaterThan(10);
+  });
+
+  it.each(['#ff000080', '#f008', 'rgba(0,0,0,0.5)', 'transparent'])(
+    'explains transparency in %s',
     (input) => {
       const r = parseColor(input);
       expect(r.ok).toBe(false);
-      if (!r.ok) expect(r.reason.length).toBeGreaterThan(10);
+      if (!r.ok) expect(r.reason).toMatch(/transparen|solid/i);
     },
   );
-
-  it.each(['#ff000080', '#f008', 'rgba(0,0,0,0.5)', 'transparent'])('explains transparency in %s', (input) => {
-    const r = parseColor(input);
-    expect(r.ok).toBe(false);
-    if (!r.ok) expect(r.reason).toMatch(/transparen|solid/i);
-  });
 
   it('rejects 50,000 characters quickly', () => {
     const t = performance.now();
@@ -61,13 +79,24 @@ describe('contrast', () => {
     expect(contrast(rgb('#777777'), rgb('#fff'))).toBeLessThan(4.5);
   });
   it('is symmetric', () => {
-    expect(contrast(rgb('#e8590c'), rgb('#fff'))).toBeCloseTo(contrast(rgb('#fff'), rgb('#e8590c')), 10);
+    expect(contrast(rgb('#e8590c'), rgb('#fff'))).toBeCloseTo(
+      contrast(rgb('#fff'), rgb('#e8590c')),
+      10,
+    );
   });
 });
 
 describe('OKLCH', () => {
   it('round-trips 8-bit colours exactly', () => {
-    for (const hex of ['#1a73e8', '#e8590c', '#00ff00', '#808080', '#000000', '#ffffff', '#12ab34']) {
+    for (const hex of [
+      '#1a73e8',
+      '#e8590c',
+      '#00ff00',
+      '#808080',
+      '#000000',
+      '#ffffff',
+      '#12ab34',
+    ]) {
       expect(toHex(oklchToRgb(rgbToOklch(rgb(hex))))).toBe(hex);
     }
   });

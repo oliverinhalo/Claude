@@ -4,8 +4,8 @@
   "description": "Paste a colour pair that fails WCAG contrast and get the nearest passing colour that keeps its hue.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fbfbfa",
-  "theme_color": "#0b0d10",
+  "background_color": "#f7f5f0",
+  "theme_color": "#0c0c10",
   "icons": [
     {
       "src": "/favicon.svg",

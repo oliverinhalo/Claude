@@ -67,3 +67,59 @@ test.describe('accessibility', () => {
     });
   }
 });
+
+test.describe('core loop', () => {
+  test('first load shows a failing pair and a fix that passes', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByText('Needs 4.5 : 1')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Change the text colour' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Change the background' })).toBeVisible();
+  });
+
+  test('keyboard: type a pair, apply the fix, see it pass', async ({ page }) => {
+    await page.goto('/');
+    const text = page.getByLabel('Text colour', { exact: true });
+    await text.fill('#999999');
+    await page.getByLabel('Background', { exact: true }).fill('#ffffff');
+    await expect(page.getByText('Needs 4.5 : 1')).toBeVisible();
+    await page
+      .getByRole('button', { name: /^Use #/ })
+      .first()
+      .focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('Passes 4.5 : 1')).toBeVisible();
+    await expect(page.getByText(/already clears the target/)).toBeVisible();
+  });
+
+  test('bad input explains itself and keeps the last result', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Text colour', { exact: true }).fill('banana');
+    await expect(page.getByText(/not a colour I know/)).toBeVisible();
+    await expect(page.getByText(/last valid pair/)).toBeVisible();
+  });
+
+  test('state survives reload; a share link restores a pair', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Text colour', { exact: true }).fill('#336699');
+    await page.reload();
+    await expect(page.getByLabel('Text colour', { exact: true })).toHaveValue('#336699');
+    await page.goto('/#fg=%23aa0000&bg=%23000000&t=7');
+    await expect(page.getByLabel('Text colour', { exact: true })).toHaveValue('#aa0000');
+    await expect(page.getByRole('radio', { name: /AAA/ })).toBeChecked();
+  });
+
+  test('huge paste is rejected without freezing', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Text colour', { exact: true }).fill('a'.repeat(50000));
+    await expect(page.getByText(/characters; a colour is under/)).toBeVisible();
+  });
+
+  test('works at 320px with fixes visible', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto('/');
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+});

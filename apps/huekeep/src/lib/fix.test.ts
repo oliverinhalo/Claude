@@ -67,20 +67,25 @@ describe('solve', () => {
     expect(o.status).toBe('fixable');
   });
 
-  it.each([3, 4.5, 7] as Target[])('always reaches %s when it returns a fix, across a colour sweep', (target) => {
-    for (let h = 0; h < 360; h += 40) {
-      for (const l of [20, 50, 80]) {
-        const fg = rgb(`hsl(${h} 70% ${l}%)`);
-        const bg = rgb('hsl(40 20% 96%)');
-        const o = solve(fg, bg, target);
-        if (o.status === 'fixable') {
-          for (const f of o.fixes) {
-            expect(contrast(f.rgb, f.role === 'text' ? bg : fg)).toBeGreaterThanOrEqual(target);
+  it.each([3, 4.5, 7] as Target[])(
+    'always reaches %s when it returns a fix, across a colour sweep',
+    (target) => {
+      for (let h = 0; h < 360; h += 40) {
+        for (const l of [20, 50, 80]) {
+          const fg = rgb(`hsl(${h} 70% ${l}%)`);
+          const bg = rgb('hsl(40 20% 96%)');
+          const o = solve(fg, bg, target);
+          if (o.status === 'fixable') {
+            for (const f of o.fixes) {
+              expect(contrast(f.rgb, f.role === 'text' ? bg : fg)).toBeGreaterThanOrEqual(
+                target,
+              );
+            }
           }
         }
       }
-    }
-  });
+    },
+  );
 
   it('solves in well under 100 ms', () => {
     const t = performance.now();

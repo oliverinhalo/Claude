@@ -47,13 +47,13 @@ Contrast checkers say "fail" and stop. The few that suggest a fix drift the hue 
 
 ## The four states
 
-| State   | Behaviour |
-| ------- | --------- |
+| State   | Behaviour                                                                                                                                                |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Empty   | A field cleared shows "Type a colour like #1a73e8, rgb(26 115 232) or hsl(217 80% 51%)" and results hold the last valid pair, dimmed and labelled stale. |
-| Error   | Per-field inline message saying what was wrong and an example of a valid form; field marked `aria-invalid`. |
-| Slow    | Search is synchronous and < 20 ms; no spinner exists. Typing is not debounced. |
-| Offline | Nothing is fetched. The app works fully with the network off; the footer says so. |
+| Error   | Per-field inline message saying what was wrong and an example of a valid form; field marked `aria-invalid`.                                              |
+| Slow    | Search is synchronous and < 20 ms; no spinner exists. Typing is not debounced.                                                                           |
+| Offline | Nothing is fetched. The app works fully with the network off; the footer says so.                                                                        |
 
 ## The one thing that must be excellent
 
-The **lightness ribbon**: a strip showing the colour at every lightness with the passing zones marked, the original and the fix as markers. It shows *why* the fix is where it is.
+The **lightness ribbon**: a strip showing the colour at every lightness with the passing zones marked, the original and the fix as markers. It shows _why_ the fix is where it is.

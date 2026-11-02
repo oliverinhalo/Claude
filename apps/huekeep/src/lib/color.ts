@@ -54,14 +54,23 @@ function channel(token: string): number | null {
 
 export function parseColor(input: string): ParseResult {
   if (input.length > MAX_INPUT_LENGTH) {
-    return { ok: false, reason: `That is ${input.length} characters; a colour is under ${MAX_INPUT_LENGTH}.` };
+    return {
+      ok: false,
+      reason: `That is ${input.length} characters; a colour is under ${MAX_INPUT_LENGTH}.`,
+    };
   }
   const s = input.trim().toLowerCase();
   if (s === '') {
-    return { ok: false, reason: 'Type a colour like #1a73e8, rgb(26 115 232) or hsl(217 80% 51%).' };
+    return {
+      ok: false,
+      reason: 'Type a colour like #1a73e8, rgb(26 115 232) or hsl(217 80% 51%).',
+    };
   }
   if (s === 'transparent') {
-    return { ok: false, reason: 'Transparent has no colour to measure. Use the solid colour it sits on.' };
+    return {
+      ok: false,
+      reason: 'Transparent has no colour to measure. Use the solid colour it sits on.',
+    };
   }
   const named = NAMES[s];
   if (named) return parseColor(named);
@@ -72,14 +81,20 @@ export function parseColor(input: string): ParseResult {
     if (h.length === 4 || h.length === 8) {
       return {
         ok: false,
-        reason: 'This colour has transparency. Contrast depends on what is behind it, so give the solid result instead.',
+        reason:
+          'This colour has transparency. Contrast depends on what is behind it, so give the solid result instead.',
       };
     }
     if (h.length === 3) h = [...h].map((c) => c + c).join('');
-    if (h.length !== 6) return { ok: false, reason: 'A hex colour has 3 or 6 digits, like #1a73e8.' };
+    if (h.length !== 6)
+      return { ok: false, reason: 'A hex colour has 3 or 6 digits, like #1a73e8.' };
     return {
       ok: true,
-      rgb: [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)],
+      rgb: [
+        parseInt(h.slice(0, 2), 16),
+        parseInt(h.slice(2, 4), 16),
+        parseInt(h.slice(4, 6), 16),
+      ],
     };
   }
   if (/^[0-9a-f]{6}$/.test(s)) return parseColor('#' + s);
@@ -88,26 +103,51 @@ export function parseColor(input: string): ParseResult {
   if (fn) {
     const kind = fn[1] ?? '';
     const parts = (fn[2] ?? '').split(/[\s,/]+/).filter(Boolean);
-    if (parts.length === 4 && Number(parts[3]?.replace('%', '')) !== (parts[3]?.endsWith('%') ? 100 : 1)) {
-      return { ok: false, reason: 'This colour has transparency. Give the solid result instead.' };
+    if (
+      parts.length === 4 &&
+      Number(parts[3]?.replace('%', '')) !== (parts[3]?.endsWith('%') ? 100 : 1)
+    ) {
+      return {
+        ok: false,
+        reason: 'This colour has transparency. Give the solid result instead.',
+      };
     }
     if (parts.length < 3 || parts.length > 4) {
-      return { ok: false, reason: `${kind}() needs three values, like ${kind.startsWith('rgb') ? 'rgb(26 115 232)' : 'hsl(217 80% 51%)'}.` };
+      return {
+        ok: false,
+        reason: `${kind}() needs three values, like ${kind.startsWith('rgb') ? 'rgb(26 115 232)' : 'hsl(217 80% 51%)'}.`,
+      };
     }
     if (kind.startsWith('rgb')) {
       const vals = parts.slice(0, 3).map(channel);
-      if (vals.some((v) => v === null)) return { ok: false, reason: 'rgb() values must be numbers, like rgb(26 115 232).' };
-      return { ok: true, rgb: vals.map((v) => Math.round(clamp(v as number, 0, 255))) as unknown as RGB };
+      if (vals.some((v) => v === null))
+        return { ok: false, reason: 'rgb() values must be numbers, like rgb(26 115 232).' };
+      return {
+        ok: true,
+        rgb: vals.map((v) => Math.round(clamp(v as number, 0, 255))) as unknown as RGB,
+      };
     }
     const hue = Number((parts[0] ?? '').replace(/deg$/, ''));
     const sat = channel(parts[1] ?? '');
     const lig = channel(parts[2] ?? '');
-    if (!Number.isFinite(hue) || sat === null || lig === null || !(parts[1] ?? '').endsWith('%') || !(parts[2] ?? '').endsWith('%')) {
-      return { ok: false, reason: 'hsl() wants a hue and two percentages, like hsl(217 80% 51%).' };
+    if (
+      !Number.isFinite(hue) ||
+      sat === null ||
+      lig === null ||
+      !(parts[1] ?? '').endsWith('%') ||
+      !(parts[2] ?? '').endsWith('%')
+    ) {
+      return {
+        ok: false,
+        reason: 'hsl() wants a hue and two percentages, like hsl(217 80% 51%).',
+      };
     }
     return { ok: true, rgb: hslToRgb(hue, clamp(sat / 255, 0, 1), clamp(lig / 255, 0, 1)) };
   }
-  return { ok: false, reason: `“${s.slice(0, 24)}” is not a colour I know. Try #1a73e8, rgb(26 115 232) or hsl(217 80% 51%).` };
+  return {
+    ok: false,
+    reason: `“${s.slice(0, 24)}” is not a colour I know. Try #1a73e8, rgb(26 115 232) or hsl(217 80% 51%).`,
+  };
 }
 
 export const toHex = (rgb: RGB): string =>
@@ -188,7 +228,9 @@ export function oklchToRgb(color: Oklch): RGB {
     }
     lin = oklchToLinear({ l, c: lo, h: color.h });
   }
-  return lin.map((v) => clamp(Math.round(linearToSrgb(clamp(v, 0, 1))), 0, 255)) as unknown as RGB;
+  return lin.map((v) =>
+    clamp(Math.round(linearToSrgb(clamp(v, 0, 1))), 0, 255),
+  ) as unknown as RGB;
 }
 
 /** Perceptual distance (Euclidean in OKLab, ×100 so 1 ≈ barely noticeable). */
