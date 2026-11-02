@@ -44,7 +44,9 @@ describe('Huekeep core loop', () => {
 
   it('applying a fix makes the pair pass', async () => {
     render(<App />);
-    await userEvent.click(screen.getAllByRole('button', { name: /^Use #/ })[0]!);
+    const [first] = screen.getAllByRole('button', { name: /^Use #/ });
+    if (!first) throw new Error('no fix offered');
+    await userEvent.click(first);
     expect(screen.getByText('Passes 4.5 : 1')).toBeInTheDocument();
   });
 

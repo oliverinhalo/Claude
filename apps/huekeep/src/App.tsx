@@ -19,6 +19,16 @@ export function App() {
   const [status, setStatus] = useState('');
   const last = useRef<{ fg: RGB; bg: RGB }>({ fg: [232, 89, 12], bg: [255, 255, 255] });
 
+  // A share link pasted into an already-open tab only changes the hash.
+  useEffect(() => {
+    const onHash = () => {
+      const shared = fromHash(location.hash);
+      if (shared) setState(shared);
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
   useEffect(() => {
     store.save(state);
   }, [state]);

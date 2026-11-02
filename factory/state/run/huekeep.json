@@ -3,9 +3,9 @@
   "week": 5,
   "status": "in_progress",
   "started": "2026-11-02T17:26:27Z",
-  "updated": "2026-11-02T17:26:27Z",
-  "last_completed_phase": "select",
-  "next_action": "Spec, design, build",
+  "updated": "2026-11-02T17:33:11Z",
+  "last_completed_phase": "gate",
+  "next_action": "QA agent, polish (og image, README, offline), publish",
   "decisions": [],
   "blockers": [],
   "live_url": null
