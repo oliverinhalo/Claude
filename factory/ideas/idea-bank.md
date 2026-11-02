@@ -175,3 +175,8 @@ Mark shipped ideas with `✅ <slug>` and rejected ones with `✗ <reason>` inlin
 - **Photo print sizes** — crop ratios for common print sizes. *(editor)*
 - **Time-zone-safe deadline** — convert "5pm Friday" for a distributed team. *(planner)*
 - **Typography pairing checker** — see two Google Fonts together. *(generator)*
+
+## Run 2026-11-02 (week 45)
+- **Contrast fixer, not just checker** ✅ huekeep
+- **Palette fixer** — fix a whole set of brand colours against one background in one go and export tokens. *(accessibility-tool)* follow-up to huekeep
+- **APCA readout** — show APCA Lc next to WCAG 2.x ratios. *(accessibility-tool)*

@@ -62,6 +62,21 @@
       "signature_detail": "",
       "paid_tier_hypothesis": "",
       "notes": "Live note/chord detection, fretboard, tab; exports MusicXML, MIDI, ASCII tab, JSON (no native .gp)."
+    },
+    {
+      "week": 5,
+      "slug": "huekeep",
+      "name": "Huekeep",
+      "category": "accessibility-tool",
+      "sentence": "Huekeep helps a designer or front-end developer whose brand colour fails WCAG contrast get the nearest passing colour, same hue, as a pasteable hex in under ten seconds, without nudging a picker until the ratio turns green.",
+      "repo": "oliverinhalo/huekeep",
+      "url": "https://huekeep.pages.dev",
+      "host": "cloudflare",
+      "shipped": "2026-11-02",
+      "score": 7,
+      "signature_detail": "Lightness ribbon: the colour at every lightness with passing zones and was/now markers",
+      "paid_tier_hypothesis": "Whole-palette fixing, design-token export, APCA readout",
+      "notes": "OKLCH hue-held solver, 8-bit verified, WCAG 2.x only, no alpha; share links; offline service worker."
     }
   ]
 }
