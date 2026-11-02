@@ -1,0 +1,12 @@
+{
+  "slug": "huekeep",
+  "week": 5,
+  "status": "in_progress",
+  "started": "2026-11-02T17:26:27Z",
+  "updated": "2026-11-02T17:26:27Z",
+  "last_completed_phase": "select",
+  "next_action": "Spec, design, build",
+  "decisions": [],
+  "blockers": [],
+  "live_url": null
+}

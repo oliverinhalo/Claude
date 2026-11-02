@@ -1,0 +1,17 @@
+{
+  "name": "Huekeep",
+  "short_name": "Huekeep",
+  "description": "Paste a colour pair that fails WCAG contrast and get the nearest passing colour that keeps its hue.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfbfa",
+  "theme_color": "#0b0d10",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
