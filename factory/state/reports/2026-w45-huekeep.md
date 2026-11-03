@@ -36,4 +36,4 @@ Live: https://huekeep.pages.dev (Cloudflare Pages; repo oliverinhalo/huekeep). v
 Run the designer agent and a real Lighthouse pass, and write the full 40-idea ideation instead of shortcutting it.
 
 ## Follow-up run (2026-11-03) — Lighthouse rung
-Measured live: perf 0.87, a11y 1, best-practices 1, SEO 1. Cause: CLS 0.263 from the web-font swap reflowing the heading. Fix: preload the latin variable woff2 in index.html. Local Lighthouse after fix: perf 1.0, CLS 0. Gate 9/9. Republished; live score to be re-measured.
+Measured live: perf 0.87, a11y 1, best-practices 1, SEO 1. Cause: CLS 0.263 from the web-font swap reflowing the heading. Fix: preload the latin variable woff2 in index.html. Local Lighthouse after fix: perf 1.0, CLS 0. Gate 9/9. Republished; live re-measured: perf 1.0, CLS 0, verify-live passes.
