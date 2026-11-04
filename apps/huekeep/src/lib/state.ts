@@ -1,4 +1,5 @@
 import { createStore } from './storage';
+import { parseColor } from './color';
 import type { Target } from './fix';
 
 export interface HuekeepState {
@@ -34,8 +35,11 @@ export function fromHash(hash: string): HuekeepState | null {
   const p = new URLSearchParams(hash.replace(/^#/, ''));
   const fg = p.get('fg');
   const bg = p.get('bg');
-  const t = Number(p.get('t') ?? 4.5);
+  const raw = p.get('t') ?? '4.5';
+  const t = /^\d(\.\d+)?$/.test(raw) ? Number(raw) : NaN;
   if (!fg || !bg || fg.includes('\uFFFD') || bg.includes('\uFFFD') || !isTarget(t)) return null;
+  // A link whose colours do not parse is malformed: ignore it rather than load an error state.
+  if (!parseColor(fg).ok || !parseColor(bg).ok) return null;
   const s = { fg, bg, target: t };
   return isState(s) ? s : null;
 }

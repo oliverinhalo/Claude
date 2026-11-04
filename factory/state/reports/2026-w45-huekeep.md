@@ -37,3 +37,6 @@ Run the designer agent and a real Lighthouse pass, and write the full 40-idea id
 
 ## Follow-up run (2026-11-03) — Lighthouse rung
 Measured live: perf 0.87, a11y 1, best-practices 1, SEO 1. Cause: CLS 0.263 from the web-font swap reflowing the heading. Fix: preload the latin variable woff2 in index.html. Local Lighthouse after fix: perf 1.0, CLS 0. Gate 9/9. Republished; live re-measured: perf 1.0, CLS 0, verify-live passes.
+
+## Follow-up run (2026-11-04) — QA re-check
+QA re-run (foreground) after the earlier fixes: F1–F7 all hold (140k-case solver sweep clean). Three new bugs found and fixed with regression tests: N3 stale/error state failed axe color-contrast (opacity dimming → grayscale filter); N1 `#777` showed 4.47 not 4.48 (formatRatio floors only when rounding would cross a threshold); N2 partially-valid share hashes were loaded as error state (now ignored). Gate 9/9, 40 e2e.

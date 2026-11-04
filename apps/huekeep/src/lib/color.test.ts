@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   contrast,
+  formatRatio,
   hueDelta,
   oklchToRgb,
   parseColor,
@@ -120,5 +121,18 @@ describe('parser strictness (QA M2, padded input)', () => {
   });
   it('accepts padded valid input past the raw length limit', () => {
     expect(parseColor(' '.repeat(100) + '#fff').ok).toBe(true);
+  });
+});
+
+describe('formatRatio', () => {
+  it('rounds normally: #777 on white reads 4.48 as the spec says', () => {
+    expect(formatRatio(contrast([119, 119, 119], [255, 255, 255]))).toBe('4.48');
+    expect(formatRatio(21)).toBe('21.00');
+  });
+  it('never rounds a failing ratio up to the threshold', () => {
+    expect(formatRatio(4.4954)).toBe('4.49');
+    expect(formatRatio(2.996)).toBe('2.99');
+    expect(formatRatio(6.999)).toBe('6.99');
+    expect(formatRatio(4.5)).toBe('4.50');
   });
 });

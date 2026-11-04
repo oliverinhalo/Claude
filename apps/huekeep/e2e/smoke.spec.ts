@@ -148,4 +148,32 @@ test.describe('regressions from QA', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await context.setOffline(false);
   });
+
+  test('#777 on white reads 4.48 and fails (SPEC 2)', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Text colour', { exact: true }).fill('#777');
+    await page.getByLabel('Background', { exact: true }).fill('#fff');
+    await expect(page.getByText('4.48').first()).toBeVisible();
+    await expect(page.getByText('Needs 4.5 : 1')).toBeVisible();
+  });
+
+  test('a share link with unparseable colours is ignored', async ({ page }) => {
+    await page.goto('/#fg=banana&bg=%23ffffff&t=7');
+    await expect(page.getByLabel('Text colour', { exact: true })).toHaveValue('#e8590c');
+  });
+
+  for (const theme of ['light', 'dark'] as const) {
+    test(`stale/error state has no serious axe violations in ${theme}`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme: theme });
+      await page.goto('/');
+      await page.getByLabel('Text colour', { exact: true }).fill('banana');
+      await expect(page.getByText(/last valid pair/)).toBeVisible();
+      const { violations } = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+      expect(
+        violations.filter((v) => v.impact === 'critical' || v.impact === 'serious'),
+      ).toEqual([]);
+    });
+  }
 });

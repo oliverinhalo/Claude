@@ -31,6 +31,10 @@ describe('share hash', () => {
     '#fg=a&bg=b&t=5',
     '#' + 'x'.repeat(400),
     '#fg=' + 'a'.repeat(100) + '&bg=b',
+    '#fg=banana&bg=%23fff', // colours that do not parse
+    '#fg=%23fff&bg=%3Cscript%3E&t=4.5',
+    '#fg=%23fff&bg=%23000&t=0x7', // not a plain number
+    '#fg=%23fff&bg=%23000&t=%207',
   ])('ignores malformed hash %#', (h) => expect(fromHash(h)).toBeNull());
 });
 

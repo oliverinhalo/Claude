@@ -173,6 +173,16 @@ export function contrast(a: RGB, b: RGB): number {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
+/**
+ * Ratio as shown to the user: rounded to two decimals, except that rounding may
+ * never carry a failing ratio up to a WCAG threshold (4.4954 reads 4.49, not 4.50).
+ */
+export function formatRatio(ratio: number): string {
+  const rounded = Math.round(ratio * 100) / 100;
+  const crossed = [3, 4.5, 7].some((t) => ratio < t && rounded >= t);
+  return (crossed ? Math.floor(ratio * 100 + 1e-9) / 100 : rounded).toFixed(2);
+}
+
 // --- OKLab / OKLCH (Björn Ottosson) -----------------------------------------
 
 function linearToSrgb(v: number): number {

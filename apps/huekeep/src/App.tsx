@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ColourField } from './components/ColourField';
 import { FixCard } from './components/FixCard';
-import { contrast, parseColor, type RGB } from './lib/color';
+import { contrast, formatRatio, parseColor, type RGB } from './lib/color';
 import { TARGETS, solve, type Fix, type Target } from './lib/fix';
 import { SEED, fromHash, store, toHash, type HuekeepState } from './lib/state';
 
@@ -17,9 +17,6 @@ function takeSharedLink(): HuekeepState | null {
 function initial(): HuekeepState {
   return takeSharedLink() ?? store.load().value;
 }
-
-/** WCAG does not round up: 4.4954 is not 4.50. Floor to two decimals. */
-const show = (ratio: number) => (Math.floor(ratio * 100 + 1e-9) / 100).toFixed(2);
 
 export function App() {
   const [state, setState] = useState<HuekeepState>(initial);
@@ -174,14 +171,14 @@ export function App() {
 
           <section
             aria-labelledby="verdict"
-            className={`mt-8 transition-opacity duration-[var(--dur-state)] ${stale ? 'opacity-50' : ''}`}
+            className={`mt-8 transition-[filter] duration-[var(--dur-state)] ${stale ? 'grayscale' : ''}`}
           >
             <h2 id="verdict" className="sr-only">
               Result
             </h2>
             <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-[var(--text)] pt-4">
               <p className="tnum text-[length:var(--t-3xl)] leading-none font-semibold">
-                {show(ratio)}
+                {formatRatio(ratio)}
                 <span className="text-[length:var(--t-lg)] text-[var(--text-muted)]"> : 1</span>
               </p>
               <p
