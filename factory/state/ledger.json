@@ -53,7 +53,7 @@
       "slug": "guitar-cam",
       "name": "Guitar Cam",
       "category": "music-tool",
-      "sentence": "",
+      "sentence": "Guitar Cam helps a guitarist practising or working out a part see which note or chord they are playing, on which fret, in real time, and turn it into a tab they can export, without guessing by ear or retyping tab by hand.",
       "repo": "oliverinhalo/guitar-cam",
       "url": "https://guitar-cam.pages.dev",
       "host": "cloudflare",
