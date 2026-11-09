@@ -34,3 +34,42 @@ describe('App shell', () => {
     expect(document.documentElement.dataset.theme).toBeUndefined();
   });
 });
+
+describe('detection flow', () => {
+  it('pasted text produces a score, a label and highlights', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: /try a sample/i }));
+    expect(await screen.findByTestId('score')).toBeInTheDocument();
+    expect(screen.getByTestId('label')).toBeInTheDocument();
+    expect(document.querySelectorAll('mark[data-strength]').length).toBeGreaterThan(0);
+  });
+
+  it('sensitivity changes the highlight count without re-analysing', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: /try a sample/i }));
+    await screen.findByTestId('score');
+    const before = document.querySelectorAll('mark[data-strength]').length;
+    const slider = screen.getByRole('slider');
+    slider.focus();
+    for (let i = 0; i < 12; i++) await userEvent.keyboard('{ArrowRight}');
+    expect(slider).toHaveValue('90');
+    expect(document.querySelectorAll('mark[data-strength]').length).toBeLessThanOrEqual(before);
+  });
+
+  it('n jumps to the first highlighted sentence and explains it', async () => {
+    render(<App />);
+    await userEvent.click(screen.getByRole('button', { name: /try a sample/i }));
+    await screen.findByTestId('score');
+    (document.activeElement as HTMLElement).blur();
+    await userEvent.keyboard('n');
+    expect(
+      screen.getByRole('complementary', { name: /why this sentence/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('survives corrupt stored settings', () => {
+    localStorage.setItem('ai-detector:state', '{{{nope');
+    render(<App />);
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+  });
+});

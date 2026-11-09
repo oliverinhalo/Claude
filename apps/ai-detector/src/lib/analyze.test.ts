@@ -44,9 +44,10 @@ describe('analyze', () => {
     const seg = segment(text);
     const parts = sections(seg.sentences);
     expect(parts.length).toBeGreaterThan(5);
-    expect(parts[0]![0]).toBe(0);
-    expect(parts.at(-1)![1]).toBe(seg.sentences.length);
-    for (let i = 1; i < parts.length; i++) expect(parts[i]![0]).toBeLessThan(parts[i - 1]![1]);
+    expect(parts[0]?.[0]).toBe(0);
+    expect(parts.at(-1)?.[1]).toBe(seg.sentences.length);
+    for (let i = 1; i < parts.length; i++)
+      expect(parts[i]?.[0]).toBeLessThan(parts[i - 1]?.[1] ?? 0);
     const a = await analyze(text);
     expect(a.results).toHaveLength(seg.sentences.length);
   });

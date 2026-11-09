@@ -98,7 +98,7 @@ function rhythm(sentences: Sentence[]): number[] {
     // Human prose: cv ≈ 0.55+. Chatbot prose: cv ≈ 0.2–0.35.
     const evenness = clamp01((0.58 - cv) / 0.33);
     // Mid-length sentences (14–30 words) are where models sit.
-    const own = sentences[i]!.words;
+    const own = sentences[i]?.words ?? 0;
     const midBias = own >= 14 && own <= 32 ? 0.15 : own < 7 ? -0.2 : 0;
     return clamp01(evenness * 0.85 + midBias);
   });
@@ -147,10 +147,10 @@ export function runDetectors(sentences: Sentence[]): Scores[] {
   const g = register(sentences);
   const v = voice(sentences);
   return sentences.map((_, i) => ({
-    rhythm: r[i]!,
-    phrasing: p[i]!,
-    register: g[i]!,
-    voice: v[i]!,
+    rhythm: r[i] ?? 0,
+    phrasing: p[i] ?? 0,
+    register: g[i] ?? 0,
+    voice: v[i] ?? 0,
   }));
 }
 

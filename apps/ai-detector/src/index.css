@@ -81,3 +81,80 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The signature: highlighter pen. Ink stays readable on every strength, both themes. */
+.hl {
+  color: var(--hl-ink);
+  border-radius: 3px;
+  padding: 0.05em 0.15em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  cursor: pointer;
+}
+.hl-1 {
+  background: var(--hl-1);
+}
+.hl-2 {
+  background: var(--hl-2);
+}
+.hl-3 {
+  background: var(--hl-3);
+}
+.hl-selected,
+.hl:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
+}
+.doc-p {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 8rem;
+}
+
+.btn {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: var(--s-2);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
+  padding: 0 var(--s-4);
+  font-size: var(--t-sm);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color var(--dur-state);
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+kbd {
+  font-family: var(--font-mono);
+  font-size: var(--t-xs);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 0 0.35em;
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+}
+.btn-primary kbd {
+  color: inherit;
+}

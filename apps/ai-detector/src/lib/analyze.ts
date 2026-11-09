@@ -38,7 +38,7 @@ export function sections(
     let end = start;
     let w = 0;
     while (end < sentences.length && (w < size || end === start)) {
-      w += sentences[end]!.words;
+      w += sentences[end]?.words ?? 0;
       end += 1;
     }
     out.push([start, end]);
@@ -47,7 +47,7 @@ export function sections(
     let ow = 0;
     while (back > start + 1 && ow < overlap) {
       back -= 1;
-      ow += sentences[back]!.words;
+      ow += sentences[back]?.words ?? 0;
     }
     start = back;
   }
@@ -73,24 +73,27 @@ export async function analyze(text: string, options: AnalyzeOptions = {}): Promi
   const seg: Segmented = segment(text);
   const { sentences } = seg;
   const parts = sections(sentences);
-  const sum = new Array<number>(sentences.length).fill(0);
-  const seen = new Array<number>(sentences.length).fill(0);
-  const detSum: Scores[] = sentences.map(() => ({
-    rhythm: 0,
-    phrasing: 0,
-    register: 0,
-    voice: 0,
+  interface Acc {
+    sum: number;
+    seen: number;
+    det: Scores;
+  }
+  const acc: Acc[] = sentences.map(() => ({
+    sum: 0,
+    seen: 0,
+    det: { rhythm: 0, phrasing: 0, register: 0, voice: 0 },
   }));
 
   for (let i = 0; i < parts.length; i++) {
     if (options.signal?.aborted) throw new DOMException('Analysis cancelled', 'AbortError');
-    const [a, b] = parts[i]!;
+    const [a, b] = parts[i] ?? [0, 0];
     const scores = runDetectors(sentences.slice(a, b));
     scores.forEach((s, k) => {
-      const id = a + k;
-      sum[id]! += combine(s);
-      seen[id]! += 1;
-      for (const d of DETECTORS) detSum[id]![d.id] += s[d.id];
+      const cell = acc[a + k];
+      if (!cell) return;
+      cell.sum += combine(s);
+      cell.seen += 1;
+      for (const d of DETECTORS) cell.det[d.id] += s[d.id];
     });
     options.onProgress?.(i + 1, parts.length);
     await yieldToBrowser();
@@ -98,17 +101,19 @@ export async function analyze(text: string, options: AnalyzeOptions = {}): Promi
 
   // Raw per-sentence blend, then smooth with neighbours so highlights form phrases of
   // evidence rather than isolated flickers.
-  const raw = sentences.map((_, i) => sum[i]! / Math.max(1, seen[i]!));
+  const raw = acc.map((c) => c.sum / Math.max(1, c.seen));
   const results: SentenceResult[] = sentences.map((s, i) => {
-    const prev = raw[i - 1] ?? raw[i]!;
-    const next = raw[i + 1] ?? raw[i]!;
-    const blended = raw[i]! * 0.6 + prev * 0.2 + next * 0.2;
-    const n = Math.max(1, seen[i]!);
+    const own = raw[i] ?? 0;
+    const prev = raw[i - 1] ?? own;
+    const next = raw[i + 1] ?? own;
+    const blended = own * 0.6 + prev * 0.2 + next * 0.2;
+    const cell = acc[i];
+    const n = Math.max(1, cell?.seen ?? 1);
     const scores: Scores = {
-      rhythm: detSum[i]!.rhythm / n,
-      phrasing: detSum[i]!.phrasing / n,
-      register: detSum[i]!.register / n,
-      voice: detSum[i]!.voice / n,
+      rhythm: (cell?.det.rhythm ?? 0) / n,
+      phrasing: (cell?.det.phrasing ?? 0) / n,
+      register: (cell?.det.register ?? 0) / n,
+      voice: (cell?.det.voice ?? 0) / n,
     };
     const tooShort = s.words < 5;
     return { ...s, scores, probability: tooShort ? 0 : logistic(blended) };

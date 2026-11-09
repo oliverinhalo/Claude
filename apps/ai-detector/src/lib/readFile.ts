@@ -66,20 +66,21 @@ export function decodeEntities(s: string): string {
   });
 }
 
-/** Word: paragraphs are <w:p>, text is <w:t>. */
+/** Word: paragraphs are <w:p>, text runs are <w:t>, breaks are <w:br/> and <w:tab/>. */
 export function docxXmlToText(xml: string): string {
   return xml
-    .split(/<\/w:p>/)
-    .map((para) =>
-      decodeEntities(
-        para
-          .replace(/<w:(tab)\b[^>]*\/>/g, ' ')
-          .replace(/<w:(br|cr)\b[^>]*\/>/g, '\n')
-          .replace(/<w:t\b[^>]*>([^<]*)<\/w:t>/g, '\u0001$1\u0002')
-          .replace(/[^\u0001\u0002 \n]*?(?=\u0001|$)/g, (m) => (m.includes('\n') ? '\n' : ''))
-          .replace(/[\u0001\u0002]/g, ''),
-      ),
-    )
+    .split('</w:p>')
+    .map((para) => {
+      let out = '';
+      for (const m of para.matchAll(
+        /<w:t\b[^>]*>([^<]*)<\/w:t>|<w:(tab)\b[^>]*\/>|<w:(br|cr)\b[^>]*\/>/g,
+      )) {
+        if (m[1] !== undefined) out += decodeEntities(m[1]);
+        else if (m[2]) out += ' ';
+        else out += '\n';
+      }
+      return out;
+    })
     .join('\n');
 }
 
