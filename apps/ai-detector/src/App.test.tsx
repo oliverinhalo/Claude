@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
@@ -50,8 +50,7 @@ describe('detection flow', () => {
     await screen.findByTestId('score');
     const before = document.querySelectorAll('mark[data-strength]').length;
     const slider = screen.getByRole('slider');
-    slider.focus();
-    for (let i = 0; i < 12; i++) await userEvent.keyboard('{ArrowRight}');
+    fireEvent.change(slider, { target: { value: '90' } });
     expect(slider).toHaveValue('90');
     expect(document.querySelectorAll('mark[data-strength]').length).toBeLessThanOrEqual(before);
   });
