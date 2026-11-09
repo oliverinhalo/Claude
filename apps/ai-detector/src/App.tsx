@@ -127,7 +127,8 @@ export function App() {
                 type="file"
                 accept={ACCEPT}
                 className="sr-only"
-                aria-label="Choose a document"
+                aria-hidden="true"
+                tabIndex={-1}
                 onChange={(e) => {
                   void onFile(e.target.files?.[0]);
                   e.target.value = '';
@@ -243,8 +244,8 @@ export function App() {
 
         <footer className="border-t border-[var(--border)] py-6 text-sm text-[var(--text-muted)]">
           <p>
-            Runs entirely in your browser and works offline once loaded. Nothing you add is sent
-            anywhere.{' '}
+            Runs entirely in your browser and keeps working if you go offline while this tab is
+            open. Nothing you add is sent anywhere.{' '}
             <a
               className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--text)]"
               href="https://github.com/oliverinhalo/ai-detector"
