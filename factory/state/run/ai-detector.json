@@ -1,11 +1,11 @@
 {
   "slug": "ai-detector",
   "week": 6,
-  "status": "in_progress",
+  "status": "complete",
   "started": "2026-11-09T16:59:19Z",
-  "updated": "2026-11-09T17:21:40Z",
-  "last_completed_phase": "polish",
-  "next_action": "publish",
+  "updated": "2026-11-09T17:27:29Z",
+  "last_completed_phase": "complete",
+  "next_action": "Live at https://ai-detector-5ir.pages.dev",
   "decisions": [],
   "blockers": [],
   "live_url": null

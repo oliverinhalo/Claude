@@ -77,6 +77,21 @@
       "signature_detail": "Lightness ribbon: the colour at every lightness with passing zones and was/now markers",
       "paid_tier_hypothesis": "Whole-palette fixing, design-token export, APCA readout",
       "notes": "OKLCH hue-held solver, 8-bit verified, WCAG 2.x only, no alpha; share links; offline service worker."
+    },
+    {
+      "week": 6,
+      "slug": "ai-detector",
+      "name": "AI Detector",
+      "category": "education-tool",
+      "sentence": "AI Detector helps a student checking their own work see which sentences read as AI-written in under a minute, without uploading private coursework to a server.",
+      "repo": "oliverinhalo/ai-detector",
+      "url": "https://ai-detector-5ir.pages.dev",
+      "host": "cloudflare-pages",
+      "shipped": "2026-11-09",
+      "score": 6,
+      "signature_detail": "Highlighter-pen sentence marks in three strengths",
+      "paid_tier_hypothesis": "",
+      "notes": ""
     }
   ]
 }
