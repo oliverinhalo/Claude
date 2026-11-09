@@ -1,25 +1,5 @@
 {
   "version": 1,
-  "updated": "2026-11-09T16:57:52.097Z",
-  "items": [
-    {
-      "title": "AI detector",
-      "source": "console",
-      "brief": {
-        "purpose": "A student to upload large .docx or other formats and to get an ai score and highlight areas it detects are written by AI",
-        "mustHave": [
-          "Detect AI",
-          "Alow large documents to be uploaded",
-          "Highlight lines that are AI"
-        ],
-        "niceToHave": [
-          "Fast"
-        ],
-        "exclude": [],
-        "notes": "If needed break a file down into overlapping sections.\nUse pre made detectors(multiple to noy miss anything)\nIf it passes this things like turn it in should also pass"
-      },
-      "id": "q_uhflkdi4",
-      "addedAt": "2026-11-09T16:57:52.097Z"
-    }
-  ]
+  "updated": "2026-11-09T17:27:29Z",
+  "items": []
 }
