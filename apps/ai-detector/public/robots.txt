@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ai-detector.pages.dev/sitemap.xml
+Sitemap: https://ai-detector-5ir.pages.dev/sitemap.xml
