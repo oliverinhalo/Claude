@@ -2,7 +2,7 @@
 
 Upload an essay or report of any length and see which sentences read as AI-written, scored privately in your browser.
 
-**[Open the app →](https://ai-detector.pages.dev)**
+**[Open the app →](https://ai-detector-5ir.pages.dev)**
 
 No account. No tracking. Nothing leaves your browser.
 
