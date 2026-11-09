@@ -180,3 +180,7 @@ Mark shipped ideas with `✅ <slug>` and rejected ones with `✗ <reason>` inlin
 - **Contrast fixer, not just checker** ✅ huekeep
 - **Palette fixer** — fix a whole set of brand colours against one background in one go and export tokens. *(accessibility-tool)* follow-up to huekeep
 - **APCA readout** — show APCA Lc next to WCAG 2.x ratios. *(accessibility-tool)*
+
+## Run 2026-11-09 (week 46, second app) — chosen from the bank, no queue
+- **Sourdough schedule** ✅ crumb-clock (planner)
+- **Crumb Clock follow-ups** — multiple loaves; hydration calculator; other doughs (pizza, focaccia); starter maintenance reminders. *(planner)*

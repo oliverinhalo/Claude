@@ -1,10 +1,10 @@
 {
   "slug": "crumb-clock",
   "week": 7,
-  "status": "in_progress",
+  "status": "complete",
   "started": "2026-11-09T17:49:07Z",
-  "updated": "2026-11-09T17:57:16Z",
-  "last_completed_phase": "publish",
+  "updated": "2026-11-09T17:59:09Z",
+  "last_completed_phase": "done",
   "next_action": "",
   "decisions": [],
   "blockers": [],

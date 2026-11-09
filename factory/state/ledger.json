@@ -92,6 +92,21 @@
       "signature_detail": "Highlighter-pen sentence marks in three strengths",
       "paid_tier_hypothesis": "",
       "notes": ""
+    },
+    {
+      "week": 7,
+      "slug": "crumb-clock",
+      "name": "Crumb Clock",
+      "category": "planner",
+      "sentence": "Crumb Clock helps a home sourdough baker work out when to feed, mix, shape and bake in under ten seconds, without doing the back-of-envelope maths and setting eight alarms by hand.",
+      "repo": "oliverinhalo/crumb-clock",
+      "url": "https://crumb-clock.pages.dev",
+      "host": "cloudflare-pages",
+      "shipped": "2026-11-09",
+      "score": 7,
+      "signature_detail": "Timeline rail whose night-time steps turn hollow red",
+      "paid_tier_hypothesis": "Multiple loaves, hydration calculator, recipe library",
+      "notes": ""
     }
   ]
 }
