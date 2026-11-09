@@ -40,7 +40,7 @@ export function decodePlan(hash: string): Plan | null {
   const c = Number(params.get('c'));
   const m = params.get('m');
   if (!Number.isInteger(t) || t <= 0 || t > 100_000_000) return null;
-  if (!Number.isFinite(c) || c < TEMP_MIN || c > TEMP_MAX) return null;
+  if (!Number.isInteger(c) || c < TEMP_MIN || c > TEMP_MAX) return null;
   if (m !== 'o' && m !== 's') return null;
   return { readyAt: t * 60000, method: m === 'o' ? 'overnight' : 'same-day', roomTemp: c };
 }

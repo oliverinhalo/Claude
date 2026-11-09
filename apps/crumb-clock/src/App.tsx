@@ -54,6 +54,18 @@ export function App() {
   const [plan, setPlan] = useState<Plan>(init.plan);
   const [copied, setCopied] = useState(false);
 
+  // A shared link pasted into an already-open tab only changes the hash.
+  useEffect(() => {
+    const onHash = () => {
+      const next = decodePlan(window.location.hash);
+      if (next) setPlan(next);
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => {
+      window.removeEventListener('hashchange', onHash);
+    };
+  }, []);
+
   useEffect(() => {
     savedStore.save({ method: plan.method, roomTemp: plan.roomTemp });
   }, [plan.method, plan.roomTemp]);

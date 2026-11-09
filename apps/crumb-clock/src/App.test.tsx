@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
@@ -65,5 +65,19 @@ describe('Crumb Clock core loop', () => {
     window.location.hash = '';
     render(<App />);
     expect(screen.getByText(/started fresh/i)).toBeInTheDocument();
+  });
+});
+
+describe('shared link in an open tab', () => {
+  it('applies a pasted hash without a reload', () => {
+    localStorage.clear();
+    render(<App />);
+    act(() => {
+      window.location.hash = '#t=29906460&m=o&c=18';
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    expect(screen.getByLabelText(/overnight in the fridge/i)).toBeChecked();
+    expect(screen.getByText(/18 °C/)).toBeInTheDocument();
+    window.location.hash = '';
   });
 });

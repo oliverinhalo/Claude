@@ -24,6 +24,13 @@ describe('ics', () => {
     for (const line of fold('x'.repeat(200)).split('\r\n'))
       expect(line.length).toBeLessThanOrEqual(75);
   });
+  it('folds by UTF-8 octets without splitting characters', () => {
+    const folded = fold('DESCRIPTION:' + '°🍞'.repeat(60));
+    const enc = new TextEncoder();
+    for (const line of folded.split('\r\n'))
+      expect(enc.encode(line).length).toBeLessThanOrEqual(75);
+    expect(folded.replace(/\r\n /g, '')).toBe('DESCRIPTION:' + '°🍞'.repeat(60));
+  });
 });
 
 describe('plan url state', () => {
@@ -35,10 +42,15 @@ describe('plan url state', () => {
     };
     expect(decodePlan('#' + encodePlan(plan))).toEqual(plan);
   });
-  it.each(['', '#', '#t=abc&m=s&c=20', '#t=100&m=x&c=20', '#t=100&m=s&c=99', '#t=-5&m=s&c=20'])(
-    'rejects malformed hash %j',
-    (h) => expect(decodePlan(h)).toBeNull(),
-  );
+  it.each([
+    '',
+    '#',
+    '#t=abc&m=s&c=20',
+    '#t=100&m=x&c=20',
+    '#t=100&m=s&c=99',
+    '#t=-5&m=s&c=20',
+    '#t=100&m=s&c=22.5',
+  ])('rejects malformed hash %j', (h) => expect(decodePlan(h)).toBeNull());
   it('validates saved state strictly', () => {
     expect(isSaved({ method: 'same-day', roomTemp: 22 })).toBe(true);
     expect(isSaved({ method: 'nope', roomTemp: 22 })).toBe(false);

@@ -16,12 +16,27 @@ export function escapeText(s: string): string {
     .replace(/\r?\n/g, '\\n');
 }
 
-/** Fold lines longer than 75 octets (approximated by characters). */
+/** Fold lines longer than 75 octets (UTF-8), never splitting a character. */
 export function fold(line: string): string {
-  if (line.length <= 75) return line;
-  const parts: string[] = [line.slice(0, 75)];
-  for (let i = 75; i < line.length; i += 74) parts.push(' ' + line.slice(i, i + 74));
-  return parts.join('\r\n');
+  const enc = new TextEncoder();
+  if (enc.encode(line).length <= 75) return line;
+  const parts: string[] = [];
+  let cur = '';
+  let curBytes = 0;
+  let limit = 75;
+  for (const ch of line) {
+    const n = enc.encode(ch).length;
+    if (curBytes + n > limit) {
+      parts.push(cur);
+      cur = '';
+      curBytes = 0;
+      limit = 74; // continuation lines carry a leading space
+    }
+    cur += ch;
+    curBytes += n;
+  }
+  parts.push(cur);
+  return parts.join('\r\n ');
 }
 
 /** Build an iCalendar file with one event and a 5-minute-early alarm per step. */

@@ -156,7 +156,7 @@ const pad = (n: number): string => String(n).padStart(2, '0');
 /** Format an epoch ms as the value of a datetime-local input. */
 export function toLocalInput(ms: number): string {
   const d = new Date(ms);
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${String(d.getFullYear()).padStart(4, '0')}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 /** Parse a datetime-local value. Returns null for anything that is not a real time. */
@@ -164,8 +164,11 @@ export function fromLocalInput(value: string): number | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
   if (!m) return null;
   const [y = 0, mo = 0, d = 0, h = 0, mi = 0] = m.slice(1).map(Number);
-  const date = new Date(y, mo - 1, d, h, mi);
-  if (date.getMonth() !== mo - 1 || date.getDate() !== d) return null;
+  // `new Date(y, …)` maps years 0–99 to 1900–1999; setFullYear does not.
+  const date = new Date(2000, 0, 1, h, mi);
+  date.setFullYear(y, mo - 1, d);
+  if (date.getFullYear() !== y || date.getMonth() !== mo - 1 || date.getDate() !== d)
+    return null;
   const t = date.getTime();
   return Number.isFinite(t) ? t : null;
 }

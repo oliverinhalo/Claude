@@ -85,6 +85,7 @@ describe('local input helpers', () => {
   });
   it('rejects garbage and impossible dates', () => {
     expect(fromLocalInput('')).toBeNull();
+    expect(fromLocalInput('0001-01-01T00:00')).not.toBe(fromLocalInput('1901-01-01T00:00'));
     expect(fromLocalInput('tomorrow')).toBeNull();
     expect(fromLocalInput('2026-02-31T10:00')).toBeNull();
   });
@@ -92,5 +93,13 @@ describe('local input helpers', () => {
     expect(formatDuration(45)).toBe('45 min');
     expect(formatDuration(120)).toBe('2 h');
     expect(formatDuration(135)).toBe('2 h 15 min');
+  });
+});
+
+describe('years below 100', () => {
+  it('round-trips year 0001 instead of mapping it to 1901', () => {
+    const t = fromLocalInput('0001-01-01T00:00');
+    expect(t).not.toBeNull();
+    expect(toLocalInput(t as number)).toBe('0001-01-01T00:00');
   });
 });
