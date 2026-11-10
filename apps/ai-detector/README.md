@@ -10,7 +10,7 @@ No account. No tracking. Nothing leaves your browser.
 
 ## What it does
 
-Drop in a .docx, .odt, .txt, .md, .html or .rtf file (up to 100 MB) or paste text. Four detectors score every sentence, combine into an overall 0–100 score, and highlight the sentences that read as machine-written, in three strengths. Click a highlight to see why; press `n` / `p` to jump between them; slide the sensitivity to taste.
+Drop in a .docx, .odt, .txt, .md, .html or .rtf file (up to 100 MB) or paste text. Five detectors score every sentence, combine into an overall 0–100 score, and highlight the sentences that read as machine-written, in three strengths. Click a highlight to see why; press `n` / `p` to jump between them; slide the sensitivity to taste.
 
 ## Why it exists
 
@@ -37,7 +37,7 @@ npm run dev
 
 ## How it works
 
-Text is split into paragraphs and sentences, then into overlapping ~1,500-word sections (150-word overlap) analysed one at a time so the page never freezes. Four detectors score each sentence from 0 to 1: **Rhythm** (uneven vs uniform sentence lengths), **Stock phrasing** (chatbot transitions and filler), **Formal register** (dense abstract vocabulary) and **Personal voice** (contractions, first person, repeated openers). A weighted blend, smoothed across neighbouring sentences, gives the per-sentence probability. DOCX/ODT are read with a small built-in zip reader and the browser's `DecompressionStream`; no dependencies.
+Text is split into paragraphs and sentences, then into overlapping ~1,500-word sections (150-word overlap) analysed one at a time so the page never freezes. Five detectors score each sentence from 0 to 1: **Rhythm** (uneven vs uniform sentence lengths), **Stock phrasing** (chatbot transitions and filler), **Formal register** (dense abstract vocabulary) **Personal voice** (contractions, first person, repeated openers) and **Specificity** (generic text with no figures, names or quotations). If a high score rests on style signals alone, with no stock phrasing, the label is capped at Mixed. A weighted blend, smoothed across neighbouring sentences, gives the per-sentence probability. DOCX/ODT are read with a small built-in zip reader and the browser's `DecompressionStream`; no dependencies.
 
 Everything runs client-side. State is persisted to `localStorage` through a
 versioned store that migrates old data and recovers from corrupt data rather
@@ -56,3 +56,7 @@ MIT — see [LICENSE](./LICENSE).
 ---
 
 Built by the [weekly app factory](https://github.com/oliverinhalo/Claude).
+
+## Accuracy: what has and has not been measured
+
+`npm run` the benchmark with `npx tsx eval/run.ts -v`. The corpus (`eval/corpus.ts`) is 39 passages **written by hand for this project**, so it is a regression benchmark, not evidence of real-world accuracy. On the 10-passage blind split (written after the last tuning change) the tool had AUC 0.84, no human passage labelled Likely AI, and 2 of 5 AI passages missed (casual- and literary-style chatbot text). Formal human writing (legal, minutes, scientific) still scores high on style signals, so those cases are capped at "Mixed". Expect false positives and false negatives on real text; never treat the score as a verdict.

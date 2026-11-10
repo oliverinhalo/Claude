@@ -13,7 +13,7 @@ No detector — including Turnitin, GPTZero or this one — is reliable enough t
 produce false positives (notably on formal and non-native English). The brief asks that a pass here
 implies a pass at Turnitin; that cannot be promised, because Turnitin is proprietary. The app says so.
 Paid detector APIs are excluded (free tiers only; and uploading a student's essay is the thing this
-app exists to avoid). "Multiple detectors" is met by an in-browser ensemble of four independent
+app exists to avoid). "Multiple detectors" is met by an in-browser ensemble of five independent
 detectors that must agree.
 
 ## Core loop
