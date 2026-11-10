@@ -78,6 +78,17 @@ export function Report({ analysis, name, sensitivity, onSensitivity }: Props) {
         </p>
       )}
 
+      {analysis.styleOnly && (
+        <p
+          role="status"
+          className="mb-4 rounded-[var(--radius)] border border-[var(--border-strong)] bg-[var(--surface-sunken)] p-3 text-sm"
+        >
+          <strong>Style signals only.</strong> This reads formal and even, but none of the stock
+          phrasing chatbots lean on turned up. Careful human writing (legal, scientific,
+          minutes) looks like this too, so it is shown as Mixed, not Likely AI.
+        </p>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-[auto_1fr]">
         <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-sm)] sm:min-w-52">
           <p className="text-sm text-[var(--text-muted)]">AI score</p>
@@ -102,7 +113,7 @@ export function Report({ analysis, name, sensitivity, onSensitivity }: Props) {
         </div>
 
         <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-raised)] p-5 shadow-[var(--shadow-sm)]">
-          <h3 className="text-sm font-semibold">Four detectors, averaged</h3>
+          <h3 className="text-sm font-semibold">Five detectors, averaged</h3>
           <ul className="mt-3 space-y-2">
             {DETECTORS.map((d) => {
               const v = analysis.detectorMeans[d.id];

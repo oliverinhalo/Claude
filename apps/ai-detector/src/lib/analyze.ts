@@ -20,6 +20,8 @@ export interface Analysis {
   score: number;
   label: 'Mostly human' | 'Mixed' | 'Likely AI';
   reliable: boolean;
+  /** True when a high score rests on style signals alone (no stock phrasing); formal human writing does this. */
+  styleOnly: boolean;
   detectorMeans: Scores;
 }
 
@@ -81,7 +83,7 @@ export async function analyze(text: string, options: AnalyzeOptions = {}): Promi
   const acc: Acc[] = sentences.map(() => ({
     sum: 0,
     seen: 0,
-    det: { rhythm: 0, phrasing: 0, register: 0, voice: 0 },
+    det: { rhythm: 0, phrasing: 0, register: 0, voice: 0, specificity: 0 },
   }));
 
   for (let i = 0; i < parts.length; i++) {
@@ -114,6 +116,7 @@ export async function analyze(text: string, options: AnalyzeOptions = {}): Promi
       phrasing: (cell?.det.phrasing ?? 0) / n,
       register: (cell?.det.register ?? 0) / n,
       voice: (cell?.det.voice ?? 0) / n,
+      specificity: (cell?.det.specificity ?? 0) / n,
     };
     const tooShort = s.words < 5;
     return { ...s, scores, probability: tooShort ? 0 : logistic(blended) };
@@ -122,17 +125,28 @@ export async function analyze(text: string, options: AnalyzeOptions = {}): Promi
   const total = results.reduce((a, r) => a + r.words, 0) || 1;
   const weighted = results.reduce((a, r) => a + r.probability * r.words, 0) / total;
   const score = Math.round(weighted * 100);
-  const detectorMeans: Scores = { rhythm: 0, phrasing: 0, register: 0, voice: 0 };
+  const detectorMeans: Scores = {
+    rhythm: 0,
+    phrasing: 0,
+    register: 0,
+    voice: 0,
+    specificity: 0,
+  };
   for (const d of DETECTORS) {
     detectorMeans[d.id] = results.reduce((a, r) => a + r.scores[d.id] * r.words, 0) / total;
   }
+  // Rhythm, voice and register are style signals that careful human writers (legal,
+  // scientific, committee prose) share with chatbots. Without any stock phrasing to
+  // corroborate, refuse to call it "Likely AI" — a false accusation is the costly error.
+  const styleOnly = score >= 60 && detectorMeans.phrasing < 0.15;
   return {
     results,
     paragraphs: seg.paragraphs,
     words: countWords(text),
     sections: parts.length,
     score,
-    label: score >= 60 ? 'Likely AI' : score >= 35 ? 'Mixed' : 'Mostly human',
+    styleOnly,
+    label: score >= 60 && !styleOnly ? 'Likely AI' : score >= 35 ? 'Mixed' : 'Mostly human',
     reliable: total >= MIN_RELIABLE_WORDS,
     detectorMeans,
   };
