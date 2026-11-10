@@ -20,3 +20,7 @@ Playwright browser was missing (installed); publish chose `ai-detector-5ir.pages
 
 ## Score: 6/10
 Polished, private and fast, but detection quality is unvalidated heuristics. Lighthouse not measured. Would do differently: benchmark against labelled human/AI text before shipping, and add a real model.
+
+## Follow-up run (2026-11-10, CONTINUE mode)
+Lighthouse measured against live URLs (mobile default): ai-detector 100/100/100/100 (perf/a11y/best-practices/SEO); crumb-clock 100/100/100/100. The "Lighthouse not measured" gap above is closed.
+Remaining gap, not attempted: detection quality is unvalidated heuristics. Closing it needs a labelled human/AI corpus and a transformers.js model, which is a multi-run job and not something to rush. Left on the roadmap; score stays 6.
