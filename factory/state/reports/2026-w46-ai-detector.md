@@ -24,3 +24,9 @@ Polished, private and fast, but detection quality is unvalidated heuristics. Lig
 ## Follow-up run (2026-11-10, CONTINUE mode)
 Lighthouse measured against live URLs (mobile default): ai-detector 100/100/100/100 (perf/a11y/best-practices/SEO); crumb-clock 100/100/100/100. The "Lighthouse not measured" gap above is closed.
 Remaining gap, not attempted: detection quality is unvalidated heuristics. Closing it needs a labelled human/AI corpus and a transformers.js model, which is a multi-run job and not something to rush. Left on the roadmap; score stays 6.
+
+## Accuracy run (2026-11-10, owner request: "more accurate and reliable")
+Added a fifth detector (Specificity: no figures/names/quotes), ~10 more stock-phrase patterns, reweighted, and a "style-only" guard: a high score with no stock phrasing is capped at Mixed with an on-screen explanation. Built a 39-passage hand-written labelled corpus (`eval/corpus.ts`, `eval/run.ts`) and a regression test (`benchmark.test.ts`).
+Before (29 passages): AUC 0.981 but 1 human flagged Likely AI, 1 casual AI missed; tune accuracy 0.88.
+After: tune AUC 1.00, holdout 0.97, **blind (10 passages written after tuning) AUC 0.84, accuracy 0.70, 0/5 humans flagged, 2/5 AI missed**. Tune/holdout numbers are optimistic (I saw them while tuning). The corpus is authored by me, not real-world text, so none of this validates real accuracy. Gate 9/9; live verified (verify-live all green).
+Still not done: a trained model; real labelled data. Score stays 6 — fewer false accusations, still heuristics.

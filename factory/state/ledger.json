@@ -91,7 +91,7 @@
       "score": 6,
       "signature_detail": "Highlighter-pen sentence marks in three strengths",
       "paid_tier_hypothesis": "",
-      "notes": ""
+      "notes": "2026-11-10 accuracy pass: 5th detector, style-only guard (no Likely AI without stock phrasing), 39-passage hand-written benchmark. Blind AUC 0.84, 0/5 human false accusations, 2/5 AI missed. Still heuristics; no trained model."
     },
     {
       "week": 7,
