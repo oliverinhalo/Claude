@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 const dist = 'dist';
 const base = process.env.VITE_BASE ?? '/';
-const site = process.env.SITE_URL ?? 'https://budgeter.pages.dev';
+const site = process.env.SITE_URL ?? 'https://budgeter-73o.pages.dev';
 
 if (!existsSync(join(dist, 'index.html'))) {
   console.error('postbuild: dist/index.html is missing — the build did not produce output');

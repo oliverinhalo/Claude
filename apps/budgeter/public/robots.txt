@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://budgeter.pages.dev/sitemap.xml
+Sitemap: https://budgeter-73o.pages.dev/sitemap.xml

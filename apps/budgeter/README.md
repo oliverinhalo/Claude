@@ -2,7 +2,7 @@
 
 Turn a UK salary into monthly take-home pay, then see what is left after your spending.
 
-**[Open the app →](https://budgeter.pages.dev)**
+**[Open the app →](https://budgeter-73o.pages.dev)**
 
 No account. No tracking. Nothing leaves your browser.
 
