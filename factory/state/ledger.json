@@ -46,7 +46,7 @@
       "score": 7,
       "signature_detail": "",
       "paid_tier_hypothesis": "",
-      "notes": "Canonical/sitemap point at budgeter.pages.dev (wrong); see factory/state/publish-app-cloudflare-subdomain.patch"
+      "notes": "2026-11-11: canonical, OG and sitemap URLs fixed to budgeter-73o.pages.dev and verified live."
     },
     {
       "week": 4,
