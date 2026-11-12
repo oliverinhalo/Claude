@@ -20,3 +20,6 @@ Playwright browser missing (installed). Lint non-null assertions and a Python-es
 ## Score: 7/10
 Solid, focused, accessible, verified live. Lighthouse not measured; the schedule's durations are rule-of-thumb, not validated against real bakes; copy/design pass was light.
 Would do differently: do the real scoring pass and measure Lighthouse.
+
+## Follow-up run (2026-11-12, CONTINUE mode)
+Fixed two QA leftovers: the URL hash goes stale after Copy link (it now follows the plan once a hash is present) and the infeasible alert lacks the year (added). Gate 9/9, republished, verify-live all green. Still open: clearing the date field is ignored; overflow at 200px. Score stays 7. ai-detector (6) needs a trained model and real labelled data, which is a multi-run job, so I did not start it.
