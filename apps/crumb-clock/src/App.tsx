@@ -23,8 +23,15 @@ const dayFmt = new Intl.DateTimeFormat(undefined, {
   day: 'numeric',
   month: 'short',
 });
+const dayYearFmt = new Intl.DateTimeFormat(undefined, {
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
 const timeFmt = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
 const day = (ms: number) => dayFmt.format(ms);
+const dayYear = (ms: number) => dayYearFmt.format(ms);
 const time = (ms: number) => timeFmt.format(ms);
 
 function initialPlan(now: number): { plan: Plan; recovered: string | null; shared: boolean } {
@@ -69,6 +76,14 @@ export function App() {
   useEffect(() => {
     savedStore.save({ method: plan.method, roomTemp: plan.roomTemp });
   }, [plan.method, plan.roomTemp]);
+
+  // Once the URL carries a plan (shared or copied), keep it in step with the form
+  // so a reload or a re-copied tab never shows an outdated schedule.
+  useEffect(() => {
+    if (!window.location.hash) return;
+    const next = `#${encodePlan(plan)}`;
+    if (window.location.hash !== next) window.history.replaceState(null, '', next);
+  }, [plan]);
 
   const steps = useMemo(() => buildSchedule(plan), [plan]);
   const feasible = isFeasible(plan, now);
@@ -214,8 +229,8 @@ export function App() {
                 className="mt-4 rounded-[var(--radius)] border border-[var(--danger)] p-4"
               >
                 <p>
-                  That plan needs you to begin {day(first.at)} at {time(first.at)}, which has
-                  already passed. The earliest you can eat is {day(earliest)} at{' '}
+                  That plan needs you to begin {dayYear(first.at)} at {time(first.at)}, which
+                  has already passed. The earliest you can eat is {dayYear(earliest)} at{' '}
                   {time(earliest)}.
                 </p>
                 <button
