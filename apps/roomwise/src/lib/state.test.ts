@@ -12,7 +12,7 @@ describe('hash', () => {
     if (r.status === 'ok') expect(r.state).toEqual(s);
   });
   it('flags garbage and ignores unrelated hashes', () => {
-    expect(decodeHash('#s=@@@').status).toBe('none');
+    expect(decodeHash('#s=@@@').status).toBe('bad');
     expect(decodeHash('#s=abcd').status).toBe('bad');
     expect(decodeHash('#about').status).toBe('none');
     expect(decodeHash('').status).toBe('none');

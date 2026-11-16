@@ -1,20 +1,28 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeToggle } from './components/ThemeToggle';
 import {
+  areaMax,
   compute,
   EXAMPLE,
   explain,
+  FT2_PER_M2 as FT2,
   formatAmount,
   LIMITS,
   summary,
   type AreaUnit,
   type State,
 } from './lib/split';
-import { encodeState, loadInitial, newRoom, store } from './lib/state';
+import {
+  decodeHash,
+  encodeState,
+  loadInitial,
+  newRoom,
+  serializable,
+  store,
+} from './lib/state';
 
 const SWATCH = ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6'] as const;
 const swatch = (i: number) => `var(${SWATCH[i % SWATCH.length]})`;
-const FT2 = 10.7639;
 
 const field =
   'min-h-11 w-full rounded-[var(--radius)] border border-[var(--border-strong)] bg-[var(--surface)] px-3 text-[var(--text)]';
@@ -39,10 +47,21 @@ export function App() {
   const result = useMemo(() => compute(state), [state]);
 
   useEffect(() => {
-    store.save(state);
+    store.save(serializable(state));
     const next = `#${encodeState(state)}`;
     if (window.location.hash !== next) history.replaceState(null, '', next);
   }, [state]);
+
+  useEffect(() => {
+    const onHash = () => {
+      const h = decodeHash(window.location.hash);
+      if (h.status === 'ok') setState(h.state);
+      else if (h.status === 'bad')
+        setNotice('That share link could not be read, so the previous split is kept.');
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
 
   useEffect(() => {
     if (addedRef.current) {
@@ -59,7 +78,9 @@ export function App() {
   const setUnit = (unit: AreaUnit) => {
     if (unit === state.unit) return;
     const k = unit === 'ft2' ? FT2 : 1 / FT2;
-    const conv = (n: number) => (Number.isFinite(n) ? Math.round(n * k * 10) / 10 : n);
+    const max = areaMax(unit);
+    const conv = (n: number) =>
+      Number.isFinite(n) ? Math.min(max, Math.round(n * k * 10) / 10) : n;
     setState((s) => ({
       ...s,
       unit,
@@ -166,11 +187,11 @@ export function App() {
                   type="number"
                   inputMode="decimal"
                   min={0}
-                  max={LIMITS.area}
+                  max={areaMax(state.unit)}
                   step="any"
                   value={show(state.shared)}
                   onChange={(e) =>
-                    patch({ shared: Math.min(toNum(e.target.value) || 0, LIMITS.area) })
+                    patch({ shared: Math.min(toNum(e.target.value) || 0, areaMax(state.unit)) })
                   }
                 />
               </div>
@@ -283,13 +304,13 @@ export function App() {
                           type="number"
                           inputMode="decimal"
                           min={0}
-                          max={LIMITS.area}
+                          max={areaMax(state.unit)}
                           step="any"
                           value={show(room.area)}
                           aria-invalid={!share?.valid}
                           onChange={(e) =>
                             patchRoom(room.id, {
-                              area: Math.min(toNum(e.target.value), LIMITS.area),
+                              area: Math.min(toNum(e.target.value), areaMax(state.unit)),
                             })
                           }
                         />
