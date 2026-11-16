@@ -1,5 +1,6 @@
 import { createStore } from './storage';
 import {
+  areaMax,
   DEFAULT_PERKS,
   EXAMPLE,
   LIMITS,
@@ -13,7 +14,7 @@ const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object
 const num = (v: unknown, min: number, max: number): v is number =>
   typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;
 
-function validRoom(v: unknown): v is Room {
+function validRoom(v: unknown, max: number): v is Room {
   return (
     isObj(v) &&
     typeof v.id === 'string' &&
@@ -22,7 +23,7 @@ function validRoom(v: unknown): v is Room {
     typeof v.area === 'number' &&
     Number.isFinite(v.area) &&
     v.area >= 0 &&
-    v.area <= LIMITS.area &&
+    v.area <= max &&
     Array.isArray(v.perks) &&
     v.perks.every((p) => typeof p === 'string')
   );
@@ -49,10 +50,10 @@ export function isState(v: unknown): v is State {
     typeof v.currency === 'string' &&
     v.currency.length <= 3 &&
     typeof v.cents === 'boolean' &&
-    num(v.shared, 0, LIMITS.area) &&
+    num(v.shared, 0, areaMax(v.unit as AreaUnit)) &&
     Array.isArray(v.rooms) &&
     v.rooms.length <= LIMITS.rooms &&
-    v.rooms.every(validRoom) &&
+    v.rooms.every((r) => validRoom(r, areaMax(v.unit as AreaUnit))) &&
     Array.isArray(v.perks) &&
     v.perks.length <= 20 &&
     v.perks.every(validPerk)
@@ -79,8 +80,19 @@ function b64decode(text: string): string {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 }
 
+/** Cleared or invalid number fields are NaN in memory; JSON would turn them into null. */
+export function serializable(state: State): State {
+  const n = (v: number) => (Number.isFinite(v) ? v : 0);
+  return {
+    ...state,
+    rent: n(state.rent),
+    shared: n(state.shared),
+    rooms: state.rooms.map((r) => ({ ...r, area: n(r.area) })),
+  };
+}
+
 export function encodeState(state: State): string {
-  return `s=${b64encode(JSON.stringify(state))}`;
+  return `s=${b64encode(JSON.stringify(serializable(state)))}`;
 }
 
 export type HashResult =
@@ -88,7 +100,7 @@ export type HashResult =
 
 export function decodeHash(hash: string): HashResult {
   const m = /^#?s=([A-Za-z0-9_-]+)$/.exec(hash);
-  if (!m?.[1]) return { status: 'none' };
+  if (!m?.[1]) return /^#?s=/.test(hash) ? { status: 'bad' } : { status: 'none' };
   try {
     const parsed: unknown = JSON.parse(b64decode(m[1]));
     return isState(parsed) ? { status: 'ok', state: parsed } : { status: 'bad' };

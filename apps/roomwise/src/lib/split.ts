@@ -26,6 +26,11 @@ export interface State {
 
 export const LIMITS = { rooms: 12, area: 1000, rent: 1_000_000, perk: 50 } as const;
 
+export const FT2_PER_M2 = 10.7639;
+/** Area cap for a unit: LIMITS.area is in m²; ft² gets the same physical cap. */
+export const areaMax = (unit: AreaUnit): number =>
+  unit === 'ft2' ? Math.round(LIMITS.area * FT2_PER_M2) : LIMITS.area;
+
 export const DEFAULT_PERKS: Perk[] = [
   { id: 'ensuite', label: 'Ensuite bathroom', pct: 10 },
   { id: 'balcony', label: 'Balcony or private outdoor space', pct: 5 },
