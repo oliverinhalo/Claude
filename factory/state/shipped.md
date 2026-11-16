@@ -9,7 +9,8 @@
 | 5 | **Huekeep** | Huekeep helps a designer or front-end developer whose brand colour fails WCAG contrast get the nearest passing colour, same hue, as a pasteable hex in under ten seconds, without nudging a picker until the ratio turns green. | [open](https://huekeep.pages.dev) | [oliverinhalo/huekeep](https://github.com/oliverinhalo/huekeep) | 7/10 |
 | 6 | **AI Detector** | AI Detector helps a student checking their own work see which sentences read as AI-written in under a minute, without uploading private coursework to a server. | [open](https://ai-detector-5ir.pages.dev) | [oliverinhalo/ai-detector](https://github.com/oliverinhalo/ai-detector) | 6/10 |
 | 7 | **Crumb Clock** | Crumb Clock helps a home sourdough baker work out when to feed, mix, shape and bake in under ten seconds, without doing the back-of-envelope maths and setting eight alarms by hand. | [open](https://crumb-clock.pages.dev) | [oliverinhalo/crumb-clock](https://github.com/oliverinhalo/crumb-clock) | 7/10 |
+| 8 | **Roomwise** | Roomwise helps a housemate who has just been handed a lease work out the rent split by room in under a minute, without the spreadsheet argument. | [open](https://roomwise-i1p.pages.dev) | [oliverinhalo/roomwise](https://github.com/oliverinhalo/roomwise) | 7/10 |
 
-**7 of 52 shipped · mean score 6.9/10**
+**8 of 52 shipped · mean score 6.9/10**
 
 Updated by `factory/scripts/ledger.sh`. Do not edit by hand.

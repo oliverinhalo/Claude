@@ -107,6 +107,21 @@
       "signature_detail": "Timeline rail whose night-time steps turn hollow red",
       "paid_tier_hypothesis": "Multiple loaves, hydration calculator, recipe library",
       "notes": "2026-11-12: URL hash now tracks the plan after Copy link; infeasible alert shows the year. Re-verified live."
+    },
+    {
+      "week": 8,
+      "slug": "roomwise",
+      "name": "Roomwise",
+      "category": "calculator",
+      "sentence": "Roomwise helps a housemate who has just been handed a lease work out the rent split by room in under a minute, without the spreadsheet argument.",
+      "repo": "oliverinhalo/roomwise",
+      "url": "https://roomwise-i1p.pages.dev",
+      "host": "cloudflare-pages",
+      "shipped": "2026-11-16",
+      "score": 7,
+      "signature_detail": "Floor-plan strip whose segment widths are each room's share",
+      "paid_tier_hypothesis": "Pro-rating for move-ins, utilities by room, saved scenarios",
+      "notes": "Slug pages.dev was taken; live at the suffixed host."
     }
   ]
 }
