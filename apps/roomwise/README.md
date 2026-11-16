@@ -43,7 +43,7 @@ than failing — see `src/lib/storage.ts`.
 
 ## Roadmap
 
-<!-- Replace: what a heavier user would want next. -->
+Pro-rating for mid-month move-ins, utilities by room, and saved scenarios.
 
 ## Licence
 
