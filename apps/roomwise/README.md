@@ -1,6 +1,6 @@
-# **APP_NAME**
+# Roomwise
 
-**APP_DESCRIPTION**
+Split the rent by room size and perks, so housemates agree on a fair number in a minute.
 
 **[Open the app →](https://roomwise.pages.dev)**
 
@@ -10,11 +10,11 @@ No account. No tracking. Nothing leaves your browser.
 
 ## What it does
 
-<!-- Replace: two or three sentences a stranger understands, and a screenshot. -->
+Enter the total rent, then each room's size and perks (ensuite, balcony, dark window…). Roomwise gives every room a fair share that adds up to the rent exactly, shows the arithmetic under each room, and lets you copy a share link or a plain-text summary for the house chat.
 
 ## Why it exists
 
-<!-- Replace: the specific problem, and what people do today instead. -->
+Splitting rent equally is unfair when one room is twice the size of another. Splitting it fairly usually means a spreadsheet and an argument. Roomwise makes the method visible and the weights adjustable.
 
 ## Running it locally
 
@@ -35,7 +35,7 @@ npm run dev
 
 ## How it works
 
-<!-- Replace: the interesting mechanism, if there is one. -->
+weight = (room area + equal slice of shared space) × (1 + sum of perk percentages). Shares use largest-remainder rounding so they always sum to the rent. The whole state is mirrored into the URL hash, which is what makes links shareable.
 
 Everything runs client-side. State is persisted to `localStorage` through a
 versioned store that migrates old data and recovers from corrupt data rather
