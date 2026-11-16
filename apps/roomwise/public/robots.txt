@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://roomwise.pages.dev/sitemap.xml
+Sitemap: https://roomwise-i1p.pages.dev/sitemap.xml

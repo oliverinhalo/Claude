@@ -2,7 +2,7 @@
 
 Split the rent by room size and perks, so housemates agree on a fair number in a minute.
 
-**[Open the app →](https://roomwise.pages.dev)**
+**[Open the app →](https://roomwise-i1p.pages.dev)**
 
 No account. No tracking. Nothing leaves your browser.
 
