@@ -20,3 +20,7 @@ Playwright browser missing (installed). Lint forbade non-null assertions in test
 ## Score: 7/10
 Focused, accessible, verified live. Lighthouse not measured; I did not drive the core loop in production by hand beyond verify-live (QA drove it locally). Switching units rounds to 0.1, so round trips drift slightly.
 Would do differently: run the real ideation and scoring pass, and measure Lighthouse.
+
+## Follow-up run (2026-11-17, CONTINUE mode)
+Lighthouse measured against the live URL (mobile default): performance 97, accessibility 100, best-practices 100, SEO 100. The "Lighthouse not measured" gap is closed. Score stays 7.
+No interrupted run, empty queue and inbox. The lowest-scored app (ai-detector, 6) is blocked on a real labelled corpus and a trained model, a multi-run job, so nothing further was attempted this run.
