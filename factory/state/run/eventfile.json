@@ -1,0 +1,12 @@
+{
+  "slug": "eventfile",
+  "week": 9,
+  "status": "in_progress",
+  "started": "2026-11-23T19:29:22Z",
+  "updated": "2026-11-23T19:29:22Z",
+  "last_completed_phase": "plan",
+  "next_action": "write spec, build lib/ics",
+  "decisions": [],
+  "blockers": [],
+  "live_url": null
+}

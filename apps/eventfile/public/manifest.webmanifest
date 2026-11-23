@@ -1,0 +1,17 @@
+{
+  "name": "Eventfile",
+  "short_name": "Eventfile",
+  "description": "Write a recurring event once and download a correct .ics calendar file, with no account and no upload.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfbfa",
+  "theme_color": "#0b0d10",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
