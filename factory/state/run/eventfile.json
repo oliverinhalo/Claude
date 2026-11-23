@@ -1,10 +1,10 @@
 {
   "slug": "eventfile",
   "week": 9,
-  "status": "in_progress",
+  "status": "complete",
   "started": "2026-11-23T19:29:22Z",
-  "updated": "2026-11-23T19:38:12Z",
-  "last_completed_phase": "publish",
+  "updated": "2026-11-23T19:41:02Z",
+  "last_completed_phase": "done",
   "next_action": "publish.sh eventfile, verify live, ledger",
   "decisions": [],
   "blockers": [],

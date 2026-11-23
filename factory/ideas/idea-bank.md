@@ -184,3 +184,7 @@ Mark shipped ideas with `✅ <slug>` and rejected ones with `✗ <reason>` inlin
 ## Run 2026-11-09 (week 46, second app) — chosen from the bank, no queue
 - **Sourdough schedule** ✅ crumb-clock (planner)
 - **Crumb Clock follow-ups** — multiple loaves; hydration calculator; other doughs (pizza, focaccia); starter maintenance reminders. *(planner)*
+
+## Run 2026-11-23 (week 47, second app)
+- **ICS builder** ✅ eventfile (generator)
+- **Eventfile follow-ups** — stable UID / re-download updates; multiple events per file; import an existing .ics to edit; subscribable feed. *(generator)*

@@ -122,6 +122,21 @@
       "signature_detail": "Floor-plan strip whose segment widths are each room's share",
       "paid_tier_hypothesis": "Pro-rating for move-ins, utilities by room, saved scenarios",
       "notes": "Slug pages.dev was taken; live at the suffixed host."
+    },
+    {
+      "week": 9,
+      "slug": "eventfile",
+      "name": "Eventfile",
+      "category": "generator",
+      "sentence": "Eventfile helps a club secretary or team organiser write one recurring event and get a correct .ics file in under a minute, without hand-editing RRULE text or trusting an ad-laden generator.",
+      "repo": "oliverinhalo/eventfile",
+      "url": "https://eventfile.pages.dev",
+      "host": "cloudflare-pages",
+      "shipped": "2026-11-23",
+      "score": 7,
+      "signature_detail": "Tear-off calendar leaf showing the first occurrence; real VTIMEZONE derived from Intl",
+      "paid_tier_hypothesis": "Multiple events per file, saved templates, hosted subscribable feeds, attendees",
+      "notes": "Live at eventfile.pages.dev; verified by verify-live and a production download."
     }
   ]
 }
