@@ -4,8 +4,8 @@
   "description": "Write a recurring event once and download a correct .ics calendar file, with no account and no upload.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fbfbfa",
-  "theme_color": "#0b0d10",
+  "background_color": "#f8f4ec",
+  "theme_color": "#f8f4ec",
   "icons": [
     {
       "src": "/favicon.svg",

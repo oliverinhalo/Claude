@@ -1,4 +1,5 @@
 import { parseDate, parseTime } from './dates';
+import { occurrences } from './recur';
 import { isValidZone } from './timezone';
 
 export const FLOATING = 'floating';
@@ -90,17 +91,22 @@ export function validate(f: EventForm): FieldError[] {
       errs.push({ field: 'tz', message: 'This browser does not know that time zone.' });
   }
   if (f.freq !== 'none') {
-    if (f.interval < 1 || f.interval > 99)
+    if (!Number.isInteger(f.interval) || f.interval < 1 || f.interval > 99)
       errs.push({ field: 'interval', message: 'Repeat every 1 to 99.' });
     if (f.freq === 'weekly' && f.weekdays.length === 0)
       errs.push({ field: 'weekdays', message: 'Pick at least one weekday.' });
-    if (f.endMode === 'count' && (f.count < 1 || f.count > 999))
+    if (f.endMode === 'count' && (!Number.isInteger(f.count) || f.count < 1 || f.count > 999))
       errs.push({ field: 'count', message: 'Number of events must be 1 to 999.' });
     if (f.endMode === 'until') {
       const until = parseDate(f.until);
       if (!until) errs.push({ field: 'until', message: 'Enter a valid end date.' });
       else if (start && until < start)
         errs.push({ field: 'until', message: 'The end date is before the start date.' });
+      else if (start && errs.length === 0 && occurrences(f, 1).length === 0)
+        errs.push({
+          field: 'until',
+          message: 'No event falls on or before this end date. Pick a later date.',
+        });
     }
   }
   return errs;

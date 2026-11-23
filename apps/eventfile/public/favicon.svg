@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Eventfile">
-  <!-- Phase 4 replaces this with the app's own mark. -->
-  <rect width="64" height="64" rx="14" fill="#2f5540" />
-  <path d="M18 40.5 32 20l14 20.5" fill="none" stroke="#fbfbfa" stroke-width="5"
-        stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="6" y="10" width="52" height="48" rx="8" fill="#fffdf8" stroke="#a8341c" stroke-width="3"/>
+  <path d="M6 18a8 8 0 0 1 8-8h36a8 8 0 0 1 8 8v8H6z" fill="#a8341c"/>
+  <rect x="18" y="4" width="5" height="12" rx="2.5" fill="#1c1812"/>
+  <rect x="41" y="4" width="5" height="12" rx="2.5" fill="#1c1812"/>
+  <path d="M20 44h24M20 36h12" stroke="#1c1812" stroke-width="4" stroke-linecap="round"/>
 </svg>

@@ -1,31 +1,27 @@
 # Design decisions
 
-> Written in Phase 4, before the UI is built. Replace every section.
-> Reference: `.claude/skills/ship-weekly-app/references/design-direction.md`
-
 ## The one word
 
-<!-- precise · calm · playful · dense · editorial · technical · warm · stark · retro · clinical -->
+Stationery: warm, printed, dependable.
 
 ## Type
 
-- Display face:
-- Body face:
-- Scale:
+- Display face: system serif stack (Iowan Old Style / Palatino / Georgia). No font download.
+- Body face: system sans. Mono for the file preview and dates.
+- Scale: 1.25 modular scale from `--t-xs` to `--t-3xl`.
 
 ## Colour
 
-Tokens live in `src/styles/tokens.css`. Both themes were checked at 4.5:1.
+Tokens live in `src/styles/tokens.css`. Both themes are checked at 4.5:1 by `tokens.test.ts` and axe.
 
-- Accent, and what it means:
-- Dark mode notes:
+- Surfaces: warm paper (light) and warm charcoal (dark), not a grey inversion.
+- Accent: vermilion, the colour of a calendar's tear-off header; lightened in dark mode.
 
-## Space, shape, motion
+## Signature
 
-- Radius:
-- Border vs shadow:
-- Motion:
+The calendar leaf: the first occurrence rendered as a tear-off page beside the rule in words.
 
-## The signature detail
+## States
 
-<!-- The one thing this app is remembered for. An app with no answer here scores at most 5. -->
+Empty: never empty, a worked example is loaded. Error: field-specific messages and a disabled
+download. Slow: nothing is asynchronous. Offline: fully client-side.

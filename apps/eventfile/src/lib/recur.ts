@@ -23,7 +23,14 @@ export function occurrences(f: EventForm, limit: number): string[] {
   const max = f.endMode === 'count' ? Math.min(limit, f.count) : limit;
   const out: string[] = [];
   const interval = Math.max(1, f.interval);
-  const weekStart = addDays(start, -mondayIndex(start));
+  // Weekly: the interval is counted from the week of the first selected weekday on/after
+  // the start (the shifted DTSTART), which is how a calendar will read the emitted RRULE.
+  let anchor = start;
+  if (f.freq === 'weekly' && f.weekdays.length > 0) {
+    for (let i = 0; i < 7 && !f.weekdays.includes(anchor.getUTCDay()); i++)
+      anchor = addDays(anchor, 1);
+  }
+  const weekStart = addDays(anchor, -mondayIndex(anchor));
   const anchorNth = nthOfMonth(start);
 
   const matches = (d: Date): boolean => {

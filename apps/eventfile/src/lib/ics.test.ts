@@ -150,6 +150,23 @@ describe('occurrences', () => {
       '2026-12-31',
     ]);
   });
+  it('weekly interval counts from the shifted first weekday, not the original start week', () => {
+    // Thu 2026-12-03 start, Mon+Wed every 2 weeks: first is Mon 7 Dec, then Wed 9 Dec, then 21 Dec.
+    expect(occurrences({ ...base, freq: 'weekly', interval: 2, weekdays: [1, 3] }, 3)).toEqual([
+      '2026-12-07',
+      '2026-12-09',
+      '2026-12-21',
+    ]);
+  });
+  it('rejects NaN and fractional interval/count, and an until with no occurrence', () => {
+    const fields = (o: Partial<EventForm>) =>
+      validate({ ...base, freq: 'weekly', ...o }).map((e) => e.field);
+    expect(fields({ interval: NaN })).toContain('interval');
+    expect(fields({ interval: 1.5 })).toContain('interval');
+    expect(fields({ endMode: 'count', count: NaN })).toContain('count');
+    expect(fields({ endMode: 'count', count: 2.5 })).toContain('count');
+    expect(fields({ weekdays: [1], endMode: 'until', until: '2026-12-04' })).toContain('until');
+  });
   it('count caps results', () => {
     expect(
       occurrences({ ...base, freq: 'daily', endMode: 'count', count: 2 }, 10),

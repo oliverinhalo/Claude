@@ -64,7 +64,13 @@ export function App() {
   const err = (field: FieldError['field']) => errors.find((e) => e.field === field);
 
   useEffect(() => {
-    store.save(form);
+    // A cleared number box is NaN, which JSON turns into null and the strict validator would
+    // then discard as "corrupt" on the next visit. Persist a loadable value instead.
+    store.save({
+      ...form,
+      interval: Number.isInteger(form.interval) ? form.interval : 1,
+      count: Number.isInteger(form.count) ? form.count : 1,
+    });
   }, [form]);
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
