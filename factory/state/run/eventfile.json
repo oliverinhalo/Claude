@@ -3,9 +3,9 @@
   "week": 9,
   "status": "in_progress",
   "started": "2026-11-23T19:29:22Z",
-  "updated": "2026-11-23T19:35:04Z",
-  "last_completed_phase": "polish",
-  "next_action": "og image, seo, readme, qa agent, publish",
+  "updated": "2026-11-23T19:38:12Z",
+  "last_completed_phase": "publish",
+  "next_action": "publish.sh eventfile, verify live, ledger",
   "decisions": [],
   "blockers": [],
   "live_url": null
