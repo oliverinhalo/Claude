@@ -1,12 +1,19 @@
-import { addDays, compactDate, compactTime, parseDate, parseTime, WEEKDAY_CODES } from './dates';
+import {
+  addDays,
+  compactDate,
+  compactTime,
+  parseDate,
+  parseTime,
+  WEEKDAY_CODES,
+} from './dates';
 import { FLOATING, validate, type EventForm } from './model';
-import { isLastOfMonth, nthOfMonth, occurrences } from './recur';
+import { nthOfMonth, occurrences } from './recur';
 import { vtimezone, wallToUtc } from './timezone';
 
 const enc = new TextEncoder();
 
 export const escapeText = (s: string): string =>
-  s.replace(/\\/g, '\\\\').replace(/;/g, '\;').replace(/,/g, '\\,').replace(/\r\n|\r|\n/g, '\\n');
+  s.replace(/[\\;,]/g, (c) => `\\${c}`).replace(/\r\n|\r|\n/g, '\\n');
 
 /** Fold a content line to at most 75 octets per physical line, never splitting a character. */
 export function fold(line: string): string[] {
@@ -41,7 +48,12 @@ export function buildRRule(f: EventForm, firstDate: Date): string | null {
   if (f.interval > 1) parts.push(`INTERVAL=${f.interval}`);
   if (f.freq === 'weekly') {
     const order = [1, 2, 3, 4, 5, 6, 0];
-    parts.push(`BYDAY=${order.filter((d) => f.weekdays.includes(d)).map((d) => WEEKDAY_CODES[d]).join(',')}`);
+    parts.push(
+      `BYDAY=${order
+        .filter((d) => f.weekdays.includes(d))
+        .map((d) => WEEKDAY_CODES[d])
+        .join(',')}`,
+    );
   } else if (f.freq === 'monthly') {
     const wd = WEEKDAY_CODES[firstDate.getUTCDay()];
     if (f.monthlyMode === 'day') parts.push(`BYMONTHDAY=${firstDate.getUTCDate()}`);

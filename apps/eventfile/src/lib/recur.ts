@@ -29,7 +29,9 @@ export function occurrences(f: EventForm, limit: number): string[] {
   const matches = (d: Date): boolean => {
     const days = Math.round((d.getTime() - start.getTime()) / DAY);
     const monthDiff =
-      (d.getUTCFullYear() - start.getUTCFullYear()) * 12 + d.getUTCMonth() - start.getUTCMonth();
+      (d.getUTCFullYear() - start.getUTCFullYear()) * 12 +
+      d.getUTCMonth() -
+      start.getUTCMonth();
     switch (f.freq) {
       case 'daily':
         return days % interval === 0;
@@ -65,19 +67,23 @@ export function occurrences(f: EventForm, limit: number): string[] {
 export function describeDate(iso: string): string {
   const d = parseDate(iso);
   if (!d) return iso;
-  return `${WEEKDAY_NAMES[d.getUTCDay()].slice(0, 3)} ${d.getUTCDate()} ${
-    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getUTCMonth()]
+  return `${(WEEKDAY_NAMES[d.getUTCDay()] ?? '').slice(0, 3)} ${d.getUTCDate()} ${
+    ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][
+      d.getUTCMonth()
+    ]
   } ${d.getUTCFullYear()}`;
 }
 
-const ordinal = (n: number) => ['', 'first', 'second', 'third', 'fourth', 'fifth'][n] ?? `${n}th`;
+const ordinal = (n: number) =>
+  ['', 'first', 'second', 'third', 'fourth', 'fifth'][n] ?? `${n}th`;
 
 /** A plain-English reading of the repeat rule. */
 export function describeRule(f: EventForm): string {
   const start = parseDate(f.startDate);
   if (f.freq === 'none' || !start) return 'Does not repeat.';
   const n = Math.max(1, f.interval);
-  const every = (unit: string, plural: string) => (n === 1 ? `Every ${unit}` : `Every ${n} ${plural}`);
+  const every = (unit: string, plural: string) =>
+    n === 1 ? `Every ${unit}` : `Every ${n} ${plural}`;
   let s: string;
   switch (f.freq) {
     case 'daily':

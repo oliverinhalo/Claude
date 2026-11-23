@@ -7,7 +7,8 @@ export function parseDate(s: string): Date | null {
   if (!m) return null;
   const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
   const dt = new Date(Date.UTC(y, mo - 1, d));
-  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d)
+    return null;
   if (y < 1970 || y > 2100) return null;
   return dt;
 }
@@ -24,7 +25,8 @@ export const fmtDate = (d: Date): string =>
 
 export const addDays = (d: Date, n: number): Date => new Date(d.getTime() + n * 86_400_000);
 
-export const daysInMonth = (y: number, m0: number): number => new Date(Date.UTC(y, m0 + 1, 0)).getUTCDate();
+export const daysInMonth = (y: number, m0: number): number =>
+  new Date(Date.UTC(y, m0 + 1, 0)).getUTCDate();
 
 export const compactDate = (d: Date): string =>
   `${pad(d.getUTCFullYear(), 4)}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}`;

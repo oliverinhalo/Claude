@@ -49,6 +49,37 @@ test.describe('smoke', () => {
   });
 });
 
+test.describe('core loop', () => {
+  test('edit, see the rule, download a valid .ics', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Title').fill('Choir, rehearsal; weekly');
+    await page.getByLabel('How often').selectOption('weekly');
+    await expect(page.getByText(/Every 2 weeks on Thursday/)).toBeVisible();
+    await expect(page.getByLabel('Calendar file contents')).toContainText(
+      'RRULE:FREQ=WEEKLY;INTERVAL=2;BYDAY=TH',
+    );
+    const [download] = await Promise.all([
+      page.waitForEvent('download'),
+      page.getByRole('button', { name: 'Download .ics' }).click(),
+    ]);
+    expect(download.suggestedFilename()).toBe('choir-rehearsal-weekly.ics');
+  });
+
+  test('an empty title disables download', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Title').fill('');
+    await expect(page.getByText('Give the event a title.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Download .ics' })).toBeDisabled();
+  });
+
+  test('the form is remembered across reloads', async ({ page }) => {
+    await page.goto('/');
+    await page.getByLabel('Title').fill('Remember me');
+    await page.reload();
+    await expect(page.getByLabel('Title')).toHaveValue('Remember me');
+  });
+});
+
 test.describe('accessibility', () => {
   for (const theme of ['light', 'dark'] as const) {
     test(`has no serious violations in ${theme} mode`, async ({ page }) => {

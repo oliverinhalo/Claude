@@ -31,16 +31,23 @@ export function isValidZone(tz: string): boolean {
 
 /** Offset from UTC in minutes at a UTC instant (positive = east of Greenwich). */
 export function offsetMinutes(utcMs: number, tz: string): number {
-  const p: Record<string, number> = {};
+  const p = { year: 1970, month: 1, day: 1, hour: 0, minute: 0, second: 0 };
   for (const part of formatter(tz).formatToParts(new Date(utcMs))) {
-    if (part.type !== 'literal') p[part.type] = Number(part.value);
+    if (part.type in p) p[part.type as keyof typeof p] = Number(part.value);
   }
   const asUtc = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
   return Math.round((asUtc - Math.floor(utcMs / 1000) * 1000) / 60_000);
 }
 
 /** Convert a wall-clock time in a zone to a UTC instant (ms). */
-export function wallToUtc(y: number, mo0: number, d: number, h: number, mi: number, tz: string): number {
+export function wallToUtc(
+  y: number,
+  mo0: number,
+  d: number,
+  h: number,
+  mi: number,
+  tz: string,
+): number {
   const guess = Date.UTC(y, mo0, d, h, mi);
   let utc = guess - offsetMinutes(guess, tz) * 60_000;
   utc = guess - offsetMinutes(utc, tz) * 60_000;

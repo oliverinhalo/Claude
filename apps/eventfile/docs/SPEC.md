@@ -48,12 +48,12 @@ Corrupt → example plus a "recovered" notice. No server, no network.
 
 ## The four states
 
-| State   | Behaviour |
-| ------- | --------- |
-| Empty   | Never empty: the example event is prefilled. "Start from blank" clears it. |
+| State   | Behaviour                                                                     |
+| ------- | ----------------------------------------------------------------------------- |
+| Empty   | Never empty: the example event is prefilled. "Start from blank" clears it.    |
 | Error   | Inline, field-specific messages; download disabled with the reason beside it. |
-| Slow    | Everything is synchronous. VTIMEZONE derivation is memoised per zone/year. |
-| Offline | Fully client-side; works with the network off. Stated in the footer. |
+| Slow    | Everything is synchronous. VTIMEZONE derivation is memoised per zone/year.    |
+| Offline | Fully client-side; works with the network off. Stated in the footer.          |
 
 ## The one thing that must be excellent
 

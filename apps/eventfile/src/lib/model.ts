@@ -58,7 +58,16 @@ export function isEventForm(v: unknown): v is EventForm {
 }
 
 export interface FieldError {
-  field: 'title' | 'startDate' | 'startTime' | 'endTime' | 'tz' | 'interval' | 'weekdays' | 'count' | 'until';
+  field:
+    | 'title'
+    | 'startDate'
+    | 'startTime'
+    | 'endTime'
+    | 'tz'
+    | 'interval'
+    | 'weekdays'
+    | 'count'
+    | 'until';
   message: string;
 }
 
@@ -70,7 +79,8 @@ export function validate(f: EventForm): FieldError[] {
   if (f.title.length > MAX_TITLE)
     errs.push({ field: 'title', message: `Keep the title under ${MAX_TITLE} characters.` });
   const start = parseDate(f.startDate);
-  if (!start) errs.push({ field: 'startDate', message: 'Enter a valid start date (1970–2100).' });
+  if (!start)
+    errs.push({ field: 'startDate', message: 'Enter a valid start date (1970–2100).' });
   if (!f.allDay) {
     if (parseTime(f.startTime) === null)
       errs.push({ field: 'startTime', message: 'Enter a start time like 09:30.' });
