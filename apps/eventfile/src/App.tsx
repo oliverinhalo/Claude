@@ -47,6 +47,19 @@ const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const btn =
   'inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] px-4 font-medium transition-colors duration-[var(--dur-state)]';
 
+const UID_KEY = 'eventfile:uid';
+function stableUid(): string {
+  try {
+    const saved = window.localStorage.getItem(UID_KEY);
+    if (saved) return saved;
+    const fresh = `${crypto.randomUUID()}@eventfile`;
+    window.localStorage.setItem(UID_KEY, fresh);
+    return fresh;
+  } catch {
+    return `${crypto.randomUUID()}@eventfile`;
+  }
+}
+
 export function App() {
   const loaded = useMemo(() => store.load(), []);
   const [form, setForm] = useState<EventForm>(loaded.value);
@@ -76,7 +89,12 @@ export function App() {
 
   const zones = useMemo(() => zoneList(form.tz), [form.tz]);
   const dates = errors.length === 0 ? occurrences(form, 6) : [];
-  const text = useMemo(() => (errors.length === 0 ? buildIcs(form) : null), [form]);
+  // One UID per browser, so importing the file again updates the event instead of duplicating it.
+  const uid = useMemo(stableUid, []);
+  const text = useMemo(
+    () => (errors.length === 0 ? buildIcs(form, { uid }) : null),
+    [form, uid],
+  );
   const first = dates[0];
   const shifted = errors.length === 0 && form.freq === 'weekly' && first !== form.startDate;
 

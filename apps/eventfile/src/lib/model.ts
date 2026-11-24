@@ -87,6 +87,11 @@ export function validate(f: EventForm): FieldError[] {
       errs.push({ field: 'startTime', message: 'Enter a start time like 09:30.' });
     if (parseTime(f.endTime) === null)
       errs.push({ field: 'endTime', message: 'Enter an end time like 10:30.' });
+    else if (parseTime(f.endTime) === parseTime(f.startTime))
+      errs.push({
+        field: 'endTime',
+        message: 'End time matches the start. Pick a later time.',
+      });
     if (f.tz !== FLOATING && !isValidZone(f.tz))
       errs.push({ field: 'tz', message: 'This browser does not know that time zone.' });
   }

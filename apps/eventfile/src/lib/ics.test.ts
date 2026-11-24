@@ -224,3 +224,13 @@ describe('validation and storage shape', () => {
     expect(blankForm(base).tz).toBe('Europe/London');
   });
 });
+
+describe('polish: equal start and end, stable uid', () => {
+  it('rejects an end time equal to the start', () => {
+    const f = { ...exampleForm(), startTime: '09:00', endTime: '09:00' };
+    expect(buildIcs(f)).toBeNull();
+  });
+  it('uses the supplied uid', () => {
+    expect(buildIcs(exampleForm(), { uid: 'fixed@x' })).toContain('UID:fixed@x');
+  });
+});
