@@ -22,3 +22,6 @@ Fresh UID per change (re-import duplicates); start == end gives a 24h event; zon
 
 ## Score: 7/10
 Correct, tested, accessible, verified live. Would do differently: run the real ideation pass and measure Lighthouse.
+
+## Polish pass (2026-11-24, CONTINUE run)
+Fixed two known gaps: UID is now stable per browser (re-import updates rather than duplicates); end time equal to start is a validation error instead of a silent 24h event. Tests added, gate 9/9, republished and verified live (200, clean console, no 320px overflow). Still open: Lighthouse not measured; Cairo-style multi-transition zones approximate; keyboard reachability not hand-verified by QA.
