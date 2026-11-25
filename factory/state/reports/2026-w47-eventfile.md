@@ -25,3 +25,6 @@ Correct, tested, accessible, verified live. Would do differently: run the real i
 
 ## Polish pass (2026-11-24, CONTINUE run)
 Fixed two known gaps: UID is now stable per browser (re-import updates rather than duplicates); end time equal to start is a validation error instead of a silent 24h event. Tests added, gate 9/9, republished and verified live (200, clean console, no 320px overflow). Still open: Lighthouse not measured; Cairo-style multi-transition zones approximate; keyboard reachability not hand-verified by QA.
+
+## Follow-up run (2026-11-25, CONTINUE mode)
+Lighthouse measured against the live URL (mobile default): performance 99, accessibility 100, best-practices 100, SEO 100. That gap is closed. Score stays 7. Still open: Cairo-style multi-transition zones are approximate; QA did not hand-verify full keyboard reachability. No inbox items, queue empty, no interrupted run; ai-detector (6) remains blocked on a labelled corpus and trained model, a multi-run job.
