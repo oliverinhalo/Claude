@@ -22,3 +22,6 @@ Owner brief: issue #4 — track the fretboard, tell me the note/chord playing, e
 ## Continue run (2026-11-01)
 - Fixed the leftover: importing a take with zero events now says "That take is empty…" instead of loading silently. Gate 9/9.
 - Lighthouse still not measured (no browser audit tooling wired in); self-score unchanged at 7/10.
+
+## Follow-up run (2026-11-26, CONTINUE mode)
+Lighthouse measured against the live URL (mobile default): performance 100, accessibility 100, best-practices 100, SEO 100. The "Lighthouse not measured" gap is closed; score unchanged.

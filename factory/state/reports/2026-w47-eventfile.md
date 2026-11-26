@@ -28,3 +28,6 @@ Fixed two known gaps: UID is now stable per browser (re-import updates rather th
 
 ## Follow-up run (2026-11-25, CONTINUE mode)
 Lighthouse measured against the live URL (mobile default): performance 99, accessibility 100, best-practices 100, SEO 100. That gap is closed. Score stays 7. Still open: Cairo-style multi-transition zones are approximate; QA did not hand-verify full keyboard reachability. No inbox items, queue empty, no interrupted run; ai-detector (6) remains blocked on a labelled corpus and trained model, a multi-run job.
+
+## Follow-up run (2026-11-26, CONTINUE mode)
+No inbox items, queue empty, no interrupted run. Measured Lighthouse on guitar-cam and budgeter (both 100/100/100/100). Remaining across the portfolio: ai-detector needs a labelled corpus and trained model (multi-run); eventfile Cairo-style zones approximate and keyboard reachability not hand-verified. Nothing else worth doing without padding.

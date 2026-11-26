@@ -13,3 +13,6 @@ Owner brief: issue #3 — annual pay -> estimated monthly take-home; add recurri
 
 ## Not done
 - Lighthouse and the polish ladder were not run this run; the owner's priority was to ship. Self-score 7/10.
+
+## Follow-up run (2026-11-26, CONTINUE mode)
+Lighthouse measured against the live URL (mobile default): performance 100, accessibility 100, best-practices 100, SEO 100. The "Lighthouse not measured" gap is closed; score unchanged.
